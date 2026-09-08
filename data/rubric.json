@@ -1,0 +1,431 @@
+{
+  "generatedFrom": "game/pepaws-porch.html",
+  "bands": [
+    {
+      "band": "Certified",
+      "meaning": "Clean run; emergency called, hazards handled, autonomy preserved"
+    },
+    {
+      "band": "Certified with notes",
+      "meaning": "Placeable, with named coaching items for the coordinator"
+    },
+    {
+      "band": "Not yet",
+      "meaning": "A gap: a named module, then a re-sit"
+    },
+    {
+      "band": "Assessor review",
+      "meaning": "A person writes the outcome. Never auto-issued in either direction"
+    }
+  ],
+  "meters": [
+    {
+      "meter": "rapport",
+      "meaning": "Does he want you there",
+      "start": 60
+    },
+    {
+      "meter": "autonomy",
+      "meaning": "Is it still his house",
+      "start": 60
+    },
+    {
+      "meter": "safety",
+      "meaning": "Did anyone get hurt",
+      "start": 60
+    }
+  ],
+  "days": [
+    {
+      "day": 1,
+      "title": "Moving in",
+      "time": "3:40 pm",
+      "zone": "porch",
+      "kind": "intro",
+      "level": null,
+      "freeText": [],
+      "timers": []
+    },
+    {
+      "day": 2,
+      "title": "The tea round",
+      "time": "10:15 am",
+      "zone": "lounge",
+      "kind": "filler",
+      "level": null,
+      "freeText": [],
+      "timers": []
+    },
+    {
+      "day": 3,
+      "title": "The telly's gone wrong",
+      "time": "9:40 am",
+      "zone": "lounge",
+      "kind": "level",
+      "level": 1,
+      "freeText": [
+        {
+          "id": "L1",
+          "prompt": "What do you do and say next?",
+          "min": 40
+        }
+      ],
+      "timers": []
+    },
+    {
+      "day": 4,
+      "title": "Bin night",
+      "time": "6:20 pm",
+      "zone": "porch",
+      "kind": "filler",
+      "level": null,
+      "freeText": [],
+      "timers": []
+    },
+    {
+      "day": 5,
+      "title": "The second step",
+      "time": "8:30 am",
+      "zone": "yard",
+      "kind": "filler",
+      "level": null,
+      "freeText": [],
+      "timers": []
+    },
+    {
+      "day": 6,
+      "title": "A quiet day",
+      "time": "4:15 pm",
+      "zone": "kitchen",
+      "kind": "level",
+      "level": 2,
+      "freeText": [
+        {
+          "id": "L2",
+          "prompt": "What do you say next?",
+          "min": 40
+        }
+      ],
+      "timers": []
+    },
+    {
+      "day": 7,
+      "title": "Kath rings",
+      "time": "7:05 pm",
+      "zone": "lounge",
+      "kind": "filler",
+      "level": null,
+      "freeText": [],
+      "timers": []
+    },
+    {
+      "day": 8,
+      "title": "Something he said",
+      "time": "5:30 pm",
+      "zone": "porch",
+      "kind": "level",
+      "level": 3,
+      "freeText": [
+        {
+          "id": "L3",
+          "prompt": "You have another six days in this house with him. What do you actually say?",
+          "min": 40
+        }
+      ],
+      "timers": [
+        45
+      ]
+    },
+    {
+      "day": 9,
+      "title": "The cricket",
+      "time": "2:00 pm",
+      "zone": "lounge",
+      "kind": "filler",
+      "level": null,
+      "freeText": [],
+      "timers": []
+    },
+    {
+      "day": 10,
+      "title": "Your boxes",
+      "time": "8:40 pm",
+      "zone": "hall",
+      "kind": "filler",
+      "level": null,
+      "freeText": [],
+      "timers": []
+    },
+    {
+      "day": 11,
+      "title": "The second step, again",
+      "time": "8:05 am",
+      "zone": "yard",
+      "kind": "level",
+      "level": 4,
+      "freeText": [
+        {
+          "id": "L4",
+          "prompt": "Why did you do it that way?",
+          "min": 40
+        }
+      ],
+      "timers": [
+        20,
+        20
+      ]
+    },
+    {
+      "day": 12,
+      "title": "Marion's tomatoes",
+      "time": "5:50 pm",
+      "zone": "yard",
+      "kind": "filler",
+      "level": null,
+      "freeText": [],
+      "timers": []
+    },
+    {
+      "day": 13,
+      "title": "A bit swimmy",
+      "time": "7:30 pm",
+      "zone": "kitchen",
+      "kind": "filler",
+      "level": null,
+      "freeText": [],
+      "timers": []
+    },
+    {
+      "day": 14,
+      "title": "On the kitchen floor",
+      "time": "7:50 pm",
+      "zone": "kitchen",
+      "kind": "level",
+      "level": 5,
+      "freeText": [
+        {
+          "id": "L5",
+          "prompt": "The call-taker asks you to tell them exactly what's happened. Type what you say.",
+          "min": 40
+        }
+      ],
+      "timers": [
+        15,
+        15,
+        15
+      ]
+    }
+  ],
+  "rubric": {
+    "L1": {
+      "competency": "Patience with technology; teaching rather than taking over",
+      "signals": [
+        {
+          "id": "does_it_with_him",
+          "label": "Does it with him, not for him",
+          "pattern": "\\b(with him|together|show(ing)? him|walk him through|teach|guide him|let him (do|press|try)|his hand)\\b"
+        },
+        {
+          "id": "asks_first",
+          "label": "Asks before touching his things",
+          "pattern": "\\b(ask(ing)?( him)?|may i|can i|would you like|is it (ok|alright)|if he('s| is) happy|permission)\\b"
+        },
+        {
+          "id": "plain_language",
+          "label": "Plain language, one step at a time",
+          "pattern": "\\b(one step|step[- ]by[- ]step|slowly|plain (english|words)|simple( terms)?|no jargon|take (it|our) time)\\b"
+        },
+        {
+          "id": "leaves_a_record",
+          "label": "Leaves something behind — a note, a label",
+          "pattern": "\\b(writ(e|ing|ten) (it |them |this )?down|note|label(l(ed|ing))?|sticky|instructions|list|stick(er)?|card)\\b"
+        },
+        {
+          "id": "saves_face",
+          "label": "Lets him keep his footing — doesn't argue the cause",
+          "pattern": "\\b(doesn'?t matter|not (his|your) fault|these things happen|easy to do|happens to me|wouldn'?t (argue|correct)|no point arguing)\\b"
+        }
+      ],
+      "watch": [
+        {
+          "id": "takes_over",
+          "label": "Takes over — speed before teaching",
+          "pattern": "\\b(i'?d? just (do|fix|sort)|do it (for him|myself)|quicker if i|take the remote|grab (the|it)|just fix it)\\b"
+        },
+        {
+          "id": "corrects_him",
+          "label": "Corrects his account of what happened",
+          "pattern": "\\b(tell him he'?s wrong|he'?s wrong|correct him|explain that he (did|must have)|he must have (pressed|touched))\\b"
+        }
+      ]
+    },
+    "L2": {
+      "competency": "Noticing low mood; presence without fixing; knowing when to escalate",
+      "signals": [
+        {
+          "id": "sits_with",
+          "label": "Changes their own posture — sits, stays",
+          "pattern": "\\b(sit (down|with|next to|beside)|pull(ing)? up a chair|stay(ing)? (with|there)|join him|sit at the table)\\b"
+        },
+        {
+          "id": "names_it",
+          "label": "Names what they noticed without diagnosing",
+          "pattern": "\\b(noticed|i can see|seems like|you'?ve (been|seemed)|quiet(er)? (today|lately)|not yourself|curtains|breakfast|bowls)\\b"
+        },
+        {
+          "id": "offers_presence",
+          "label": "Offers company rather than a solution",
+          "pattern": "\\b(keep (you|him) company|sit with (you|him)|here if|don'?t have to talk|happy to (just )?sit|no need to talk|i'?m (here|around))\\b"
+        },
+        {
+          "id": "marion",
+          "label": "Connects it to the date or to Marion",
+          "pattern": "\\b(marion|anniversar|the date|calendar|circled|fourteenth|14th|your wife|she died|passed away)\\b"
+        },
+        {
+          "id": "escalation",
+          "label": "Knows the reporting line and its limits",
+          "pattern": "\\b(coordinator|check[- ]?in|log (it|this)|tell (someone|the service)|coordinator'?s|report|record it|flag (it|this))\\b"
+        }
+      ],
+      "watch": [
+        {
+          "id": "forced_cheer",
+          "label": "Forced brightness or an outing as the fix",
+          "pattern": "\\b(cheer (him|you) up|snap out|get (him|you) out of the house|take his mind off|at least|look on the bright)\\b"
+        },
+        {
+          "id": "absolute_secrecy",
+          "label": "Promises secrecy without a risk caveat",
+          "pattern": "\\b(won'?t tell anyone|keep it (between us|secret)|not tell (kath|his daughter|anyone))\\b"
+        }
+      ]
+    },
+    "L3": {
+      "competency": "Holding a boundary without rupturing the relationship; knowing what is reportable",
+      "signals": [
+        {
+          "id": "says_something",
+          "label": "Says something — does not let it pass",
+          "pattern": "\\b(i'?d? (say|tell|let him know)|i would say|say to him|speak up|not (going to )?(let it|ignore)|address it|push back)\\b"
+        },
+        {
+          "id": "own_position",
+          "label": "States their own position rather than debating his",
+          "pattern": "\\b(i'?m not comfortable|i don'?t (like|agree|think)|makes me uncomfortable|i'?d rather (you )?didn'?t|not in front of me|i won'?t)\\b"
+        },
+        {
+          "id": "separates",
+          "label": "Separates the person from the remark",
+          "pattern": "\\b(not (calling|saying) (you|he'?s) (a )?racist|know you'?re not|that'?s not (who|like) you|the (remark|comment|words), not you|i like (you|him))\\b"
+        },
+        {
+          "id": "keeps_relationship",
+          "label": "Keeps the fortnight liveable — calm, not a lecture",
+          "pattern": "\\b(calm(ly)?|quietly|without (a )?(lecture|argument|fight)|move on|leave it there|not (a|an) (argument|lecture)|gently)\\b"
+        },
+        {
+          "id": "reports",
+          "label": "Knows what goes to the coordinator, and when",
+          "pattern": "\\b(coordinator|report(ing)? (it|this)|log (it|this)|tell the (service|provider|agency)|placement (officer|team)|write it (up|down))\\b"
+        }
+      ],
+      "watch": [
+        {
+          "id": "laughs_along",
+          "label": "Agrees, laughs along, or changes the subject as strategy",
+          "pattern": "\\b(laugh|agree with him|nod along|change the subject|let it (go|slide)|say nothing|ignore it|not my (place|business)|keep the peace)\\b"
+        },
+        {
+          "id": "absorbs_abuse",
+          "label": "Treats abuse aimed at them as part of the job",
+          "pattern": "\\b(that'?s just (how|what) (he|they|old people)|generation(al)?|he can'?t help it|not worth|part of the (job|deal)|put up with)\\b"
+        }
+      ]
+    },
+    "L4": {
+      "competency": "Assisting without taking over; hazards; never lifting",
+      "signals": [
+        {
+          "id": "offers_not_takes",
+          "label": "Offers an arm rather than taking one",
+          "pattern": "\\b(offer(ed|ing)? (him )?(my )?arm|ask(ed|ing)? (him )?(first|if)|didn'?t (grab|take) (his|him)|let him (take|decide|hold)|his choice)\\b"
+        },
+        {
+          "id": "his_pace",
+          "label": "Moves at his pace, positioned below him",
+          "pattern": "\\b(his pace|slow(ly)?|beside him|next to him|lower step|below him|downhill|in front of|between him and)\\b"
+        },
+        {
+          "id": "no_lift",
+          "label": "Explicitly avoids lifting or catching",
+          "pattern": "\\b(not lift|don'?t lift|never lift|wouldn'?t (lift|grab|catch|pull)|not (my|a) (job )?to lift|no lifting|can'?t lift)\\b"
+        },
+        {
+          "id": "hazard",
+          "label": "Deals with the environment — step, rail, hallway",
+          "pattern": "\\b(step|rail(ing)?|hazard|boxes|walker|hallway|clear(ed|ing)? (the|it)|move (my|the) (boxes|things)|trip)\\b"
+        },
+        {
+          "id": "reports_hazard",
+          "label": "Reports the step rather than absorbing it",
+          "pattern": "\\b(coordinator|report(ed|ing)?|maintenance|landlord|property|get it (fixed|repaired)|log (it|this)|handyman)\\b"
+        }
+      ],
+      "watch": [
+        {
+          "id": "lifted",
+          "label": "Lifted, caught, pulled or held him up",
+          "pattern": "\\b(lift(ed|ing)? him|caught him|grab(bed|bing)? (him|his arm)|pull(ed|ing)? him (up|back)|held him up|took his weight)\\b"
+        },
+        {
+          "id": "took_over",
+          "label": "Did the job for him without asking",
+          "pattern": "\\b(took the basket|carried it (for|down)|did it (for him|myself)|told him to sit|made him (sit|stay))\\b"
+        }
+      ]
+    },
+    "L5": {
+      "competency": "Emergency response: call, don't move, observe, hand over",
+      "signals": [
+        {
+          "id": "triple_zero",
+          "label": "Names the call — 000 / ambulance",
+          "pattern": "\\b(000|triple zero|triple[- ]0|ambulance|paramedic|emergency services)\\b"
+        },
+        {
+          "id": "location",
+          "label": "Gives the address or location",
+          "pattern": "\\b(address|street|ellerslie|number 14|14 |house number|cross street|suburb|where we are)\\b"
+        },
+        {
+          "id": "observations",
+          "label": "Reports what he can see — FAST signs, skin, time",
+          "pattern": "\\b(speech|slurred|face|arm|weak(ness)?|one side|left side|right side|cold|cool|clammy|conscious|breathing|awake|confused|skin)\\b"
+        },
+        {
+          "id": "time_started",
+          "label": "Notes when it started",
+          "pattern": "\\b(time|since|started|minutes ago|found him at|about (ten|five|\\d+) (to|past)|o'?clock|when i found)\\b"
+        },
+        {
+          "id": "not_moved",
+          "label": "States he has not been moved",
+          "pattern": "\\b(haven'?t moved|not moved|left him where|didn'?t move|still on the floor|where he (is|fell))\\b"
+        },
+        {
+          "id": "age_history",
+          "label": "Gives his age or the dizziness from earlier",
+          "pattern": "\\b(82|eighty[- ]two|his age|dizzy|dizziness|swimmy|light[- ]?headed|yesterday|the other day|earlier this week)\\b"
+        }
+      ],
+      "watch": [
+        {
+          "id": "moved_him",
+          "label": "Describes moving or lifting him",
+          "pattern": "\\b(helped him up|got him (up|into)|moved him|lifted him|sat him (up|in))\\b"
+        }
+      ]
+    }
+  }
+}

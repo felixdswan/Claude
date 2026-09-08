@@ -1,0 +1,1665 @@
+<title>Pepaws Porch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Pepaws Porch — a committed single visual world (one cottage, in real light).
+   Muted, naturalistic palette; every surface painted explicitly so the page
+   holds on either host ground. */
+:root{
+  --surround:#2B302C; --surround-2:#232823;
+  --paper:#EFE9DD; --card:#F8F3E9; --card-2:#E7DFCF; --sunk:#DED5C2;
+  --ink:#31302B; --ink-2:#6B6459; --ink-3:#918878;
+  --line:#CDC3B0; --line-2:#B5A995;
+  --sage:#6F7C5A; --sage-lo:#5A6649; --slate:#5B6C74; --plum:#7A6E86;
+  --rust:#A8563E; --rust-lo:#8C4530; --ochre:#BE9350; --clay:#A8785F;
+  --good:#5F7A50; --warn:#B08A3C; --bad:#A2523C;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--surround);
+  background-image:radial-gradient(120% 90% at 50% 0%, #333A34 0%, var(--surround) 45%, var(--surround-2) 100%);
+  color:var(--ink);
+  font:400 16px/1.55 "Source Sans 3","Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;
+}
+h1,h2,h3{margin:0;font-family:Fraunces,Georgia,serif;font-weight:600;line-height:1.12;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--slate);outline-offset:2px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+#app{
+  width:100%;max-width:468px;height:min(94vh,880px);min-height:560px;
+  background:var(--card);border-radius:18px;overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,.42);
+  display:flex;flex-direction:column;position:relative;
+}
+#app.wide{max-width:1060px}
+
+.topbar{flex:none;background:var(--card-2);border-bottom:1px solid var(--line);padding:10px 14px 11px;display:flex;flex-direction:column;gap:9px}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.daylabel{font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.clock{font:500 12px/1 "IBM Plex Mono",monospace;color:var(--ink-3)}
+.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.m{display:flex;flex-direction:column;gap:4px}
+.m span{font:600 9px/1 "IBM Plex Mono",monospace;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.m .track{height:5px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.m .track i{display:block;height:100%;border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+.stage{flex:none;position:relative;background:#B9C6CC;line-height:0}
+.stage svg{display:block;width:100%;height:auto}
+.stagenote{position:absolute;left:12px;top:12px;font:500 10px/1 "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;color:#F3EEE2;background:rgba(31,34,30,.5);padding:5px 8px;border-radius:5px}
+
+.panel{flex:1;min-height:0;overflow-y:auto;padding:16px 16px 20px;display:flex;flex-direction:column;gap:13px;background:var(--card)}
+.panel::-webkit-scrollbar{width:8px}
+.panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.who{font:700 11px/1 "IBM Plex Mono",monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--rust)}
+.who.narr{color:var(--ink-3)}
+.line{font-size:17px;line-height:1.5;color:var(--ink)}
+.line em{font-style:italic;color:var(--ink-2)}
+.prompt{font-family:Fraunces,Georgia,serif;font-size:19px;font-weight:600;line-height:1.25}
+.sub{font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;background:var(--card);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;font-size:15.5px;line-height:1.4;transition:background .14s,border-color .14s}
+.opt:hover{background:#FDFAF3;border-color:var(--slate)}
+.opt.examine{border-style:dashed;color:var(--ink-2);font-size:14.5px}
+.opt[disabled]{opacity:.45;cursor:default}
+
+.cont{align-self:flex-start;background:var(--slate);color:#F6F2E8;border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:15px}
+.cont:hover{background:#4E5D64}
+.cont.primary{background:var(--sage)}
+.cont.primary:hover{background:var(--sage-lo)}
+.cont[disabled]{background:var(--line-2);cursor:default}
+
+textarea{width:100%;min-height:132px;resize:vertical;padding:12px 13px;border-radius:10px;border:1px solid var(--line-2);background:#FDFAF3;color:var(--ink);font:400 15.5px/1.5 "Source Sans 3",system-ui,sans-serif}
+textarea:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0 3px rgba(91,108,116,.16)}
+.tfoot{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.count{font:500 11.5px/1 "IBM Plex Mono",monospace;color:var(--ink-3)}
+.count.short{color:var(--rust)}
+
+.timer{flex:none;height:4px;background:var(--sunk);position:relative;overflow:hidden}
+.timer i{display:block;height:100%;background:var(--rust);width:100%}
+.timerlabel{font:600 11px/1 "IBM Plex Mono",monospace;letter-spacing:.08em;color:var(--rust);text-transform:uppercase}
+
+.notice{border-left:3px solid var(--ochre);background:#F2EADA;padding:11px 13px;border-radius:0 8px 8px 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.notice.alarm{border-left-color:var(--rust);background:#F4E3DC}
+.notice b{color:var(--ink)}
+.daycard{position:absolute;inset:0;z-index:20;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;animation:fade .3s ease}
+.daycard .n{font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3)}
+.daycard h2{font-size:31px}
+.daycard .t{font-size:14.5px;color:var(--ink-2)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+.scroll{flex:1;min-height:0;overflow-y:auto}
+.pad{padding:20px 18px 24px;display:flex;flex-direction:column;gap:14px}
+.title h1{font-size:38px;letter-spacing:-.01em}
+.title .kicker{font:600 11px/1 "IBM Plex Mono",monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3)}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2)}
+input[type=text],input[type=email]{padding:11px 12px;border:1px solid var(--line-2);border-radius:9px;background:#FDFAF3;font:400 15.5px/1.4 "Source Sans 3",system-ui,sans-serif;color:var(--ink)}
+input:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0 3px rgba(91,108,116,.16)}
+.check{flex-direction:row;align-items:flex-start;gap:9px;font-weight:400;font-size:13.5px;line-height:1.45;color:var(--ink-2);cursor:pointer}
+.check input{margin-top:3px;width:17px;height:17px;accent-color:var(--sage);flex:none}
+.err{font-size:13px;color:var(--rust);font-weight:600}
+
+.band{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 15px;font-weight:700;font-size:14px;color:#F6F2E8}
+.rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.row .v{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink-2);text-align:right;flex:none}
+.status{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:7px}
+.dotled{width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-3)}
+.dotled.ok{background:var(--good)} .dotled.no{background:var(--bad)} .dotled.wait{background:var(--warn)}
+
+.atable{width:100%;border-collapse:collapse;font-size:13.5px}
+.atable th{text-align:left;font:600 10px/1.3 "IBM Plex Mono",monospace;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);padding:8px 10px;border-bottom:1px solid var(--line-2);background:var(--card-2)}
+.atable td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.awrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--card);max-height:52vh}
+.arow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pill{font:600 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.06em;padding:5px 9px;border-radius:999px;background:var(--sunk);color:var(--ink-2)}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<div id="app" role="application" aria-label="Pepaws Porch assessment"></div>
+<script>
+"use strict";
+/* ============================================================
+   PEPAWS PORCH — homeshare readiness assessment
+   One resident (Bruce Whitlam, 82), fourteen days, five graded
+   challenges. Single-run assessment, not a replayable game.
+   ============================================================ */
+
+/* ---------- light presets: one cottage, different hours ---------- */
+var LIGHT = {
+  day:   {s1:"#A7BDCB", s2:"#DCE1D8", amb:"rgba(255,244,214,0.00)", warm:"#F2E4C4", key:0.00},
+  gold:  {s1:"#BCC0B4", s2:"#EEDCB6", amb:"rgba(214,158,78,0.15)",  warm:"#FBEBC6", key:0.10},
+  grey:  {s1:"#9FA9A9", s2:"#C9CBC2", amb:"rgba(96,104,112,0.13)",  warm:"#DCDCD2", key:0.04},
+  dusk:  {s1:"#5E6E82", s2:"#C39E85", amb:"rgba(58,64,94,0.30)",    warm:"#E7C48F", key:0.22},
+  night: {s1:"#2C3542", s2:"#495062", amb:"rgba(20,26,42,0.33)",    warm:"#F0D08A", key:0.40}
+};
+
+function defsFor(L){
+  return '<defs>'
+    + '<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+L.s1+'"/><stop offset="1" stop-color="'+L.s2+'"/></linearGradient>'
+    + '<linearGradient id="roofg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6C7772"/><stop offset="1" stop-color="#525C58"/></linearGradient>'
+    + '<linearGradient id="wallg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4DBCA"/><stop offset="1" stop-color="#D2C7B2"/></linearGradient>'
+    + '<linearGradient id="deckg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4AC8B"/><stop offset="1" stop-color="#A88F70"/></linearGradient>'
+    + '<linearGradient id="grassg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8B9670"/><stop offset="1" stop-color="#727D5B"/></linearGradient>'
+    + '<linearGradient id="floorg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B49874"/><stop offset="1" stop-color="#8E7454"/></linearGradient>'
+    + '<linearGradient id="innerwall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DCD5C4"/><stop offset="1" stop-color="#C4BBA6"/></linearGradient>'
+    + '<linearGradient id="glassg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+L.warm+'" stop-opacity="0.85"/><stop offset="1" stop-color="#A9B6B4" stop-opacity="0.7"/></linearGradient>'
+    + '<radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="'+L.warm+'" stop-opacity="0.72"/><stop offset="1" stop-color="'+L.warm+'" stop-opacity="0"/></radialGradient>'
+    + '</defs>';
+}
+function ambient(L){
+  return L.amb === "rgba(255,244,214,0.00)" ? "" : '<rect x="0" y="0" width="800" height="400" fill="'+L.amb+'"/>';
+}
+
+/* ---------- foliage: many small strokes, not one blob ---------- */
+function bush(cx, cy, w, h, hue, seed){
+  var out = '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + (w * 0.8).toFixed(1) + '" ry="' + (h * 0.74).toFixed(1) + '" fill="' + hue[1] + '"/>';
+  var i, a, r, x, y, rr;
+  var n = 26;
+  for (i = 0; i < n; i++){
+    a = (i * 2.399 + seed) % 6.283;
+    r = 0.35 + ((i * 37 + seed * 11) % 100) / 155;
+    x = cx + Math.cos(a) * w * r;
+    y = cy + Math.sin(a) * h * r * 0.85;
+    rr = 5 + ((i * 13 + seed * 7) % 9);
+    out += '<ellipse cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" rx="'+rr+'" ry="'+(rr*0.82).toFixed(1)+'" fill="'+(i % 3 === 0 ? hue[1] : (i % 3 === 1 ? hue[0] : hue[2]))+'"/>';
+  }
+  return '<g>'+out+'</g>';
+}
+var GREENS = ["#7E8C67", "#66754F", "#93A07C"];
+var GREENS_D = ["#5D6A4C", "#4B573C", "#6E7B5B"];
+
+/* ---------- Bruce: ~6.5 heads tall, tonal shading, no outline ---------- */
+var SKIN = "#D6AF8E", SKIN_D = "#BE9573", HAIR = "#BCB6A8", CARD = "#7D845F", CARD_D = "#666C4C",
+    TROU = "#6C6B63", TROU_D = "#5B5A53", SHOE = "#4B423A", SHIRT = "#DFD8C7";
+
+function head(cx, cy, tilt){
+  return '<g transform="translate('+cx+','+cy+') rotate('+(tilt||0)+')">'
+    + '<ellipse cx="0" cy="0" rx="13" ry="15" fill="'+SKIN+'"/>'
+    + '<path d="M -13 2 C -13 12 -7 15 0 15 C 7 15 13 12 13 2 C 11 9 -11 9 -13 2 Z" fill="'+SKIN_D+'" opacity="0.35"/>'
+    + '<ellipse cx="-13" cy="1" rx="3.4" ry="4.6" fill="'+SKIN_D+'"/>'
+    + '<path d="M -13.5 -3 C -14 -19 14 -19 13.5 -3 C 11 -11 -11 -11 -13.5 -3 Z" fill="'+HAIR+'"/>'
+    + '<path d="M -13.6 -3 C -14.4 2 -13.6 6 -12.6 8 C -13.4 2 -13.2 -1 -12.4 -4 Z" fill="'+HAIR+'"/>'
+    + '<path d="M 13.6 -3 C 14.4 2 13.6 6 12.6 8 C 13.4 2 13.2 -1 12.4 -4 Z" fill="'+HAIR+'"/>'
+    + '<rect x="-11.5" y="-6" width="9" height="7.5" rx="3" fill="#C9D6D6" fill-opacity="0.42" stroke="#4C463D" stroke-width="1.2"/>'
+    + '<rect x="2.5" y="-6" width="9" height="7.5" rx="3" fill="#C9D6D6" fill-opacity="0.42" stroke="#4C463D" stroke-width="1.2"/>'
+    + '<path d="M -2.5 -3 L 2.5 -3" stroke="#4C463D" stroke-width="1.2" fill="none"/>'
+    + '<path d="M -7.5 5.5 C -4 3.6 4 3.6 7.5 5.5 C 4 7.6 -4 7.6 -7.5 5.5 Z" fill="'+HAIR+'"/>'
+    + '<path d="M -3.5 9.6 L 3.5 9.6" stroke="#9C7256" stroke-width="1.3" stroke-linecap="round" fill="none"/>'
+    + '</g>';
+}
+
+function bruce(pose, x, y, s){
+  var g = '<g transform="translate('+x+','+y+') scale('+s+')">';
+  g += '<ellipse cx="0" cy="3" rx="31" ry="7" fill="#2E3328" opacity="0.16"/>';
+  if (pose === "stand" || pose === "stand_stick"){
+    g += '<path d="M -14 -80 L -16 -7 L -3 -7 L -2 -80 Z" fill="'+TROU+'"/>'
+      +  '<path d="M 2 -80 L 3 -7 L 16 -7 L 14 -80 Z" fill="'+TROU_D+'"/>'
+      +  '<ellipse cx="-10" cy="-4" rx="10.5" ry="5" fill="'+SHOE+'"/><ellipse cx="10" cy="-4" rx="10.5" ry="5" fill="'+SHOE+'"/>'
+      +  '<path d="M -20 -124 Q -24 -116 -23 -98 L -21 -76 L 21 -76 L 23 -98 Q 24 -116 20 -124 Q 0 -132 -20 -124 Z" fill="'+CARD+'"/>'
+      +  '<path d="M 4 -128 L 23 -98 L 21 -76 L 4 -76 Z" fill="'+CARD_D+'" opacity="0.55"/>'
+      +  '<path d="M -7 -128 L 0 -108 L 7 -128 Z" fill="'+SHIRT+'"/>'
+      +  '<path d="M -20 -122 C -31 -112 -32 -95 -30 -80 L -22 -79 C -24 -95 -23 -109 -14 -119 Z" fill="'+CARD+'"/>'
+      +  '<path d="M 20 -122 C 31 -112 32 -95 30 -80 L 22 -79 C 24 -95 23 -109 14 -119 Z" fill="'+CARD_D+'"/>'
+      +  '<circle cx="-26" cy="-75" r="5.4" fill="'+SKIN+'"/><circle cx="26" cy="-75" r="5.4" fill="'+SKIN+'"/>'
+      +  '<rect x="-6" y="-137" width="12" height="14" rx="4" fill="'+SKIN_D+'"/>'
+      +  head(0, -148, 0);
+    if (pose === "stand_stick"){
+      g += '<path d="M 30 -78 L 34 -2" stroke="#8A6E4E" stroke-width="4" stroke-linecap="round" fill="none"/>'
+        +  '<path d="M 26 -80 L 34 -80" stroke="#8A6E4E" stroke-width="4.5" stroke-linecap="round" fill="none"/>';
+    }
+  } else if (pose === "sit"){
+    g += '<path d="M -22 -66 L -24 -30 L 14 -30 L 12 -66 Z" fill="'+TROU+'"/>'
+      +  '<path d="M -24 -34 L -26 -30 L -26 -6 L -14 -6 L -13 -32 Z" fill="'+TROU_D+'"/>'
+      +  '<path d="M 2 -34 L 1 -6 L 13 -6 L 14 -32 Z" fill="'+TROU+'"/>'
+      +  '<ellipse cx="-20" cy="-4" rx="10" ry="4.6" fill="'+SHOE+'"/><ellipse cx="7" cy="-4" rx="10" ry="4.6" fill="'+SHOE+'"/>'
+      +  '<path d="M -19 -112 Q -23 -104 -22 -86 L -21 -64 L 20 -64 L 21 -86 Q 22 -104 18 -112 Q 0 -119 -19 -112 Z" fill="'+CARD+'"/>'
+      +  '<path d="M 3 -116 L 21 -86 L 20 -64 L 3 -64 Z" fill="'+CARD_D+'" opacity="0.5"/>'
+      +  '<path d="M -6 -116 L 0 -97 L 6 -116 Z" fill="'+SHIRT+'"/>'
+      +  '<path d="M -19 -110 C -28 -100 -29 -84 -25 -70 L -18 -71 C -21 -85 -21 -98 -13 -107 Z" fill="'+CARD+'"/>'
+      +  '<path d="M 19 -110 C 28 -100 28 -86 24 -72 L 17 -73 C 20 -86 20 -98 13 -107 Z" fill="'+CARD_D+'"/>'
+      +  '<circle cx="-22" cy="-66" r="5.2" fill="'+SKIN+'"/><circle cx="21" cy="-68" r="5.2" fill="'+SKIN+'"/>'
+      +  '<rect x="-6" y="-125" width="12" height="14" rx="4" fill="'+SKIN_D+'"/>'
+      +  head(-1, -136, -6);
+  } else { /* floor — on his side against the cupboards, propped on one elbow */
+    g += '<path d="M -66 -12 L -20 -16 L -18 -3 L -66 -2 Z" fill="'+TROU+'"/>'
+      +  '<path d="M -64 -20 L -26 -24 L -22 -13 L -66 -11 Z" fill="'+TROU_D+'"/>'
+      +  '<ellipse cx="-70" cy="-6" rx="9" ry="5" fill="'+SHOE+'"/><ellipse cx="-70" cy="-15" rx="8.5" ry="4.6" fill="'+SHOE+'"/>'
+      +  '<path d="M -26 -30 Q -8 -34 6 -30 L 10 -12 Q -8 -4 -24 -8 Z" fill="'+CARD+'"/>'
+      +  '<path d="M -26 -30 Q -14 -33 -4 -32 L -2 -12 Q -14 -8 -24 -9 Z" fill="'+CARD_D+'" opacity="0.45"/>'
+      +  '<path d="M 4 -30 C 16 -30 22 -22 20 -12 L 12 -12 C 14 -20 10 -24 2 -24 Z" fill="'+CARD+'"/>'
+      +  '<circle cx="18" cy="-9" r="5.2" fill="'+SKIN+'"/>'
+      +  '<rect x="2" y="-36" width="15" height="12" rx="5" fill="'+SKIN_D+'" transform="rotate(-22 9 -30)"/>'
+      +  head(22, -41, -24);
+  }
+  return g + '</g>';
+}
+
+/* ---------- the student's hands/objects are implied, never drawn ---------- */
+
+/* ---------- scenes ---------- */
+function scenePorch(L, opts){
+  opts = opts || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="The front verandah of Bruce’s cottage">' + defsFor(L);
+  s += '<rect width="800" height="400" fill="url(#sky)"/>';
+  /* neighbouring rooflines */
+  s += '<path d="M 0 214 L 74 176 L 148 214 Z" fill="#8C948F" opacity="0.55"/>'
+    +  '<path d="M 660 210 L 730 172 L 800 210 Z" fill="#8C948F" opacity="0.55"/>';
+  /* street trees */
+  s += bush(96, 168, 62, 52, GREENS_D, 3) + bush(714, 158, 58, 50, GREENS_D, 8);
+  /* jacaranda, dusty not purple-candy */
+  s += '<path d="M 168 302 C 172 262 160 236 146 214" stroke="#7A6752" stroke-width="9" fill="none" stroke-linecap="round"/>'
+    +  bush(152, 196, 56, 44, ["#9A93AE", "#847D9B", "#ABA4BC"], 5);
+  /* ground */
+  s += '<rect x="0" y="296" width="800" height="104" fill="url(#grassg)"/>'
+    +  '<path d="M 0 296 C 180 290 620 292 800 296 L 800 306 C 600 300 200 302 0 308 Z" fill="#96A07C" opacity="0.5"/>';
+  /* house body */
+  s += '<rect x="196" y="150" width="470" height="150" fill="url(#wallg)"/>';
+  for (var i = 0; i < 10; i++) s += '<line x1="196" y1="'+(160+i*15)+'" x2="666" y2="'+(160+i*15)+'" stroke="#B8AC96" stroke-width="1" opacity="0.55"/>';
+  /* gable + fascia */
+  s += '<path d="M 178 156 L 431 78 L 684 156 Z" fill="url(#roofg)"/>'
+    +  '<path d="M 178 156 L 431 78 L 431 88 L 196 158 Z" fill="#7C8782" opacity="0.7"/>'
+    +  '<rect x="176" y="152" width="510" height="9" rx="2" fill="#E8E1D2"/>';
+  /* verandah roof, posts, deck */
+  s += '<rect x="166" y="186" width="530" height="11" rx="2" fill="#5C6763"/>'
+    +  '<rect x="166" y="197" width="530" height="7" fill="#4E5854" opacity="0.6"/>'
+    +  '<rect x="200" y="204" width="11" height="100" fill="#EDE6D6"/><rect x="208" y="204" width="4" height="100" fill="#C6BCA6"/>'
+    +  '<rect x="424" y="204" width="11" height="100" fill="#EDE6D6"/><rect x="432" y="204" width="4" height="100" fill="#C6BCA6"/>'
+    +  '<rect x="648" y="204" width="11" height="100" fill="#EDE6D6"/><rect x="656" y="204" width="4" height="100" fill="#C6BCA6"/>'
+    +  '<rect x="186" y="196" width="490" height="24" fill="#2E3328" opacity="0.13"/>'
+    +  '<rect x="180" y="300" width="500" height="16" fill="url(#deckg)"/>'
+    +  '<rect x="238" y="316" width="180" height="11" fill="#B49B7C"/><rect x="228" y="327" width="200" height="11" fill="#A88F70"/>';
+  /* door + windows */
+  s += '<rect x="300" y="206" width="72" height="96" rx="2" fill="#8C5B47"/>'
+    +  '<rect x="300" y="206" width="72" height="96" rx="2" fill="none" stroke="#6E4635" stroke-width="2"/>'
+    +  '<rect x="309" y="216" width="22" height="34" fill="#7B4E3C"/><rect x="341" y="216" width="22" height="34" fill="#7B4E3C"/>'
+    +  '<circle cx="362" cy="256" r="3.2" fill="#C7A25E"/>'
+    +  '<rect x="452" y="212" width="104" height="72" fill="url(#glassg)" stroke="#E3DACA" stroke-width="5"/>'
+    +  '<line x1="504" y1="212" x2="504" y2="284" stroke="#E3DACA" stroke-width="4"/>'
+    +  '<rect x="222" y="216" width="60" height="66" fill="url(#glassg)" stroke="#E3DACA" stroke-width="5"/>';
+  /* pots, chair, cat */
+  s += '<path d="M 592 302 L 630 302 L 625 272 L 597 272 Z" fill="#A8785F"/><rect x="594" y="266" width="34" height="8" rx="2" fill="#96684F"/>'
+    +  bush(611, 252, 22, 18, GREENS, 2)
+    +  '<path d="M 196 302 L 226 302 L 222 280 L 200 280 Z" fill="#A8785F"/>' + bush(211, 268, 17, 14, GREENS, 6);
+  s += '<g opacity="0.95"><path d="M 500 302 L 500 246 L 536 246" stroke="#8A6E4E" stroke-width="5" fill="none" stroke-linecap="round"/>'
+    +  '<path d="M 498 276 L 542 276 L 542 302" stroke="#8A6E4E" stroke-width="5" fill="none" stroke-linecap="round"/>'
+    +  '<path d="M 494 274 L 546 274 L 546 268 L 494 268 Z" fill="#9C8564"/>'
+    +  '<path d="M 490 306 Q 520 316 550 306" stroke="#8A6E4E" stroke-width="4" fill="none" stroke-linecap="round"/></g>';
+  if (opts.cat !== false){
+    s += '<g><ellipse cx="264" cy="296" rx="18" ry="9" fill="#C79A63"/><circle cx="280" cy="288" r="9" fill="#C79A63"/>'
+      +  '<path d="M 275 281 L 276 274 L 281 279 M 283 280 L 287 274 L 288 282" fill="#C79A63"/>'
+      +  '<path d="M 246 294 Q 236 290 240 282" stroke="#C79A63" stroke-width="4" fill="none" stroke-linecap="round"/></g>';
+  }
+  if (opts.bruce) s += bruce(opts.bruce, opts.bx || 404, opts.by || 300, opts.bs || 0.86);
+  if (opts.neighbours){
+    s += '<g>'
+      +  '<ellipse cx="712" cy="366" rx="18" ry="5" fill="#2E3328" opacity="0.16"/>'
+      +  '<ellipse cx="757" cy="368" rx="16" ry="4.5" fill="#2E3328" opacity="0.14"/>'
+      +  '<path d="M 749 364 L 748 330 L 765 330 L 764 364 Z" fill="#8A7F72"/>'
+      +  '<circle cx="757" cy="322" r="8.5" fill="#C4996F"/>'
+      +  '<path d="M 748 319 Q 751 311 757 311 Q 763 311 765 319 Q 759 314 748 319 Z" fill="#4A423A"/>'
+      +  '<path d="M 703 362 L 702 320 L 723 320 L 722 362 Z" fill="#6E7A84"/>'
+      +  '<path d="M 701 328 L 693 348 L 699 350 L 706 332 Z" fill="#6E7A84"/>'
+      +  '<circle cx="712" cy="310" r="10" fill="#A9805F"/>'
+      +  '<path d="M 702 307 Q 705 298 712 298 Q 720 298 722 307 Q 716 302 702 307 Z" fill="#3E3A34"/>'
+      +  '<rect x="686" y="342" width="17" height="15" rx="3" fill="#8C8272"/>'
+      +  '</g>';
+  }
+  s += ambient(L) + '</svg>';
+  return s;
+}
+
+function sceneLounge(L, opts){
+  opts = opts || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="Bruce’s lounge room">' + defsFor(L);
+  s += '<rect width="800" height="400" fill="url(#innerwall)"/>'
+    +  '<rect x="0" y="300" width="800" height="100" fill="url(#floorg)"/>'
+    +  '<rect x="0" y="292" width="800" height="10" fill="#8A7052"/>';
+  for (var i = 0; i < 9; i++) s += '<line x1="'+(i*95)+'" y1="302" x2="'+(i*95-40)+'" y2="400" stroke="#7E6647" stroke-width="1.2" opacity="0.45"/>';
+  /* window with the day behind it */
+  s += '<rect x="58" y="88" width="150" height="120" fill="url(#glassg)" stroke="#E6DFCF" stroke-width="8"/>'
+    +  '<line x1="133" y1="88" x2="133" y2="208" stroke="#E6DFCF" stroke-width="5"/>';
+  /* mantel, photos */
+  s += '<rect x="500" y="196" width="250" height="10" fill="#9A8261"/>'
+    +  '<rect x="524" y="164" width="34" height="30" fill="#E7DFCC" stroke="#9A8261" stroke-width="3"/>'
+    +  '<rect x="574" y="170" width="28" height="24" fill="#E7DFCC" stroke="#9A8261" stroke-width="3"/>'
+    +  '<rect x="620" y="160" width="38" height="34" fill="#E7DFCC" stroke="#9A8261" stroke-width="3"/>';
+  /* telly on a low unit */
+  s += '<rect x="252" y="150" width="212" height="128" rx="5" fill="#3A3A38"/>'
+    +  '<rect x="260" y="158" width="196" height="112" rx="2" fill="'+(opts.tvOn ? "#5E7F8C" : "#23262A")+'"/>';
+  if (opts.tvNoSignal){
+    s += '<rect x="260" y="158" width="196" height="112" fill="#1C1F23"/>'
+      +  '<text x="358" y="220" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="#7C848C">NO SIGNAL</text>';
+  }
+  s += '<rect x="242" y="278" width="232" height="14" rx="3" fill="#8A7357"/>'
+    +  '<rect x="276" y="292" width="12" height="16" fill="#7A6449"/><rect x="428" y="292" width="12" height="16" fill="#7A6449"/>';
+  /* armchair */
+  s += '<g><rect x="546" y="222" width="120" height="18" rx="8" fill="#7A6A5E"/>'
+    +  '<rect x="536" y="238" width="140" height="56" rx="10" fill="#8B7A6A"/>'
+    +  '<rect x="536" y="238" width="20" height="56" rx="9" fill="#7A6A5E"/>'
+    +  '<rect x="656" y="238" width="20" height="56" rx="9" fill="#7A6A5E"/>'
+    +  '<rect x="552" y="294" width="12" height="14" fill="#6B5A48"/><rect x="648" y="294" width="12" height="14" fill="#6B5A48"/></g>';
+  /* side table, remotes, tea */
+  s += '<rect x="700" y="248" width="76" height="9" rx="2" fill="#9A8261"/><rect x="732" y="257" width="10" height="46" fill="#8A7052"/>'
+    +  '<rect x="708" y="238" width="26" height="9" rx="3" fill="#3E4247"/><rect x="742" y="238" width="22" height="9" rx="3" fill="#5E6167"/>'
+    +  '<ellipse cx="700" cy="240" rx="12" ry="5" fill="#E4DCCB"/>';
+  if (opts.bruce) s += bruce(opts.bruce, opts.bx || 606, opts.by || 300, opts.bs || 0.78);
+  s += ambient(L) + '</svg>';
+  return s;
+}
+
+function sceneKitchen(L, opts){
+  opts = opts || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="Bruce’s kitchen">' + defsFor(L);
+  s += '<rect width="800" height="400" fill="url(#innerwall)"/>'
+    +  '<rect x="0" y="306" width="800" height="94" fill="#9C9384"/>';
+  for (var i = 0; i < 14; i++) for (var j = 0; j < 3; j++)
+    s += '<rect x="'+(i*60 - (j%2)*30)+'" y="'+(310+j*30)+'" width="56" height="26" rx="2" fill="'+((i+j)%2 ? "#A69C8C" : "#9A9080")+'"/>';
+  /* cupboards + bench */
+  s += '<rect x="0" y="120" width="250" height="86" fill="#C7BCA6"/><rect x="0" y="120" width="250" height="86" fill="none" stroke="#B0A48C" stroke-width="3"/>'
+    +  '<line x1="125" y1="120" x2="125" y2="206" stroke="#B0A48C" stroke-width="3"/>'
+    +  '<rect x="0" y="240" width="290" height="14" fill="#8E8672"/><rect x="0" y="254" width="290" height="52" fill="#BFB49E"/>'
+    +  '<rect x="196" y="216" width="52" height="26" rx="3" fill="#B7BEBB"/>';
+  /* fridge with photos */
+  s += '<rect x="640" y="112" width="130" height="194" rx="6" fill="#D7D2C6"/>'
+    +  '<rect x="640" y="112" width="130" height="70" rx="6" fill="#CFC9BC"/>'
+    +  '<rect x="756" y="150" width="6" height="34" rx="3" fill="#9A9384"/><rect x="756" y="196" width="6" height="34" rx="3" fill="#9A9384"/>'
+    +  '<rect x="658" y="196" width="30" height="24" fill="#EDE6D4" transform="rotate(-4 673 208)"/>'
+    +  '<rect x="700" y="204" width="26" height="20" fill="#EDE6D4" transform="rotate(3 713 214)"/>';
+  /* the calendar — the prop that matters on Day 6 */
+  s += '<g><rect x="452" y="120" width="86" height="104" fill="#F1EADA" stroke="#B7AC94" stroke-width="2.5"/>'
+    +  '<rect x="452" y="120" width="86" height="22" fill="#8B9670"/>';
+  for (var r = 0; r < 4; r++) for (var c = 0; c < 5; c++)
+    s += '<rect x="'+(459+c*16)+'" y="'+(150+r*17)+'" width="10" height="10" fill="#DAD2BF"/>';
+  if (opts.calendarMark) s += '<circle cx="507" cy="189" r="9" fill="none" stroke="#3F5FA8" stroke-width="2.4"/>';
+  s += '</g>';
+  /* chair, then Bruce, then the table in front of him — so a seated pose
+     is genuinely AT the table rather than standing behind it */
+  if (opts.chair !== false) s += '<g><rect x="596" y="212" width="12" height="60" rx="4" fill="#8E7052"/><rect x="596" y="252" width="70" height="11" rx="3" fill="#A98A63"/><rect x="600" y="263" width="10" height="44" fill="#8E7052"/><rect x="654" y="263" width="10" height="44" fill="#8E7052"/></g>';
+  if (opts.bruce) s += bruce(opts.bruce, opts.bx || 620, opts.by || 306, opts.bs || 0.76);
+  s += '<rect x="286" y="252" width="290" height="13" rx="3" fill="#A98A63"/>'
+    +  '<rect x="300" y="265" width="12" height="44" fill="#8E7052"/><rect x="550" y="265" width="12" height="44" fill="#8E7052"/>';
+  if (opts.breakfast){
+    s += '<ellipse cx="360" cy="250" rx="26" ry="9" fill="#EDE7D8"/><ellipse cx="360" cy="248" rx="15" ry="5" fill="#D8CDB4"/>'
+      +  '<ellipse cx="418" cy="250" rx="13" ry="6" fill="#E4DCCB"/>';
+  }
+  s += ambient(L);
+  if (opts.lamp) s += '<ellipse cx="430" cy="164" rx="280" ry="168" fill="url(#lamp)"/>';
+  s += '</svg>';
+  return s;
+}
+
+function sceneYard(L, opts){
+  opts = opts || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="The back yard, with the clothesline and the back step">' + defsFor(L);
+  s += '<rect width="800" height="400" fill="url(#sky)"/>'
+    +  '<rect x="0" y="196" width="800" height="30" fill="#8E8471"/>'
+    +  '<rect x="0" y="226" width="800" height="12" fill="#7C7360"/>';
+  for (var i = 0; i < 26; i++) s += '<line x1="'+(i*31)+'" y1="196" x2="'+(i*31)+'" y2="226" stroke="#7A7160" stroke-width="1.4" opacity="0.6"/>';
+  s += bush(90, 176, 60, 44, GREENS_D, 4) + bush(700, 170, 66, 46, GREENS_D, 9);
+  s += '<rect x="0" y="238" width="800" height="162" fill="url(#grassg)"/>';
+  /* back wall + door + THE STEP */
+  s += '<rect x="0" y="60" width="230" height="238" fill="url(#wallg)"/>';
+  for (var k = 0; k < 12; k++) s += '<line x1="0" y1="'+(70+k*20)+'" x2="230" y2="'+(70+k*20)+'" stroke="#B8AC96" stroke-width="1" opacity="0.5"/>';
+  s += '<rect x="60" y="128" width="78" height="126" rx="2" fill="#8C5B47" stroke="#6E4635" stroke-width="2"/>'
+    +  '<rect x="34" y="254" width="130" height="16" fill="#B49B7C"/>'
+    +  '<rect x="26" y="270" width="146" height="16" fill="#A88F70"/>'
+    +  '<rect x="18" y="286" width="162" height="16" fill="#96805F"/>';
+  if (opts.stepLoose) s += '<path d="M 26 270 L 172 270 L 172 276 L 26 274 Z" fill="#7E6A4E"/><path d="M 168 268 L 176 286" stroke="#6E5B41" stroke-width="2.5" fill="none"/>';
+  /* hills hoist */
+  s += '<line x1="530" y1="322" x2="530" y2="128" stroke="#9AA0A0" stroke-width="6"/>'
+    +  '<line x1="430" y1="146" x2="630" y2="146" stroke="#9AA0A0" stroke-width="4"/>'
+    +  '<line x1="530" y1="128" x2="458" y2="176" stroke="#9AA0A0" stroke-width="3"/><line x1="530" y1="128" x2="602" y2="176" stroke="#9AA0A0" stroke-width="3"/>'
+    +  '<rect x="452" y="146" width="30" height="44" rx="3" fill="#D8D2C2"/><rect x="496" y="146" width="26" height="38" rx="3" fill="#B6C0C4"/>'
+    +  '<rect x="540" y="146" width="30" height="46" rx="3" fill="#C9BCA6"/><rect x="586" y="146" width="24" height="34" rx="3" fill="#D8D2C2"/>';
+  /* tomato pots */
+  s += '<path d="M 690 320 L 728 320 L 723 286 L 695 286 Z" fill="#A8785F"/>' + bush(709, 268, 22, 22, GREENS, 1)
+    +  '<circle cx="702" cy="264" r="4.5" fill="#A8563E"/><circle cx="716" cy="276" r="4" fill="#B8674A"/>';
+  if (opts.basket) s += '<g><rect x="238" y="290" width="60" height="34" rx="6" fill="#C4A97E"/><rect x="238" y="290" width="60" height="9" rx="4" fill="#B0966C"/><path d="M 244 290 Q 268 274 292 290" stroke="#DED6C4" stroke-width="7" fill="none"/></g>';
+  if (opts.bruce) s += bruce(opts.bruce, opts.bx || 250, opts.by || 316, opts.bs || 0.8);
+  s += ambient(L) + '</svg>';
+  return s;
+}
+
+function sceneHall(L, opts){
+  opts = opts || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="The hallway">' + defsFor(L);
+  s += '<rect width="800" height="400" fill="#C0B7A4"/>'
+    +  '<path d="M 0 0 L 250 96 L 250 306 L 0 400 Z" fill="#B2A895"/>'
+    +  '<path d="M 800 0 L 550 96 L 550 306 L 800 400 Z" fill="#B2A895"/>'
+    +  '<rect x="250" y="96" width="300" height="210" fill="#CCC3B0"/>'
+    +  '<rect x="0" y="306" width="800" height="94" fill="url(#floorg)"/>'
+    +  '<rect x="292" y="150" width="70" height="156" rx="2" fill="#8C5B47" stroke="#6E4635" stroke-width="2"/>'
+    +  '<rect x="440" y="150" width="70" height="156" rx="2" fill="#8C5B47" stroke="#6E4635" stroke-width="2"/>'
+    +  '<rect x="250" y="290" width="300" height="16" fill="#9E8B6C" opacity="0.5"/>';
+  /* runner rug with a lifted corner */
+  s += '<path d="M 236 400 L 300 306 L 500 306 L 566 400 Z" fill="#96705C"/>'
+    +  '<path d="M 262 362 L 314 322 L 486 322 L 538 362 Z" fill="none" stroke="#B08D74" stroke-width="3"/>'
+    +  '<path d="M 236 400 L 268 356 L 250 400 Z" fill="#7E5A48"/>';
+  /* the walker */
+  s += '<g><rect x="596" y="212" width="6" height="90" fill="#A9AFAE"/><rect x="668" y="212" width="6" height="90" fill="#A9AFAE"/>'
+    +  '<rect x="592" y="208" width="86" height="6" rx="3" fill="#A9AFAE"/><rect x="596" y="248" width="78" height="5" fill="#A9AFAE"/>'
+    +  '<circle cx="599" cy="304" r="7" fill="#5E625F"/><circle cx="671" cy="304" r="7" fill="#5E625F"/></g>';
+  if (opts.boxes){
+    s += '<g><rect x="146" y="252" width="86" height="58" rx="3" fill="#B99A6E"/><rect x="146" y="252" width="86" height="10" fill="#A98A5E"/>'
+      +  '<rect x="170" y="216" width="72" height="40" rx="3" fill="#C4A87C"/><rect x="170" y="216" width="72" height="8" fill="#B0946A"/>'
+      +  '<path d="M 189 252 L 189 310" stroke="#A98A5E" stroke-width="2"/></g>';
+  }
+  if (opts.bruce) s += bruce(opts.bruce, opts.bx || 400, opts.by || 330, opts.bs || 0.78);
+  s += ambient(L) + '</svg>';
+  return s;
+}
+
+var SCENES = {porch: scenePorch, lounge: sceneLounge, kitchen: sceneKitchen, yard: sceneYard, hall: sceneHall};
+</script>
+<script>
+"use strict";
+/* ============================================================
+   CONTENT — fourteen days at 14 Ellerslie Street.
+   Five graded challenges; the rest are short filler beats that
+   build the relationship and plant the props the levels use.
+   ============================================================ */
+
+/* Rubric signal sets. Conservative by design: a signal that fires is
+   evidence FOR the applicant. Nothing here decides an outcome on its
+   own — every free-text answer is stored verbatim for an assessor. */
+var RUBRIC = {
+  L1: {
+    competency: "Patience with technology; teaching rather than taking over",
+    signals: [
+      {id:"does_it_with_him", label:"Does it with him, not for him", re:/\b(with him|together|show(ing)? him|walk him through|teach|guide him|let him (do|press|try)|his hand)\b/i},
+      {id:"asks_first", label:"Asks before touching his things", re:/\b(ask(ing)?( him)?|may i|can i|would you like|is it (ok|alright)|if he('s| is) happy|permission)\b/i},
+      {id:"plain_language", label:"Plain language, one step at a time", re:/\b(one step|step[- ]by[- ]step|slowly|plain (english|words)|simple( terms)?|no jargon|take (it|our) time)\b/i},
+      {id:"leaves_a_record", label:"Leaves something behind — a note, a label", re:/\b(writ(e|ing|ten) (it |them |this )?down|note|label(l(ed|ing))?|sticky|instructions|list|stick(er)?|card)\b/i},
+      {id:"saves_face", label:"Lets him keep his footing — doesn't argue the cause", re:/\b(doesn'?t matter|not (his|your) fault|these things happen|easy to do|happens to me|wouldn'?t (argue|correct)|no point arguing)\b/i}
+    ],
+    watch: [
+      {id:"takes_over", label:"Takes over — speed before teaching", re:/\b(i'?d? just (do|fix|sort)|do it (for him|myself)|quicker if i|take the remote|grab (the|it)|just fix it)\b/i},
+      {id:"corrects_him", label:"Corrects his account of what happened", re:/\b(tell him he'?s wrong|he'?s wrong|correct him|explain that he (did|must have)|he must have (pressed|touched))\b/i}
+    ]
+  },
+  L2: {
+    competency: "Noticing low mood; presence without fixing; knowing when to escalate",
+    signals: [
+      {id:"sits_with", label:"Changes their own posture — sits, stays", re:/\b(sit (down|with|next to|beside)|pull(ing)? up a chair|stay(ing)? (with|there)|join him|sit at the table)\b/i},
+      {id:"names_it", label:"Names what they noticed without diagnosing", re:/\b(noticed|i can see|seems like|you'?ve (been|seemed)|quiet(er)? (today|lately)|not yourself|curtains|breakfast|bowls)\b/i},
+      {id:"offers_presence", label:"Offers company rather than a solution", re:/\b(keep (you|him) company|sit with (you|him)|here if|don'?t have to talk|happy to (just )?sit|no need to talk|i'?m (here|around))\b/i},
+      {id:"marion", label:"Connects it to the date or to Marion", re:/\b(marion|anniversar|the date|calendar|circled|fourteenth|14th|your wife|she died|passed away)\b/i},
+      {id:"escalation", label:"Knows the reporting line and its limits", re:/\b(coordinator|check[- ]?in|log (it|this)|tell (someone|the service)|coordinator'?s|report|record it|flag (it|this))\b/i}
+    ],
+    watch: [
+      {id:"forced_cheer", label:"Forced brightness or an outing as the fix", re:/\b(cheer (him|you) up|snap out|get (him|you) out of the house|take his mind off|at least|look on the bright)\b/i},
+      {id:"absolute_secrecy", label:"Promises secrecy without a risk caveat", re:/\b(won'?t tell anyone|keep it (between us|secret)|not tell (kath|his daughter|anyone))\b/i}
+    ]
+  },
+  L3: {
+    competency: "Holding a boundary without rupturing the relationship; knowing what is reportable",
+    signals: [
+      {id:"says_something", label:"Says something — does not let it pass", re:/\b(i'?d? (say|tell|let him know)|i would say|say to him|speak up|not (going to )?(let it|ignore)|address it|push back)\b/i},
+      {id:"own_position", label:"States their own position rather than debating his", re:/\b(i'?m not comfortable|i don'?t (like|agree|think)|makes me uncomfortable|i'?d rather (you )?didn'?t|not in front of me|i won'?t)\b/i},
+      {id:"separates", label:"Separates the person from the remark", re:/\b(not (calling|saying) (you|he'?s) (a )?racist|know you'?re not|that'?s not (who|like) you|the (remark|comment|words), not you|i like (you|him))\b/i},
+      {id:"keeps_relationship", label:"Keeps the fortnight liveable — calm, not a lecture", re:/\b(calm(ly)?|quietly|without (a )?(lecture|argument|fight)|move on|leave it there|not (a|an) (argument|lecture)|gently)\b/i},
+      {id:"reports", label:"Knows what goes to the coordinator, and when", re:/\b(coordinator|report(ing)? (it|this)|log (it|this)|tell the (service|provider|agency)|placement (officer|team)|write it (up|down))\b/i}
+    ],
+    watch: [
+      {id:"laughs_along", label:"Agrees, laughs along, or changes the subject as strategy", re:/\b(laugh|agree with him|nod along|change the subject|let it (go|slide)|say nothing|ignore it|not my (place|business)|keep the peace)\b/i},
+      {id:"absorbs_abuse", label:"Treats abuse aimed at them as part of the job", re:/\b(that'?s just (how|what) (he|they|old people)|generation(al)?|he can'?t help it|not worth|part of the (job|deal)|put up with)\b/i}
+    ]
+  },
+  L4: {
+    competency: "Assisting without taking over; hazards; never lifting",
+    signals: [
+      {id:"offers_not_takes", label:"Offers an arm rather than taking one", re:/\b(offer(ed|ing)? (him )?(my )?arm|ask(ed|ing)? (him )?(first|if)|didn'?t (grab|take) (his|him)|let him (take|decide|hold)|his choice)\b/i},
+      {id:"his_pace", label:"Moves at his pace, positioned below him", re:/\b(his pace|slow(ly)?|beside him|next to him|lower step|below him|downhill|in front of|between him and)\b/i},
+      {id:"no_lift", label:"Explicitly avoids lifting or catching", re:/\b(not lift|don'?t lift|never lift|wouldn'?t (lift|grab|catch|pull)|not (my|a) (job )?to lift|no lifting|can'?t lift)\b/i},
+      {id:"hazard", label:"Deals with the environment — step, rail, hallway", re:/\b(step|rail(ing)?|hazard|boxes|walker|hallway|clear(ed|ing)? (the|it)|move (my|the) (boxes|things)|trip)\b/i},
+      {id:"reports_hazard", label:"Reports the step rather than absorbing it", re:/\b(coordinator|report(ed|ing)?|maintenance|landlord|property|get it (fixed|repaired)|log (it|this)|handyman)\b/i}
+    ],
+    watch: [
+      {id:"lifted", label:"Lifted, caught, pulled or held him up", re:/\b(lift(ed|ing)? him|caught him|grab(bed|bing)? (him|his arm)|pull(ed|ing)? him (up|back)|held him up|took his weight)\b/i},
+      {id:"took_over", label:"Did the job for him without asking", re:/\b(took the basket|carried it (for|down)|did it (for him|myself)|told him to sit|made him (sit|stay))\b/i}
+    ]
+  },
+  L5: {
+    competency: "Emergency response: call, don't move, observe, hand over",
+    signals: [
+      {id:"triple_zero", label:"Names the call — 000 / ambulance", re:/\b(000|triple zero|triple[- ]0|ambulance|paramedic|emergency services)\b/i},
+      {id:"location", label:"Gives the address or location", re:/\b(address|street|ellerslie|number 14|14 |house number|cross street|suburb|where we are)\b/i},
+      {id:"observations", label:"Reports what he can see — FAST signs, skin, time", re:/\b(speech|slurred|face|arm|weak(ness)?|one side|left side|right side|cold|cool|clammy|conscious|breathing|awake|confused|skin)\b/i},
+      {id:"time_started", label:"Notes when it started", re:/\b(time|since|started|minutes ago|found him at|about (ten|five|\d+) (to|past)|o'?clock|when i found)\b/i},
+      {id:"not_moved", label:"States he has not been moved", re:/\b(haven'?t moved|not moved|left him where|didn'?t move|still on the floor|where he (is|fell))\b/i},
+      {id:"age_history", label:"Gives his age or the dizziness from earlier", re:/\b(82|eighty[- ]two|his age|dizzy|dizziness|swimmy|light[- ]?headed|yesterday|the other day|earlier this week)\b/i}
+    ],
+    watch: [
+      {id:"moved_him", label:"Describes moving or lifting him", re:/\b(helped him up|got him (up|into)|moved him|lifted him|sat him (up|in))\b/i}
+    ]
+  }
+};
+
+function fx(r, a, s){ return {rapport:r, autonomy:a, safety:s}; }
+
+var DAYS = [
+  /* ---------------- Day 1 — arrival ---------------- */
+  {n:1, title:"Moving in", time:"3:40 pm", zone:"porch", light:"gold",
+   scene:{bruce:"stand_stick", bx:470, bs:0.84}, kind:"intro",
+   steps:[
+    {t:"say", who:"", narr:true, text:"Bruce Whitlam has lived at 14 Ellerslie Street for fifty-one years. Since March the second bedroom has been empty. From this afternoon it is yours, at a third of the rent, in exchange for ten hours a week."},
+    {t:"say", who:"Bruce", text:"You'll be wanting the wi-fi. The card's by the phone in the hall. Don't move the card — I'll never find it again."},
+    {t:"choice", prompt:"First afternoon. What do you do?", options:[
+      {text:"Ask him to show you round the house.", fx:fx(4,3,0), reply:"He takes twenty minutes over five rooms. You learn which tap drips, which door sticks, and that the second bedroom was Kath's."},
+      {text:"Unpack first and meet him properly over tea.", fx:fx(0,1,0), reply:"By six the boxes are in the hall and he's made two cups without asking which you'd prefer."},
+      {text:"Offer to cook dinner tonight.", fx:fx(2,-3,0), reply:"\"I've been getting my own tea since 1974.\" He softens it with a laugh, but he cooks."}
+    ]},
+    {t:"say", who:"", narr:true, text:"The coordinator will check in twice over the fortnight. Everything you do here is on the record."}
+   ]},
+
+  /* ---------------- Day 2 — filler ---------------- */
+  {n:2, title:"The tea round", time:"10:15 am", zone:"lounge", light:"day",
+   scene:{bruce:"sit", bx:606, bs:0.78}, kind:"filler",
+   steps:[
+    {t:"say", who:"Bruce", text:"Kettle's boiled. Mine's the green mug."},
+    {t:"choice", prompt:"He hasn't said how he takes it.", options:[
+      {text:"Ask him how he has it.", fx:fx(3,3,0), flag:"teaLearned", reply:"\"Strong, splash of milk, no sugar since the doctor.\" He watches you make it and doesn't correct you."},
+      {text:"Make it the way you make your own.", fx:fx(0,0,0), reply:"He drinks it. He doesn't say anything. The next one he makes himself."},
+      {text:"Check the ring in his mug and match it.", fx:fx(1,1,0), reply:"Close enough that he raises an eyebrow. \"You've been paying attention.\""}
+    ]}
+   ]},
+
+  /* ---------------- Day 3 — LEVEL 1 ---------------- */
+  {n:3, title:"The telly's gone wrong", time:"9:40 am", zone:"lounge", light:"day",
+   scene:{bruce:"stand", bx:606, bs:0.78, tvNoSignal:true}, kind:"level", level:1,
+   steps:[
+    {t:"say", who:"", narr:true, text:"Third over of the morning and the screen has gone black. He's been at it ten minutes before he calls you in."},
+    {t:"say", who:"Bruce", text:"I haven't touched a thing. It's done this on its own. That's what happens when they change it behind your back."},
+    {t:"say", who:"", narr:true, text:"He hands you a remote, firmly. It's the one for the soundbar."},
+    {t:"text", id:"L1", level:1, min:40,
+     prompt:"What do you do and say next?",
+     sub:"Write it the way you'd actually do it. There are no options here and no time limit — an assessor reads this.",
+     placeholder:"I'd start by…", rubric:"L1"},
+    {t:"say", who:"", narr:true, text:"Whatever you did, the cricket comes back on at 9:52. He watches you put the remote down where he can reach it."}
+   ]},
+
+  /* ---------------- Day 4 — filler ---------------- */
+  {n:4, title:"Bin night", time:"6:20 pm", zone:"porch", light:"dusk",
+   scene:{bruce:"stand_stick", bx:470, bs:0.84}, kind:"filler",
+   steps:[
+    {t:"say", who:"Bruce", text:"Bring those back in, love. Tuesday's not till tomorrow."},
+    {t:"say", who:"", narr:true, text:"The council notice on the fridge says the collection moved to Mondays back in March."},
+    {t:"choice", prompt:"The truck comes at six tomorrow morning.", options:[
+      {text:"Bring them in, and go through the notice with him tomorrow in daylight.", fx:fx(2,3,0), reply:"He reads it twice. \"March. Nobody told me.\" You put a reminder on the calendar together."},
+      {text:"Fetch the notice and show him now.", fx:fx(-1,2,0), reply:"He looks at it for a long moment on the dark verandah. \"Right.\" The bins stay out. He goes in first."},
+      {text:"Leave them out and say nothing.", fx:fx(0,-2,-1), reply:"The bins are emptied. He spends Tuesday morning wondering why the truck came early."}
+    ]}
+   ]},
+
+  /* ---------------- Day 5 — filler, plants the step ---------------- */
+  {n:5, title:"The second step", time:"8:30 am", zone:"yard", light:"day",
+   scene:{stepLoose:true, basket:true}, kind:"filler",
+   steps:[
+    {t:"say", who:"", narr:true, text:"Carrying the washing down to the line, the second step shifts under your foot. Not much. Enough."},
+    {t:"say", who:"Bruce", text:"That's done that for years. You get used to where to put your foot."},
+    {t:"choice", prompt:"He goes down those steps four times a day.", options:[
+      {text:"Tell the coordinator today and ask for it to go to the property team.", fx:fx(0,0,6), flag:"stepReported", reply:"Logged at 8:52. The coordinator books a repair for the following week and tells you to keep using the front path until then."},
+      {text:"Have a go at fixing it yourself on the weekend.", fx:fx(1,0,1), reply:"You mean it. The weekend is five days away and nobody else knows about it."},
+      {text:"Note it and see whether it gets worse.", fx:fx(0,0,-3), reply:"It doesn't get worse. It doesn't get better either."}
+    ]}
+   ]},
+
+  /* ---------------- Day 6 — LEVEL 2 ---------------- */
+  {n:6, title:"A quiet day", time:"4:15 pm", zone:"kitchen", light:"grey",
+   scene:{bruce:"sit", bx:434, by:318, bs:0.78, breakfast:true, calendarMark:true, chair:false}, kind:"level", level:2,
+   steps:[
+    {t:"say", who:"", narr:true, text:"Quarter past four. The curtains haven't been opened. Breakfast is where you left it at eight."},
+    {t:"say", who:"Bruce", text:"I'm fine. Didn't feel like the bowls today, that's all."},
+    {t:"choice", prompt:"He hasn't looked up from the table.", options:[
+      {text:"Look at the calendar on the wall.", examine:true, flag:"calendarSeen", fx:fx(0,0,0),
+       reply:"The fourteenth is circled in blue biro. Underneath the month, in the same pen: <em>Marion — 14.9.61</em>."},
+      {text:"Look at what's still on the table.", examine:true, flag:"breakfastSeen", fx:fx(0,0,0),
+       reply:"Toast, gone hard. A full cup of tea with the milk separated. His tablets are still in Wednesday's compartment and today is Thursday."},
+      {text:"Sit down at the table with him.", fx:fx(5,2,0), reply:"You pull out the other chair. He doesn't say anything for a while, and neither do you, and that turns out to be alright."},
+      {text:"Open the curtains and put the kettle on.", fx:fx(1,-1,0), reply:"The light comes in. He squints and turns his chair a few degrees away from the window."},
+      {text:"Give him some space and go to your room.", fx:fx(-3,0,-2), reply:"At seven the kitchen light is still off and the plate hasn't moved."}
+    ]},
+    {t:"text", id:"L2", level:2, min:40,
+     prompt:"What do you say next?",
+     sub:"His words, not yours, are the thing to work with. No time limit.",
+     placeholder:"I'd…", rubric:"L2"}
+   ]},
+
+  /* ---------------- Day 7 — filler ---------------- */
+  {n:7, title:"Kath rings", time:"7:05 pm", zone:"lounge", light:"gold",
+   scene:{bruce:"sit", bx:606, bs:0.78}, kind:"filler",
+   steps:[
+    {t:"say", who:"", narr:true, text:"His daughter rings the landline. He listens for a minute, then holds the receiver out to you. \"She wants a word.\""},
+    {t:"say", who:"Kath", text:"How is he? And I mean really, not what he tells me."},
+    {t:"choice", prompt:"Bruce is four feet away, pretending to read.", options:[
+      {text:"Tell her what you've noticed, having first said to him that you would.", fx:fx(2,2,4), reply:"You say it in front of him. He grunts. Later he says, \"You could have made it sound worse.\""},
+      {text:"Tell her he's fine.", fx:fx(1,0,-4), reply:"\"Right,\" she says, in the voice of someone who has heard that before."},
+      {text:"Say it isn't yours to answer, and give her the coordinator's number.", fx:fx(0,2,2), reply:"She takes the number. \"Fair enough. You're not his nurse.\""}
+    ]}
+   ]},
+
+  /* ---------------- Day 8 — LEVEL 3 ---------------- */
+  {n:8, title:"Something he said", time:"5:30 pm", zone:"porch", light:"gold",
+   scene:{bruce:"sit", bx:520, by:320, bs:0.8, neighbours:true, cat:false}, kind:"level", level:3,
+   steps:[
+    {t:"say", who:"", narr:true, text:"Shelling peas on the verandah. The family who moved into number 18 come past with their shopping. Bruce lifts a hand and they wave back."},
+    {t:"say", who:"Bruce", text:"Lovely people, that lot. Very clean. Not like the ***** ***** that were in there before — you couldn't get a word of English out of them."},
+    {t:"say", who:"", narr:true, text:"He says it warmly, to you, the way you'd share a joke with someone on your side. He goes back to the peas."},
+    {t:"choice", timer:45, prompt:"What comes out of your mouth first?",
+     sub:"Forty-five seconds. In a real kitchen you don't get longer than this.",
+     timeoutFx:fx(0,-3,-3), timeoutNote:"You said nothing. He finished the peas and put the radio on.",
+     options:[
+      {text:"\"I'm not comfortable with that, Bruce.\"", fx:fx(-1,5,4), tag:"boundary", reply:"He stops shelling. \"It's only what everyone thinks.\" But he says it quieter, and he's watching you now."},
+      {text:"\"Who were they, the family before?\"", fx:fx(1,0,0), tag:"deflect", reply:"He tells you about them for four minutes. Not one detail is about anything they did."},
+      {text:"Laugh, and keep shelling.", fx:fx(2,-6,-6), tag:"laughed", reply:"He's pleased. He tells you a second one, worse than the first."},
+      {text:"\"That's a disgusting thing to say and you know it.\"", fx:fx(-6,2,1), tag:"rupture", reply:"He puts the bowl down and goes inside. The back door shuts. You don't see him again until the morning."}
+    ]},
+    {t:"text", id:"L3", level:3, min:40,
+     prompt:"You have another six days in this house with him. What do you actually say?",
+     sub:"Write what you would say out loud, and what — if anything — you would do about it afterwards.",
+     placeholder:"I'd say…", rubric:"L3"}
+   ]},
+
+  /* ---------------- Day 9 — filler ---------------- */
+  {n:9, title:"The cricket", time:"2:00 pm", zone:"lounge", light:"day",
+   scene:{bruce:"sit", bx:606, bs:0.78, tvOn:true}, kind:"filler",
+   steps:[
+    {t:"say", who:"", narr:true, text:"You have a tutorial on at two. The radio is on in the lounge at a volume that comes through your wall as though the wall isn't there."},
+    {t:"choice", prompt:"The tutorial starts in three minutes.", options:[
+      {text:"Ask if he'd mind it down for the hour, and tell him when you're done.", fx:fx(3,3,0), reply:"\"Why didn't you say?\" It goes down four notches. At three he knocks to ask whether he can put it back up."},
+      {text:"Put headphones on and say nothing.", fx:fx(0,1,0), reply:"You get through the tutorial. He never learns that it's a problem, so it happens again on Thursday."},
+      {text:"Turn it down on your way past.", fx:fx(-2,-4,0), reply:"He turns it back up without a word. Neither of you mentions it."}
+    ]}
+   ]},
+
+  /* ---------------- Day 10 — filler, sets the hazard ---------------- */
+  {n:10, title:"Your boxes", time:"8:40 pm", zone:"hall", light:"dusk",
+   scene:{boxes:true}, kind:"filler",
+   steps:[
+    {t:"say", who:"", narr:true, text:"Your boxes have been in the hall since the day you moved in. To get his walker past them Bruce has to come out of the bathroom at an angle, in the dark, on the side he doesn't lean well on."},
+    {t:"choice", prompt:"It's twenty to nine.", options:[
+      {text:"Clear them out tonight.", fx:fx(2,3,6), flag:"boxesCleared", reply:"Forty minutes, two trips to the bin, and the hall is a hall again. He walks it once, straight down the middle, and doesn't say anything about it."},
+      {text:"Push them harder against the wall.", fx:fx(0,0,1), reply:"There's an extra ten centimetres. The walker still catches on the corner of the bottom one."},
+      {text:"Leave them — you'll sort it at the end of the fortnight.", fx:fx(0,-2,-5), reply:"They're still there on the fourteenth."}
+    ]}
+   ]},
+
+  /* ---------------- Day 11 — LEVEL 4 ---------------- */
+  {n:11, title:"The second step, again", time:"8:05 am", zone:"yard", light:"day",
+   scene:{bruce:"stand_stick", bx:250, by:316, bs:0.8, stepLoose:true, basket:true}, kind:"level", level:4,
+   steps:[
+    {t:"say", who:"", narr:true, text:"Bruce is at the back door with a full basket on his hip, heading for the line.", dyn:"boxes"},
+    {t:"say", who:"Bruce", text:"I've been doing this step for fifty-one years. Sit down and drink your tea."},
+    {t:"choice", timer:20, prompt:"He's already got a hand on the rail.",
+     sub:"Twenty seconds.",
+     timeoutFx:fx(0,0,-5), timeoutNote:"You were still deciding when he reached the second step.",
+     options:[
+      {text:"Walk down beside him on the lower side, hands free, saying you're going that way anyway.", fx:fx(3,5,6), tag:"beside"},
+      {text:"Take the basket off him and carry it down.", fx:fx(0,-5,1), tag:"took_basket"},
+      {text:"Take his arm and steady him down.", fx:fx(0,-3,1), tag:"took_arm"},
+      {text:"Let him go and watch from the door.", fx:fx(0,1,-4), tag:"watched"}
+    ]},
+    {t:"say", who:"", narr:true, text:"On the second step his foot slides off the loose edge. He gets a hand to the rail. The rail moves too."},
+    {t:"choice", timer:20, prompt:"He's off balance, still on his feet, basket going one way.",
+     sub:"Twenty seconds.",
+     timeoutFx:fx(0,0,-6), timeoutNote:"You froze. He got his own balance back, which is luck, not a result.",
+     options:[
+      {text:"Stay at his side, hands ready but off him, and let him find his own balance.", fx:fx(2,4,6), tag:"stayed"},
+      {text:"Get under his arms and hold him up.", fx:fx(0,-4,-6), tag:"lifted"},
+      {text:"Grab the basket so his hands are free.", fx:fx(1,0,2), tag:"took_basket2"},
+      {text:"Step back out of the way.", fx:fx(-1,0,-3), tag:"stepped_back"}
+    ]},
+    {t:"text", id:"L4", level:4, min:40,
+     prompt:"Why did you do it that way?",
+     sub:"And what, if anything, needs to happen about that step and that rail.",
+     placeholder:"I did it that way because…", rubric:"L4"}
+   ]},
+
+  /* ---------------- Day 12 — filler ---------------- */
+  {n:12, title:"Marion's tomatoes", time:"5:50 pm", zone:"yard", light:"gold",
+   scene:{bruce:"stand_stick", bx:250, by:316, bs:0.8}, kind:"filler",
+   steps:[
+    {t:"say", who:"Bruce", text:"She put those in the year she got crook. I just keep them going. Not much of a gardener, me."},
+    {t:"choice", prompt:"He's holding the hose and not really watering anything.", options:[
+      {text:"Ask him about her.", fx:fx(4,2,0), reply:"He talks until it's properly dark. Twice he stops and says \"anyway\", and twice he starts again."},
+      {text:"Offer to take over the watering from now on.", fx:fx(1,-3,0), reply:"\"No — no, I'll do it.\" He says it fast enough that you both notice."},
+      {text:"Say something kind and let it go.", fx:fx(-1,1,0), reply:"He nods and turns the hose on the pots and that's the end of it."}
+    ]}
+   ]},
+
+  /* ---------------- Day 13 — filler, foreshadow ---------------- */
+  {n:13, title:"A bit swimmy", time:"7:30 pm", zone:"kitchen", light:"dusk",
+   scene:{bruce:"sit", bx:620, by:306, bs:0.76, lamp:true}, kind:"filler",
+   steps:[
+    {t:"say", who:"Bruce", text:"Went a bit swimmy when I stood up before. It's this heat."},
+    {t:"say", who:"", narr:true, text:"It is nineteen degrees and there's a southerly coming through the back door."},
+    {t:"choice", prompt:"He's already changing the subject.", options:[
+      {text:"Ask how long, how often, and whether it's happened before — then write it down for the coordinator.", fx:fx(1,2,6), flag:"dizzyLogged", reply:"Third time this week. Worse standing up. He asks you not to make a fuss and doesn't object when you write it down anyway."},
+      {text:"Tell him to sit down and drink some water, and keep an eye on it.", fx:fx(2,1,3), reply:"He drinks half of it. You watch him for the rest of the evening and he's fine."},
+      {text:"Agree that it's the heat.", fx:fx(1,0,-5), reply:"\"That's what I said.\" Nobody writes anything down."}
+    ]}
+   ]},
+
+  /* ---------------- Day 14 — LEVEL 5 ---------------- */
+  {n:14, title:"On the kitchen floor", time:"7:50 pm", zone:"kitchen", light:"night",
+   scene:{bruce:"floor", bx:352, by:376, bs:1.55, lamp:true, chair:false}, kind:"level", level:5,
+   steps:[
+    {t:"say", who:"", narr:true, text:"Ten to eight. You come out of your room for a glass of water. He's on the floor by the fridge."},
+    {t:"say", who:"", narr:true, text:"He's awake and he knows who you are. His speech is thick down one side. His right hand isn't doing what he's telling it to do. His skin is cool and damp."},
+    {t:"say", who:"Bruce", text:"Don't you dare ring an ambulance. Do you know what they charge? Give us a hand up and I'll be right."},
+    {t:"choice", timer:15, prompt:"What do you do first?", sub:"Fifteen seconds.",
+     timeoutFx:fx(0,0,-14), hardStopOnTimeout:true,
+     timeoutNote:"Fifteen seconds passed with nothing decided.",
+     options:[
+      {text:"Ring 000 now, and tell him that's what you're doing.", fx:fx(0,0,12), tag:"called", reply:"\"Ambulance.\" You give the address before they ask for it. He swears at you and you keep talking."},
+      {text:"Help him up into the chair first, then see how he goes.", fx:fx(0,0,-14), tag:"moved_him", hardStop:true, reply:"He can't take his own weight on the right. You both end up on the floor and now nobody has rung anyone."},
+      {text:"Ring Kath and ask what she wants you to do.", fx:fx(0,0,-10), tag:"rang_family", hardStop:true, reply:"She doesn't pick up. It's four minutes before you try anyone else."},
+      {text:"Look up the symptoms on your phone.", fx:fx(0,0,-12), tag:"googled", hardStop:true, reply:"The first result says to call an ambulance."}
+    ]},
+    {t:"choice", timer:15, prompt:"The call-taker is on the line and staying on it.", sub:"Fifteen seconds.",
+     timeoutFx:fx(0,0,-6), timeoutNote:"You didn't act while the call-taker waited.",
+     options:[
+      {text:"Stay on the line, unlock the front door, put a blanket over him.", fx:fx(2,0,8), tag:"stayed_on"},
+      {text:"Put the phone down and get him some water.", fx:fx(0,0,-7), tag:"water"},
+      {text:"Roll him onto his side and move him off the cold tiles.", fx:fx(0,0,-8), tag:"moved2"},
+      {text:"Go out the front to wave the ambulance down.", fx:fx(0,0,-4), tag:"left_him"}
+    ]},
+    {t:"choice", timer:15, prompt:"They ask you to keep talking.", sub:"Fifteen seconds.",
+     timeoutFx:fx(0,0,-4), timeoutNote:"The call-taker had to prompt you twice.",
+     options:[
+      {text:"Give the time it started, the cross street, and that he was dizzy three times this week.", fx:fx(0,0,6), tag:"handover"},
+      {text:"Tell them he doesn't want them to come.", fx:fx(0,0,-5), tag:"relayed_refusal"},
+      {text:"Go and pack him a bag for hospital.", fx:fx(0,0,-4), tag:"packed_bag"},
+      {text:"Ask him again whether he's sure he doesn't want the ambulance.", fx:fx(0,0,-6), tag:"asked_again"}
+    ]},
+    {t:"text", id:"L5", level:5, min:40,
+     prompt:"The call-taker asks you to tell them exactly what's happened. Type what you say.",
+     sub:"Everything you would tell them, in the order you'd tell it.",
+     placeholder:"Ambulance. I'm at…", rubric:"L5"}
+   ]}
+];
+</script>
+<script>
+"use strict";
+/* ============================================================
+   ENGINE
+   ============================================================ */
+var app = document.getElementById("app");
+var VERSION = "1.0";
+var START_METER = 60;
+var SAVE_KEY = "pepaws-porch-run-v1";
+
+var S = null;
+function freshState(){
+  return {
+    view: "title", pid: null, name: "", email: "",
+    consentAt: null, startedAt: null, submittedAt: null,
+    di: 0, si: 0, phase: "step",
+    meters: {rapport: START_METER, autonomy: START_METER, safety: START_METER},
+    flags: {}, tags: {}, hardStop: false,
+    responses: [], choices: [], examined: {},
+    pending: null, stepEnteredAt: null, submitState: "idle", submitDetail: ""
+  };
+}
+
+/* ---------- utilities ---------- */
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+function clamp(n){ return Math.max(0, Math.min(100, Math.round(n))); }
+function el(sel){ return app.querySelector(sel); }
+function nowISO(){ return new Date().toISOString(); }
+function secsSince(t){ return t ? Math.round((Date.now() - t) / 100) / 10 : 0; }
+function meterColour(v){ return v >= 70 ? "var(--good)" : (v >= 50 ? "var(--warn)" : "var(--bad)"); }
+
+function save(){
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* private mode, blocked storage */ }
+}
+function loadSaved(){
+  try {
+    var raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    var v = JSON.parse(raw);
+    return (v && v.pid && v.view) ? v : null;
+  } catch (e) { return null; }
+}
+function clearSaved(){ try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
+
+function makePid(){
+  var t = Date.now().toString(36);
+  var r = Math.random().toString(36).slice(2, 8);
+  return "PP-" + t + "-" + r;
+}
+
+/* ---------- timer (single active) ---------- */
+var timerHandle = null, tickHandle = null;
+function clearTimer(){
+  if (timerHandle) { clearTimeout(timerHandle); timerHandle = null; }
+  if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+}
+function runTimer(seconds, onExpire){
+  clearTimer();
+  var bar = el("#tbar"), label = el("#tlabel");
+  var endAt = Date.now() + seconds * 1000;
+  if (bar){
+    bar.style.width = "100%";
+    bar.style.transition = "width " + seconds + "s linear";
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ bar.style.width = "0%"; }); });
+  }
+  if (label){
+    var tick = function(){
+      var left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+      label.textContent = left + "s";
+    };
+    tick();
+    tickHandle = setInterval(tick, 250);
+  }
+  timerHandle = setTimeout(function(){ clearTimer(); onExpire(); }, seconds * 1000);
+}
+
+/* ---------- rubric matching ----------
+   A watch pattern must not fire on a negation. "I would not lift him" and
+   "I haven't moved him" are what a GOOD answer says, and a naive substring
+   match reads them as the opposite. Before accepting a watch hit we look back
+   at the words immediately before it, within the same clause. */
+var NEG_BEFORE = /(?:\b(?:not|never|no|nor|avoid|avoided|avoiding|without|instead of|rather than|refuse|refused|dont|didnt|wont|cant|wouldnt|couldnt|shouldnt)\b|\w+n['\u2019]t\b)[^.!?;]{0,26}$/i;
+
+function hitUnnegated(re, text){
+  var g = new RegExp(re.source, re.flags.indexOf("g") === -1 ? re.flags + "g" : re.flags);
+  var m;
+  while ((m = g.exec(text)) !== null){
+    if (!NEG_BEFORE.test(text.slice(Math.max(0, m.index - 30), m.index))) return true;
+    if (g.lastIndex === m.index) g.lastIndex++;
+  }
+  return false;
+}
+
+function scoreText(rubricKey, answer){
+  var r = RUBRIC[rubricKey];
+  var matched = [], missed = [], watch = [];
+  if (!r) return {matched: matched, missed: missed, watch: watch, competency: ""};
+  r.signals.forEach(function(sig){
+    (sig.re.test(answer) ? matched : missed).push(sig.id);
+  });
+  (r.watch || []).forEach(function(w){ if (hitUnnegated(w.re, answer)) watch.push(w.id); });
+  return {matched: matched, missed: missed, watch: watch, competency: r.competency};
+}
+function signalLabel(rubricKey, id){
+  var r = RUBRIC[rubricKey]; if (!r) return id;
+  var all = r.signals.concat(r.watch || []);
+  for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i].label;
+  return id;
+}
+
+/* ---------- effects ---------- */
+function applyFx(f){
+  if (!f) return;
+  S.meters.rapport = clamp(S.meters.rapport + (f.rapport || 0));
+  S.meters.autonomy = clamp(S.meters.autonomy + (f.autonomy || 0));
+  S.meters.safety = clamp(S.meters.safety + (f.safety || 0));
+}
+
+/* ---------- navigation ---------- */
+function enterStep(){
+  S.phase = "step";
+  S.stepEnteredAt = Date.now();
+  save();
+  render();
+}
+function nextStep(){
+  clearTimer();
+  var day = DAYS[S.di];
+  if (S.si + 1 < day.steps.length){ S.si++; enterStep(); return; }
+  if (S.di + 1 < DAYS.length){ S.di++; S.si = 0; S.view = "daycard"; save(); render(); return; }
+  finish();
+}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+function render(){
+  clearTimer();
+  if (S.view === "title") return renderTitle();
+  if (S.view === "daycard") return renderDayCard();
+  if (S.view === "play") return renderPlay();
+  if (S.view === "results") return renderResults();
+  if (S.view === "assessor") return renderAssessor();
+  renderTitle();
+}
+
+/* ---------- title / consent ---------- */
+function renderTitle(){
+  app.className = "";
+  var saved = loadSaved();
+  var resumable = saved && !saved.submittedAt && saved.view === "play";
+  app.innerHTML =
+    '<div class="stage">' + scenePorch(LIGHT.gold, {bruce: "stand_stick", bx: 470, bs: 0.84}) + '</div>'
+    + '<div class="scroll"><div class="pad title">'
+    + '<div><div class="kicker">Homeshare readiness assessment</div><h1>Pepaws Porch</h1></div>'
+    + '<p class="sub">Fourteen days living with Bruce Whitlam, 82, at 14 Ellerslie Street. Five of those days put something in front of you that a placement will put in front of you for real. There are no right answers to memorise and no score to beat — an assessor reads what you write.</p>'
+    + (resumable
+        ? '<div class="notice"><b>You have a run in progress.</b> Day ' + esc(String(DAYS[saved.di].n)) + ' of 14.'
+          + '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'
+          + '<button class="cont primary" id="resume">Resume day ' + esc(String(DAYS[saved.di].n)) + '</button>'
+          + '<button class="cont" id="restart">Start again</button></div></div>'
+        : '')
+    + '<div style="display:flex;flex-direction:column;gap:12px">'
+    + '<label>Your full name<input type="text" id="fname" autocomplete="name" maxlength="120" value="' + esc(S.name) + '"></label>'
+    + '<label>Email<input type="email" id="femail" autocomplete="email" maxlength="160" value="' + esc(S.email) + '"></label>'
+    + '</div>'
+    + '<div class="notice"><b>Before you start.</b> Day 8 contains a scenario in which Bruce makes a discriminatory remark about neighbours. Any slur is censored on screen. It is part of the assessment and cannot be skipped — what is being assessed is your response, never the words. Days 11 and 14 are timed, and Day 14 is a medical emergency.</div>'
+    + '<label class="check"><input type="checkbox" id="c1"><span>I understand this is an assessment. My answers, my choices and how long I took are recorded and read by a person at the placement service.</span></label>'
+    + '<label class="check"><input type="checkbox" id="c2"><span>I have read the note about Day 8 and I am ready to continue.</span></label>'
+    + '<div id="terr"></div>'
+    + '<button class="cont primary" id="begin">Begin day 1</button>'
+    + '<p class="sub" style="font-size:12.5px">About 12–15 minutes. Once you start, a scenario cannot be replayed.</p>'
+    + '</div></div>';
+
+  if (resumable){
+    el("#resume").onclick = function(){ S = saved; S.view = "play"; enterStep(); };
+    el("#restart").onclick = function(){ clearSaved(); S = freshState(); render(); };
+  }
+  el("#begin").onclick = function(){
+    var name = el("#fname").value.trim(), email = el("#femail").value.trim();
+    var errs = [];
+    if (name.length < 2) errs.push("Enter your full name.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.push("Enter a valid email address.");
+    if (!el("#c1").checked || !el("#c2").checked) errs.push("Both boxes need ticking before you can start.");
+    if (errs.length){ el("#terr").innerHTML = '<p class="err">' + esc(errs.join(" ")) + '</p>'; return; }
+    S = freshState();
+    S.name = name; S.email = email; S.pid = makePid();
+    S.consentAt = nowISO(); S.startedAt = nowISO();
+    S.view = "daycard"; S.di = 0; S.si = 0;
+    save(); render();
+  };
+}
+
+/* ---------- day card ---------- */
+function renderDayCard(){
+  app.className = "";
+  var day = DAYS[S.di];
+  app.innerHTML = topbarHTML(day)
+    + '<div class="stage">' + sceneFor(day) + '</div>'
+    + '<div class="panel"></div>'
+    + '<div class="daycard"><div class="n">Day ' + day.n + ' of 14</div><h2>' + esc(day.title) + '</h2>'
+    + '<div class="t">' + esc(day.time) + (day.kind === "level" ? " · assessed" : "") + '</div>'
+    + '<button class="cont primary" id="go" style="margin-top:14px;align-self:center">Continue</button></div>';
+  el("#go").onclick = function(){ S.view = "play"; enterStep(); };
+}
+
+/* ---------- play ---------- */
+function sceneFor(day){
+  var fn = SCENES[day.zone] || scenePorch;
+  return fn(LIGHT[day.light] || LIGHT.day, day.scene || {});
+}
+function topbarHTML(day){
+  var m = S.meters;
+  var bar = function(k, label){
+    return '<div class="m"><span>' + label + '</span><div class="track"><i style="width:' + m[k] + '%;background:' + meterColour(m[k]) + '"></i></div></div>';
+  };
+  return '<div class="topbar"><div class="toprow">'
+    + '<span class="daylabel">Day ' + day.n + ' / 14 · ' + esc(day.title) + '</span>'
+    + '<span class="clock">' + esc(day.time) + '</span></div>'
+    + '<div class="meters">' + bar("rapport", "Rapport") + bar("autonomy", "Autonomy") + bar("safety", "Safety") + '</div></div>';
+}
+
+function renderPlay(){
+  app.className = "";
+  var day = DAYS[S.di];
+  var step = day.steps[S.si];
+  var timed = S.phase === "step" && step.t === "choice" && step.timer;
+  app.innerHTML = topbarHTML(day)
+    + '<div class="stage">' + sceneFor(day)
+    + '<div class="stagenote">' + esc(day.zone === "porch" ? "Front verandah" : day.zone === "yard" ? "Back yard" : day.zone === "hall" ? "Hallway" : day.zone === "kitchen" ? "Kitchen" : "Lounge") + '</div></div>'
+    + (timed ? '<div class="timer"><i id="tbar"></i></div>' : '')
+    + '<div class="panel" id="panel"></div>';
+  if (S.phase === "reply") renderReply(day);
+  else if (step.t === "say") renderSay(day, step);
+  else if (step.t === "choice") renderChoice(day, step);
+  else if (step.t === "text") renderText(day, step);
+}
+
+function renderSay(day, step){
+  var text = step.text;
+  if (step.dyn === "boxes" && !S.flags.boxesCleared){
+    text += " His walker is where it has been all fortnight — in the hall, behind your boxes.";
+  }
+  el("#panel").innerHTML =
+    '<div class="who' + (step.narr ? " narr" : "") + '">' + esc(step.narr ? "14 Ellerslie Street" : step.who) + '</div>'
+    + '<p class="line">' + (step.narr ? "" : "&ldquo;") + text + (step.narr ? "" : "&rdquo;") + '</p>'
+    + '<button class="cont" id="next">Continue</button>';
+  el("#next").onclick = nextStep;
+}
+
+function renderChoice(day, step){
+  var key = S.di + "." + S.si;
+  var doneEx = S.examined[key] || [];
+  var p = el("#panel");
+  var html = '<div class="prompt">' + esc(step.prompt) + '</div>';
+  if (step.sub) html += '<p class="sub">' + esc(step.sub) + '</p>';
+  if (step.timer) html += '<div class="timerlabel" id="tlabel">' + step.timer + 's</div>';
+  if (doneEx.length){
+    html += doneEx.map(function(i){
+      return '<div class="notice">' + step.options[i].reply + '</div>';
+    }).join("");
+  }
+  html += '<div class="opts">' + step.options.map(function(o, i){
+    if (o.examine && doneEx.indexOf(i) !== -1) return "";
+    return '<button class="opt' + (o.examine ? " examine" : "") + '" data-i="' + i + '">' + esc(o.text) + '</button>';
+  }).join("") + '</div>';
+  p.innerHTML = html;
+
+  Array.prototype.forEach.call(p.querySelectorAll(".opt"), function(b){
+    b.onclick = function(){ choose(day, step, parseInt(b.getAttribute("data-i"), 10), false); };
+  });
+  if (step.timer){
+    runTimer(step.timer, function(){ choose(day, step, -1, true); });
+  }
+}
+
+function choose(day, step, idx, timedOut){
+  clearTimer();
+  var key = S.di + "." + S.si;
+  var seconds = secsSince(S.stepEnteredAt);
+
+  if (!timedOut && step.options[idx].examine){
+    var o = step.options[idx];
+    if (o.flag) S.flags[o.flag] = true;
+    S.examined[key] = (S.examined[key] || []).concat([idx]);
+    S.choices.push({day: day.n, time: day.time, title: day.title, level: day.level || "",
+      prompt: step.prompt, chosen: o.text, tag: "examine", dr: 0, da: 0, ds: 0,
+      timedOut: false, seconds: seconds});
+    save(); render();
+    return;
+  }
+
+  var chosen = timedOut ? null : step.options[idx];
+  var f = timedOut ? (step.timeoutFx || {}) : (chosen.fx || {});
+  applyFx(f);
+  if (!timedOut){
+    if (chosen.flag) S.flags[chosen.flag] = true;
+    if (chosen.tag) S.tags[chosen.tag] = true;
+    if (chosen.hardStop) S.hardStop = true;
+  } else if (step.hardStopOnTimeout){
+    S.hardStop = true;
+    S.tags.timeout_emergency = true;
+  }
+  S.choices.push({
+    day: day.n, time: day.time, title: day.title, level: day.level || "",
+    prompt: step.prompt,
+    chosen: timedOut ? "(no response — timed out)" : chosen.text,
+    tag: timedOut ? "timeout" : (chosen.tag || ""),
+    dr: f.rapport || 0, da: f.autonomy || 0, ds: f.safety || 0,
+    timedOut: !!timedOut, seconds: seconds
+  });
+  S.pending = {
+    heading: timedOut ? "No response" : "You chose",
+    choiceText: timedOut ? "The moment passed." : chosen.text,
+    reply: timedOut ? (step.timeoutNote || "") : (chosen.reply || "")
+  };
+  S.phase = "reply";
+  save(); render();
+}
+
+function renderReply(day){
+  var p = S.pending || {};
+  el("#panel").innerHTML =
+    '<div class="who narr">' + esc(p.heading) + '</div>'
+    + '<p class="line" style="font-size:15.5px;color:var(--ink-2)">' + esc(p.choiceText) + '</p>'
+    + (p.reply ? '<p class="line">' + p.reply + '</p>' : "")
+    + '<button class="cont" id="next">Continue</button>';
+  el("#next").onclick = function(){ S.pending = null; nextStep(); };
+}
+
+function renderText(day, step){
+  var p = el("#panel");
+  p.innerHTML =
+    '<div class="prompt">' + esc(step.prompt) + '</div>'
+    + (step.sub ? '<p class="sub">' + esc(step.sub) + '</p>' : "")
+    + '<textarea id="ta" maxlength="1500" placeholder="' + esc(step.placeholder || "") + '" aria-label="' + esc(step.prompt) + '"></textarea>'
+    + '<div class="tfoot"><span class="count short" id="cnt">0 / ' + step.min + ' characters minimum</span>'
+    + '<button class="cont primary" id="send" disabled>Send it</button></div>';
+  var ta = el("#ta"), cnt = el("#cnt"), send = el("#send");
+  var update = function(){
+    var n = ta.value.trim().length;
+    var ok = n >= step.min;
+    cnt.textContent = ok ? (n + " / 1500 characters") : (n + " / " + step.min + " characters minimum");
+    cnt.className = "count" + (ok ? "" : " short");
+    send.disabled = !ok;
+  };
+  ta.addEventListener("input", update);
+  update();
+  setTimeout(function(){ try { ta.focus(); } catch (e) {} }, 30);
+  send.onclick = function(){
+    var answer = ta.value.trim();
+    if (answer.length < step.min) return;
+    var sc = scoreText(step.rubric, answer);
+    S.responses.push({
+      id: step.id, level: step.level, day: day.n, prompt: step.prompt,
+      answer: answer, chars: answer.length, seconds: secsSince(S.stepEnteredAt),
+      timedOut: false, matched: sc.matched, missed: sc.missed, watch: sc.watch,
+      competency: sc.competency, rubric: step.rubric
+    });
+    save();
+    nextStep();
+  };
+}
+</script>
+<script>
+"use strict";
+/* ---- xlsx-mini: dependency-free .xlsx writer (canonical copy: scripts/xlsx-mini.js) ---- */
+/* xlsx-mini — minimal, dependency-free .xlsx writer.
+   Builds an OOXML SpreadsheetML workbook inside a STORED (uncompressed) ZIP.
+   sheets: [{name, rows: [[cell, ...], ...], widths?: [n, ...]}]
+   Cells may be string | number | null | undefined | {v, bold}.
+   Returns a Uint8Array. Works in browsers and in Node (needs TextEncoder). */
+function xlsxMini(sheets) {
+  var enc = new TextEncoder();
+
+  var esc = function (s) {
+    return String(s)
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "") // control chars illegal in XML 1.0
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+  };
+
+  var colName = function (n) { // 0 -> A
+    var s = "";
+    for (n = n + 1; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(65 + ((n - 1) % 26)) + s;
+    return s;
+  };
+
+  var safeName = function (n, i) {
+    var cleaned = String(n || ("Sheet" + (i + 1))).replace(/[\\\/\?\*\[\]:]/g, " ").slice(0, 31).trim();
+    return cleaned || ("Sheet" + (i + 1));
+  };
+
+  var sheetXml = function (sheet) {
+    var cols = (sheet.widths && sheet.widths.length)
+      ? "<cols>" + sheet.widths.map(function (w, i) {
+          return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>';
+        }).join("") + "</cols>"
+      : "";
+    var rows = sheet.rows.map(function (row, r) {
+      var cells = row.map(function (raw, c) {
+        var cell = (raw && typeof raw === "object") ? raw : { v: raw };
+        var v = cell.v;
+        if (v === null || v === undefined || v === "") return "";
+        var ref = colName(c) + (r + 1);
+        var style = cell.bold ? ' s="1"' : "";
+        if (typeof v === "number" && isFinite(v)) return '<c r="' + ref + '"' + style + "><v>" + v + "</v></c>";
+        return '<c r="' + ref + '"' + style + ' t="inlineStr"><is><t xml:space="preserve">' + esc(v) + "</t></is></c>";
+      }).join("");
+      return '<row r="' + (r + 1) + '">' + cells + "</row>";
+    }).join("");
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+      + '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
+      + cols + "<sheetData>" + rows + "</sheetData></worksheet>";
+  };
+
+  var files = [];
+  files.push(["[Content_Types].xml",
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    + '<Default Extension="xml" ContentType="application/xml"/>'
+    + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+    + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+    + sheets.map(function (_, i) {
+        return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+      }).join("")
+    + "</Types>"]);
+  files.push(["_rels/.rels",
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    + '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+    + "</Relationships>"]);
+  files.push(["xl/workbook.xml",
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    + "<sheets>" + sheets.map(function (s, i) {
+        return '<sheet name="' + esc(safeName(s.name, i)) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>';
+      }).join("") + "</sheets>"
+    + "</workbook>"]);
+  files.push(["xl/_rels/workbook.xml.rels",
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    + sheets.map(function (_, i) {
+        return '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>';
+      }).join("")
+    + '<Relationship Id="rId' + (sheets.length + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+    + "</Relationships>"]);
+  files.push(["xl/styles.xml",
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    + '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>'
+    + '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'
+    + "<borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders>"
+    + '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+    + '<cellXfs count="2">'
+    + '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+    + '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+    + "</cellXfs>"
+    + '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>'
+    + "</styleSheet>"]);
+  sheets.forEach(function (s, i) { files.push(["xl/worksheets/sheet" + (i + 1) + ".xml", sheetXml(s)]); });
+
+  // --- CRC32 ---
+  var table = xlsxMini._crcTable;
+  if (!table) {
+    table = xlsxMini._crcTable = new Uint32Array(256);
+    for (var n = 0; n < 256; n++) {
+      var c = n;
+      for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      table[n] = c >>> 0;
+    }
+  }
+  var crc32 = function (bytes) {
+    var c = 0xFFFFFFFF;
+    for (var i = 0; i < bytes.length; i++) c = table[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  };
+
+  // --- ZIP (STORED, no compression) ---
+  var parts = [], central = [], offset = 0;
+  var u16 = function (n) { return [n & 0xFF, (n >>> 8) & 0xFF]; };
+  var u32 = function (n) { return [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF]; };
+
+  files.forEach(function (f) {
+    var nameBytes = enc.encode(f[0]);
+    var body = enc.encode(f[1]);
+    var crc = crc32(body);
+    var local = [].concat(
+      u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+      u32(crc), u32(body.length), u32(body.length),
+      u16(nameBytes.length), u16(0)
+    );
+    parts.push(new Uint8Array(local), nameBytes, body);
+    central.push([[].concat(
+      u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+      u32(crc), u32(body.length), u32(body.length),
+      u16(nameBytes.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset)
+    ), nameBytes]);
+    offset += local.length + nameBytes.length + body.length;
+  });
+
+  var centralParts = [], centralSize = 0;
+  central.forEach(function (e) {
+    centralParts.push(new Uint8Array(e[0]), e[1]);
+    centralSize += e[0].length + e[1].length;
+  });
+  var eocd = new Uint8Array([].concat(
+    u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length),
+    u32(centralSize), u32(offset), u16(0)
+  ));
+
+  var all = parts.concat(centralParts, [eocd]);
+  var total = all.reduce(function (n, p) { return n + p.length; }, 0);
+  var out = new Uint8Array(total), pos = 0;
+  all.forEach(function (p) { out.set(p, pos); pos += p.length; });
+  return out;
+}
+</script>
+<script>
+"use strict";
+/* ============================================================
+   OUTCOME, RECORD, STORAGE, EXPORT
+   ============================================================ */
+var DECLINE_RE = /\b((would|could)\s*n[o']?t\s+(continue|stay|carry on|live)|not\s+(continue|stay in|take)\s+(the|this)\s+placement|end the placement|leave the (house|placement)|move out|withdraw from the placement|ask(ing)? for a different (placement|household))\b/i;
+
+function computeOutcome(){
+  var m = S.meters, reasons = [], band;
+  var watchFlags = [];
+  S.responses.forEach(function(r){ (r.watch || []).forEach(function(w){ if (watchFlags.indexOf(w) === -1) watchFlags.push(w); }); });
+  var thin = S.responses.filter(function(r){ return r.answer.trim().length < 80; }).length;
+  var declined = S.responses.some(function(r){ return DECLINE_RE.test(r.answer); });
+
+  if (S.hardStop){
+    band = "Assessor review";
+    reasons.push("Day 14: an ambulance was not called in the first window. A first-aid module is required before any re-sit.");
+  } else if (declined){
+    band = "Assessor review";
+    reasons.push("You said you would not continue this placement. That is a valid answer, and it is one a person reads rather than a rule.");
+  } else if (S.tags.laughed){
+    band = "Not yet";
+    reasons.push("Day 8: agreeing with the remark. Silence and agreement both read the same way to the person it is about.");
+  } else if (m.safety < 50 || m.autonomy < 45){
+    band = "Not yet";
+    if (m.safety < 50) reasons.push("Safety finished at " + m.safety + ". Hazards were left standing or an escalation was missed.");
+    if (m.autonomy < 45) reasons.push("Autonomy finished at " + m.autonomy + ". Too much was taken out of Bruce's hands.");
+  } else if (m.rapport < 45 || m.safety < 65 || m.autonomy < 65 || S.tags.rupture || S.tags.lifted || watchFlags.length || thin){
+    band = "Certified with notes";
+    if (m.rapport < 45) reasons.push("Rapport finished at " + m.rapport + " — the relationship took damage the placement would feel.");
+    if (m.safety < 65) reasons.push("Safety finished at " + m.safety + ".");
+    if (m.autonomy < 65) reasons.push("Autonomy finished at " + m.autonomy + ".");
+    if (S.tags.rupture) reasons.push("Day 8: the boundary held, but it ended the conversation for a day.");
+    if (S.tags.lifted) reasons.push("Day 11: you took his weight. Never lift — offer, and let him find his balance.");
+    watchFlags.forEach(function(w){ reasons.push("Watch item in your writing: " + signalLabel(S.responses.filter(function(r){ return (r.watch || []).indexOf(w) !== -1; })[0].rubric, w) + "."); });
+    if (thin) reasons.push(thin + " written answer" + (thin > 1 ? "s were" : " was") + " very short. An assessor may ask you to expand.");
+  } else {
+    band = "Certified";
+    reasons.push("Clean run: the emergency was called, hazards were dealt with, and Bruce stayed in charge of his own house.");
+  }
+  return {band: band, reasons: reasons, hardStop: S.hardStop, declined: declined, watchFlags: watchFlags};
+}
+
+function bandColour(b){
+  return b === "Certified" ? "var(--good)" : b === "Certified with notes" ? "var(--warn)"
+    : b === "Not yet" ? "var(--plum)" : "var(--bad)";
+}
+
+function toRecord(){
+  var o = computeOutcome();
+  return {
+    version: VERSION, pid: S.pid, name: S.name, email: S.email,
+    consentAt: S.consentAt, startedAt: S.startedAt, submittedAt: S.submittedAt,
+    durationMin: S.startedAt && S.submittedAt
+      ? Math.round((new Date(S.submittedAt) - new Date(S.startedAt)) / 6000) / 10 : 0,
+    rapport: S.meters.rapport, autonomy: S.meters.autonomy, safety: S.meters.safety,
+    band: o.band, hardStop: !!o.hardStop, declined: !!o.declined,
+    reasons: o.reasons, watchFlags: o.watchFlags,
+    flags: S.flags, tags: S.tags,
+    responses: S.responses, choices: S.choices,
+    assessorStatus: "Awaiting assessor review"
+  };
+}
+
+/* ---------- capability access (design for absence) ---------- */
+function getCap(name){
+  try {
+    if (!window.claude || typeof window.claude.use !== "function") return Promise.resolve(null);
+    return window.claude.use(name).then(function(v){ return v || null; }, function(){ return null; });
+  } catch (e) { return Promise.resolve(null); }
+}
+
+function setStatus(id, cls, text){
+  var n = document.getElementById(id);
+  if (n) n.innerHTML = '<span class="dotled ' + cls + '"></span><span>' + esc(text) + '</span>';
+}
+
+function saveToBackend(rec){
+  return getCap("db").then(function(db){
+    if (!db){
+      S.submitState = "local";
+      setStatus("savestat", "wait", "Not written to the shared record from this view — download the file below and send it to the placement service.");
+      return;
+    }
+    return db.doc("submissions/" + S.pid).set(rec).then(function(){
+      S.submitState = "saved";
+      setStatus("savestat", "ok", "Saved to the placement record as " + S.pid + ".");
+      save();
+    }, function(err){
+      S.submitState = "error";
+      S.submitDetail = (err && err.code) || "unavailable";
+      var msg = S.submitDetail === "quota_exceeded"
+        ? "The record store is full. Download the file below and send it to the placement service."
+        : "Could not write to the placement record (" + S.submitDetail + "). Download the file below and send it to the placement service.";
+      setStatus("savestat", "no", msg);
+    });
+  });
+}
+
+/* ---------- workbooks ---------- */
+function rubricSheet(){
+  var rows = [[{v:"Level",bold:true},{v:"Competency",bold:true},{v:"Kind",bold:true},{v:"Signal id",bold:true},{v:"What it looks like",bold:true}]];
+  ["L1","L2","L3","L4","L5"].forEach(function(k){
+    var r = RUBRIC[k];
+    r.signals.forEach(function(s){ rows.push([k, r.competency, "signal", s.id, s.label]); });
+    (r.watch || []).forEach(function(s){ rows.push([k, r.competency, "watch", s.id, s.label]); });
+  });
+  rows.push([]);
+  rows.push([{v:"Bands",bold:true}]);
+  rows.push(["Certified", "Clean run; emergency called, hazards handled, autonomy preserved"]);
+  rows.push(["Certified with notes", "Placeable, with named coaching items for the coordinator"]);
+  rows.push(["Not yet", "A gap: a named module, then a re-sit"]);
+  rows.push(["Assessor review", "A person writes the outcome. Never auto-issued in either direction"]);
+  return {name: "Rubric", widths: [8, 46, 10, 22, 52], rows: rows};
+}
+
+function freeTextRows(rec, withParticipant){
+  var head = (withParticipant ? [{v:"Participant",bold:true},{v:"Name",bold:true}] : [])
+    .concat([{v:"Level",bold:true},{v:"Day",bold:true},{v:"Competency",bold:true},{v:"Prompt",bold:true},
+             {v:"Answer",bold:true},{v:"Characters",bold:true},{v:"Seconds",bold:true},
+             {v:"Signals matched",bold:true},{v:"Signals missed",bold:true},{v:"Watch flags",bold:true}]);
+  var rows = [head];
+  (rec.responses || []).forEach(function(r){
+    rows.push((withParticipant ? [rec.pid, rec.name] : []).concat([
+      r.id, r.day, r.competency, r.prompt, r.answer, r.chars, r.seconds,
+      (r.matched || []).join(", "), (r.missed || []).join(", "), (r.watch || []).join(", ")
+    ]));
+  });
+  return rows;
+}
+function choiceRows(rec, withParticipant){
+  var head = (withParticipant ? [{v:"Participant",bold:true}] : [])
+    .concat([{v:"Day",bold:true},{v:"Time",bold:true},{v:"Scene",bold:true},{v:"Level",bold:true},
+             {v:"Prompt",bold:true},{v:"Chose",bold:true},{v:"Tag",bold:true},
+             {v:"Rapport",bold:true},{v:"Autonomy",bold:true},{v:"Safety",bold:true},
+             {v:"Timed out",bold:true},{v:"Seconds",bold:true}]);
+  var rows = [head];
+  (rec.choices || []).forEach(function(c){
+    rows.push((withParticipant ? [rec.pid] : []).concat([
+      c.day, c.time, c.title, c.level, c.prompt, c.chosen, c.tag,
+      c.dr, c.da, c.ds, c.timedOut ? "yes" : "", c.seconds
+    ]));
+  });
+  return rows;
+}
+
+function participantWorkbook(rec){
+  var summary = [
+    [{v:"Pepaws Porch — homeshare readiness assessment",bold:true}],
+    [],
+    [{v:"Participant id",bold:true}, rec.pid],
+    [{v:"Name",bold:true}, rec.name],
+    [{v:"Email",bold:true}, rec.email],
+    [{v:"Consented",bold:true}, rec.consentAt],
+    [{v:"Started",bold:true}, rec.startedAt],
+    [{v:"Submitted",bold:true}, rec.submittedAt],
+    [{v:"Duration (min)",bold:true}, rec.durationMin],
+    [],
+    [{v:"Rapport",bold:true}, rec.rapport],
+    [{v:"Autonomy",bold:true}, rec.autonomy],
+    [{v:"Safety",bold:true}, rec.safety],
+    [],
+    [{v:"Provisional band",bold:true}, rec.band],
+    [{v:"Status",bold:true}, rec.assessorStatus],
+    [{v:"Emergency hard stop",bold:true}, rec.hardStop ? "yes" : "no"],
+    [{v:"Declined placement",bold:true}, rec.declined ? "yes" : "no"],
+    []
+  ];
+  summary.push([{v:"Notes",bold:true}]);
+  (rec.reasons || []).forEach(function(r){ summary.push(["", r]); });
+  return [
+    {name: "Submission", widths: [24, 70], rows: summary},
+    {name: "Free text", widths: [8, 6, 40, 46, 88, 12, 10, 34, 34, 26], rows: freeTextRows(rec, false)},
+    {name: "Choices", widths: [6, 10, 24, 7, 46, 62, 16, 10, 10, 9, 10, 9], rows: choiceRows(rec, false)},
+    rubricSheet()
+  ];
+}
+
+function assessorWorkbook(records){
+  var head = [[{v:"Participant",bold:true},{v:"Name",bold:true},{v:"Email",bold:true},
+               {v:"Submitted",bold:true},{v:"Duration (min)",bold:true},
+               {v:"Rapport",bold:true},{v:"Autonomy",bold:true},{v:"Safety",bold:true},
+               {v:"Provisional band",bold:true},{v:"Hard stop",bold:true},{v:"Declined",bold:true},
+               {v:"Watch flags",bold:true},{v:"Status",bold:true},{v:"Notes",bold:true}]];
+  records.forEach(function(r){
+    head.push([r.pid, r.name, r.email, r.submittedAt, r.durationMin, r.rapport, r.autonomy, r.safety,
+      r.band, r.hardStop ? "yes" : "", r.declined ? "yes" : "", (r.watchFlags || []).join(", "),
+      r.assessorStatus || "Awaiting assessor review", (r.reasons || []).join(" | ")]);
+  });
+  var ft = [], ch = [];
+  records.forEach(function(r, i){
+    var rows = freeTextRows(r, true); if (i === 0) ft = rows; else ft = ft.concat(rows.slice(1));
+    var crows = choiceRows(r, true); if (i === 0) ch = crows; else ch = ch.concat(crows.slice(1));
+  });
+  if (!ft.length) ft = freeTextRows({responses: []}, true);
+  if (!ch.length) ch = choiceRows({choices: []}, true);
+  return [
+    {name: "Submissions", widths: [22, 24, 30, 24, 13, 10, 11, 9, 22, 11, 11, 30, 26, 90], rows: head},
+    {name: "Free text", widths: [22, 22, 8, 6, 40, 46, 88, 12, 10, 34, 34, 26], rows: ft},
+    {name: "Choices", widths: [22, 6, 10, 24, 7, 46, 62, 16, 10, 10, 9, 10, 9], rows: ch},
+    rubricSheet()
+  ];
+}
+
+function offerFile(filename, sheets, statusId){
+  var bytes;
+  try { bytes = xlsxMini(sheets); }
+  catch (e){ setStatus(statusId, "no", "Could not build the workbook."); return; }
+  getCap("downloads").then(function(d){
+    if (!d){ setStatus(statusId, "no", "Downloads are not available in this view."); return; }
+    setStatus(statusId, "wait", "Waiting for you to confirm the download…");
+    d.save({filename: filename, data: bytes}).then(function(){
+      setStatus(statusId, "ok", "Saved " + filename + ".");
+    }, function(err){
+      var code = (err && err.code) || "unavailable";
+      if (code === "declined") setStatus(statusId, "wait", "Download cancelled.");
+      else if (code === "rate_limited") setStatus(statusId, "wait", "A download prompt is already open. Finish that one first.");
+      else setStatus(statusId, "no", "Download failed (" + code + ").");
+    });
+  });
+}
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+function finish(){
+  clearTimer();
+  S.submittedAt = nowISO();
+  S.view = "results";
+  save();
+  render();
+  saveToBackend(toRecord());
+}
+
+function renderResults(){
+  app.className = "";
+  var rec = toRecord();
+  var lv = [{k:"L1",d:3,n:"Technology"},{k:"L2",d:6,n:"Low mood"},{k:"L3",d:8,n:"A remark"},{k:"L4",d:11,n:"Mobility"},{k:"L5",d:14,n:"Emergency"}];
+  var perLevel = lv.map(function(x){
+    var r = null;
+    for (var i = 0; i < rec.responses.length; i++) if (rec.responses[i].id === x.k) r = rec.responses[i];
+    if (!r) return "";
+    var tot = r.matched.length + r.missed.length;
+    return '<div class="row"><div><b>Day ' + x.d + ' — ' + esc(x.n) + '</b>'
+      + '<div class="sub" style="font-size:12.5px">' + esc(r.competency) + '</div>'
+      + (r.watch.length ? '<div class="sub" style="font-size:12.5px;color:var(--rust)">Watch: '
+          + esc(r.watch.map(function(w){ return signalLabel(r.rubric, w); }).join("; ")) + '</div>' : "")
+      + '</div><div class="v">' + r.matched.length + '/' + tot + ' signals<br>' + r.chars + ' chars</div></div>';
+  }).join("");
+
+  app.innerHTML =
+    '<div class="stage">' + scenePorch(LIGHT.dusk, {bruce: "stand_stick", bx: 470, bs: 0.84, cat: true}) + '</div>'
+    + '<div class="scroll"><div class="pad">'
+    + '<div><div class="kicker" style="font:600 11px/1 \'IBM Plex Mono\',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)">Fourteen days · complete</div>'
+    + '<h1 style="font-size:29px;margin-top:6px">' + esc(rec.name.split(" ")[0] || "You") + ', that’s the fortnight.</h1></div>'
+    + '<div><span class="band" style="background:' + bandColour(rec.band) + '">' + esc(rec.band) + '</span></div>'
+    + '<div class="notice"><b>Provisional.</b> This band comes from your choices and a keyword pass over what you wrote. It is not the outcome. A person at the placement service reads every word you typed and writes the decision.</div>'
+    + '<div class="rows">'
+    + '<div class="row"><div><b>Rapport</b><div class="sub" style="font-size:12.5px">Does he want you there</div></div><div class="v">' + rec.rapport + ' / 100</div></div>'
+    + '<div class="row"><div><b>Autonomy</b><div class="sub" style="font-size:12.5px">Is it still his house</div></div><div class="v">' + rec.autonomy + ' / 100</div></div>'
+    + '<div class="row"><div><b>Safety</b><div class="sub" style="font-size:12.5px">Did anyone get hurt</div></div><div class="v">' + rec.safety + ' / 100</div></div>'
+    + perLevel + '</div>'
+    + '<div><div class="who narr" style="margin-bottom:8px">What the assessor will see first</div>'
+    + '<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px">'
+    + rec.reasons.map(function(r){ return '<li class="sub" style="font-size:14px">' + esc(r) + '</li>'; }).join("")
+    + '</ul></div>'
+    + '<div class="status" id="savestat"><span class="dotled wait"></span><span>Saving to the placement record…</span></div>'
+    + '<button class="cont primary" id="dl">Download my responses (.xlsx)</button>'
+    + '<div class="status" id="dlstat"><span class="dotled"></span><span>A copy for your records, and for the service if the save above did not go through.</span></div>'
+    + '<p class="sub" style="font-size:12.5px">Participant id <span class="mono">' + esc(rec.pid) + '</span> · submitted ' + esc(rec.submittedAt) + '</p>'
+    + '</div></div>';
+
+  el("#dl").onclick = function(){
+    offerFile("pepaws-porch-" + rec.pid + ".xlsx", participantWorkbook(rec), "dlstat");
+  };
+}
+
+/* ============================================================
+   ASSESSOR VIEW  (open with #assessor)
+   ============================================================ */
+function renderAssessor(){
+  app.className = "wide";
+  app.innerHTML =
+    '<div class="topbar"><div class="toprow"><span class="daylabel">Pepaws Porch · assessor</span>'
+    + '<span class="clock" id="acount">loading…</span></div></div>'
+    + '<div class="scroll"><div class="pad">'
+    + '<h1 style="font-size:26px">Submissions</h1>'
+    + '<p class="sub">Every run written to the placement record, newest first. Bands are provisional: the assessor column is what counts, and it is filled in by a person. Anyone who can open this artifact can open this page — it is a convenience, not an access control.</p>'
+    + '<div class="arow"><button class="cont" id="refresh">Refresh</button>'
+    + '<button class="cont primary" id="exp">Export workbook (.xlsx)</button>'
+    + '<span class="pill" id="src">reading…</span></div>'
+    + '<div class="status" id="astat"><span class="dotled wait"></span><span>Reading the placement record…</span></div>'
+    + '<div class="awrap"><table class="atable" id="atable"><thead><tr>'
+    + '<th>Participant</th><th>Name</th><th>Submitted</th><th>Rap</th><th>Aut</th><th>Saf</th>'
+    + '<th>Provisional</th><th>Flags</th></tr></thead><tbody><tr><td colspan="8">…</td></tr></tbody></table></div>'
+    + '</div></div>';
+
+  var records = [];
+  var draw = function(){
+    var tb = el("#atable tbody");
+    if (!records.length){ tb.innerHTML = '<tr><td colspan="8">No submissions yet.</td></tr>'; return; }
+    tb.innerHTML = records.map(function(r){
+      var flags = [];
+      if (r.hardStop) flags.push("hard stop");
+      if (r.declined) flags.push("declined");
+      (r.watchFlags || []).forEach(function(w){ flags.push(w); });
+      return '<tr><td class="mono">' + esc(r.pid) + '</td><td>' + esc(r.name) + '</td>'
+        + '<td class="mono" style="font-size:12px">' + esc((r.submittedAt || "").replace("T", " ").slice(0, 16)) + '</td>'
+        + '<td class="mono">' + esc(r.rapport) + '</td><td class="mono">' + esc(r.autonomy) + '</td><td class="mono">' + esc(r.safety) + '</td>'
+        + '<td><span class="pill" style="background:' + bandColour(r.band) + ';color:#F6F2E8">' + esc(r.band) + '</span></td>'
+        + '<td class="sub" style="font-size:12.5px">' + esc(flags.join(", ")) + '</td></tr>';
+    }).join("");
+  };
+
+  var load = function(){
+    setStatus("astat", "wait", "Reading the placement record…");
+    getCap("db").then(function(db){
+      if (!db){
+        el("#src").textContent = "no record store";
+        setStatus("astat", "no", "The shared record is not available in this view. Collect the .xlsx files participants downloaded instead.");
+        el("#acount").textContent = "0";
+        records = []; draw(); return;
+      }
+      el("#src").textContent = "shared record";
+      db.collection("submissions").orderBy("submittedAt", "desc").limit(500).get().then(function(snap){
+        records = snap.docs.map(function(d){ return d.data(); }).filter(Boolean);
+        el("#acount").textContent = records.length + " submission" + (records.length === 1 ? "" : "s");
+        setStatus("astat", "ok", "Read " + records.length + " submission" + (records.length === 1 ? "" : "s") + ".");
+        draw();
+      }, function(err){
+        setStatus("astat", "no", "Could not read the record (" + ((err && err.code) || "unavailable") + ").");
+        el("#acount").textContent = "—";
+      });
+    });
+  };
+
+  el("#refresh").onclick = load;
+  el("#exp").onclick = function(){
+    if (!records.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
+    offerFile("pepaws-porch-responses.xlsx", assessorWorkbook(records), "astat");
+  };
+  load();
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function boot(){
+  S = freshState();
+  if ((location.hash || "").replace("#", "").toLowerCase() === "assessor"){ S.view = "assessor"; }
+  render();
+}
+boot();
+</script>

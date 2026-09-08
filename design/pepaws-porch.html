@@ -1,54 +1,54 @@
 <title>Pepaws Porch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 :root{
-  --paper:#F6F2E7; --paper-2:#EDE5D1; --card:#FFFDF6; --sunk:#E7DDC4;
-  --ink:#2A2118; --ink-2:#6B5C4A; --line:#2A2118; --rule:#D8CDB2;
-  --tin:#1F5A4C; --jac:#7B5EA7; --bottle:#D9432C; --sun:#FFC24A;
-  --lawn:#7FB749; --brick:#C4674F; --sky-a:#A8DCEC; --sky-b:#E6F3F2;
-  --deck:#E3C58E; --roof:#1F5A4C; --wall:#FFF6E2; --glass:#BFE3EE;
-  --shadow:#2A2118; --pill:#FFFDF6;
+  --paper:#EFE9DD; --paper-2:#E4DCCC; --card:#F8F3E9; --sunk:#E0D7C4;
+  --ink:#31302B; --ink-2:#6B6459; --line:#B5A995; --rule:#D2C8B4;
+  --tin:#5D6A63; --jac:#8A82A0; --bottle:#A8563E; --sun:#C0904F;
+  --lawn:#7E8A67; --brick:#A8785F; --sky-a:#AFC0C9; --sky-b:#DCE1D8;
+  --deck:#BEA582; --roof:#5C6763; --wall:#E4DBCA; --glass:#C7D2D2;
+  --shadow:rgba(49,48,43,.14); --pill:#F8F3E9;
   --ok:#3E8E5A; --warn:#E08A1E; --stop:#C4321F;
-  --grass:#7FB749; --orb:#FFC24A; --orb-ray:#FFC24A;
+  --grass:#7E8A67; --orb:#D9B36A; --orb-ray:#D9B36A;
 }
 :root:not([data-theme="light"]) { }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --paper:#161C22; --paper-2:#10151B; --card:#212A32; --sunk:#1A222A;
     --ink:#F3EEE1; --ink-2:#A9A091; --line:#0C1116; --rule:#33404B;
-    --tin:#3FA189; --jac:#B198DD; --bottle:#FF6E55; --sun:#FFB13D;
-    --lawn:#94C95C; --brick:#D4826A; --sky-a:#2C3A5A; --sky-b:#4A3F63;
-    --deck:#6E5B3E; --roof:#17453A; --wall:#3A3226; --glass:#F2C25B;
-    --shadow:#0C1116; --pill:#2A343D;
+    --tin:#7E8F86; --jac:#A79EBD; --bottle:#CE7358; --sun:#D2A868;
+    --lawn:#8C9A74; --brick:#B98C72; --sky-a:#39465C; --sky-b:#5A5468;
+    --deck:#7A6549; --roof:#3D4A46; --wall:#43392C; --glass:#D8B472;
+    --shadow:rgba(0,0,0,.34); --pill:#2A343D;
     --ok:#5FBF80; --warn:#F0AB4A; --stop:#F0705C;
-    --grass:#3E5F2A; --orb:#EDE7D2; --orb-ray:#8E93B8;
+    --grass:#46543A; --orb:#DDD7C4; --orb-ray:#7A809E;
   }
 }
 :root[data-theme="dark"]{
   --paper:#161C22; --paper-2:#10151B; --card:#212A32; --sunk:#1A222A;
   --ink:#F3EEE1; --ink-2:#A9A091; --line:#0C1116; --rule:#33404B;
-  --tin:#3FA189; --jac:#B198DD; --bottle:#FF6E55; --sun:#FFB13D;
-  --lawn:#94C95C; --brick:#D4826A; --sky-a:#2C3A5A; --sky-b:#4A3F63;
-  --deck:#6E5B3E; --roof:#17453A; --wall:#3A3226; --glass:#F2C25B;
-  --shadow:#0C1116; --pill:#2A343D;
+  --tin:#7E8F86; --jac:#A79EBD; --bottle:#CE7358; --sun:#D2A868;
+  --lawn:#8C9A74; --brick:#B98C72; --sky-a:#39465C; --sky-b:#5A5468;
+  --deck:#7A6549; --roof:#3D4A46; --wall:#43392C; --glass:#D8B472;
+  --shadow:rgba(0,0,0,.34); --pill:#2A343D;
   --ok:#5FBF80; --warn:#F0AB4A; --stop:#F0705C;
-  --grass:#3E5F2A; --orb:#EDE7D2; --orb-ray:#8E93B8;
+  --grass:#46543A; --orb:#DDD7C4; --orb-ray:#7A809E;
 }
 *{box-sizing:border-box}
 body{
   background:var(--paper); color:var(--ink);
-  font:400 16.5px/1.65 Nunito,"Segoe UI",system-ui,sans-serif;
+  font:400 16.5px/1.65 "Source Sans 3","Segoe UI",system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;
 }
-h1,h2,h3,h4{font-family:"Baloo 2",Nunito,system-ui,sans-serif;font-weight:800;line-height:1.08;text-wrap:balance;margin:0}
+h1,h2,h3,h4{font-family:Fraunces,Georgia,serif;font-weight:800;line-height:1.08;text-wrap:balance;margin:0}
 p{margin:0}
 a{color:inherit}
 :focus-visible{outline:3px solid var(--bottle);outline-offset:3px;border-radius:4px}
 
 .wrap{max-width:1140px;margin:0 auto;padding:0 26px}
-.band{padding:60px 0;border-top:3px solid var(--line)}
+.band{padding:60px 0;border-top:1px solid var(--line)}
 .band--sunk{background:var(--paper-2)}
 .stack{display:flex;flex-direction:column;gap:18px}
 .prose{max-width:64ch;font-size:17px;color:var(--ink-2)}
@@ -59,7 +59,7 @@ a{color:inherit}
   letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);
   display:flex;align-items:center;gap:9px;margin-bottom:14px;
 }
-.eyebrow::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--bottle);border:2px solid var(--line);flex:none}
+.eyebrow::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--bottle);border:1px solid var(--line);flex:none}
 .h2{font-size:clamp(28px,4.2vw,44px);letter-spacing:-.01em}
 .h3{font-size:21px;letter-spacing:-.005em}
 .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
@@ -70,22 +70,21 @@ a{color:inherit}
 .herotext{padding:44px 0 34px}
 .logo{display:inline-flex;flex-direction:column;gap:2px}
 .logo b{
-  font-family:"Baloo 2",sans-serif;font-weight:800;
+  font-family:Fraunces,Georgia,serif;font-weight:800;
   font-size:clamp(46px,9vw,96px);line-height:.92;letter-spacing:-.02em;
-  color:var(--sun);
-  -webkit-text-stroke:5px var(--line);paint-order:stroke fill;
-  text-shadow:0 7px 0 var(--line);
+  color:var(--ink);
+  letter-spacing:-.02em;
 }
 .logo span{
   font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.3em;
   text-transform:uppercase;color:var(--ink-2);padding-left:5px;margin-top:16px;
 }
-.tagline{font-size:clamp(19px,2.4vw,25px);font-weight:700;font-family:"Baloo 2",sans-serif;max-width:26ch;line-height:1.25;margin-top:20px}
+.tagline{font-size:clamp(19px,2.4vw,25px);font-weight:700;font-family:Fraunces,Georgia,serif;max-width:26ch;line-height:1.25;margin-top:20px}
 .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
 .chip{
   font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.05em;
-  background:var(--pill);border:2.5px solid var(--line);border-radius:999px;
-  padding:9px 14px;box-shadow:0 3px 0 var(--shadow);
+  background:var(--pill);border:1px solid var(--line);border-radius:999px;
+  padding:9px 14px;box-shadow:0 1px 3px var(--shadow);
 }
 .chip--sun{background:var(--sun);color:#2A2118}
 .herogrid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:end}
@@ -93,17 +92,17 @@ a{color:inherit}
 
 /* ---------- STICKER CARD ---------- */
 .sticker{
-  background:var(--card);border:3px solid var(--line);border-radius:20px;
-  box-shadow:6px 6px 0 var(--shadow);
+  background:var(--card);border:1px solid var(--line);border-radius:20px;
+  box-shadow:0 2px 8px var(--shadow);
 }
 .pad{padding:24px}
 
 /* ---------- PALETTE ---------- */
 .swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:14px}
-.sw{border:3px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:5px 5px 0 var(--shadow);background:var(--card)}
-.sw i{display:block;height:76px;border-bottom:3px solid var(--line)}
+.sw{border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 2px 6px var(--shadow);background:var(--card)}
+.sw i{display:block;height:76px;border-bottom:1px solid var(--line)}
 .sw div{padding:10px 12px 12px}
-.sw b{display:block;font-family:"Baloo 2",sans-serif;font-size:15.5px;font-weight:700}
+.sw b{display:block;font-family:Fraunces,Georgia,serif;font-size:15.5px;font-weight:700}
 .sw code{font:500 11.5px/1.5 "IBM Plex Mono",monospace;color:var(--ink-2);letter-spacing:.04em}
 .sw p{font-size:12.5px;color:var(--ink-2);line-height:1.4;margin-top:5px}
 
@@ -111,8 +110,8 @@ a{color:inherit}
 .spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:18px}
 .spec>div{border-left:4px solid var(--jac);padding-left:16px}
 .spec .samp{font-size:38px;line-height:1.05;margin-bottom:8px}
-.s1{font-family:"Baloo 2",sans-serif;font-weight:800;color:var(--tin)}
-.s2{font-family:Nunito,sans-serif;font-weight:700}
+.s1{font-family:Fraunces,Georgia,serif;font-weight:800;color:var(--tin)}
+.s2{font-family:"Source Sans 3",sans-serif;font-weight:700}
 .s3{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:28px!important}
 .spec dt{font:600 11px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin-bottom:5px}
 .spec dd{margin:0 0 9px;font-size:14.5px;line-height:1.5}
@@ -120,7 +119,7 @@ a{color:inherit}
 /* ---------- CAST ---------- */
 .cast{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:18px}
 .cast article{display:flex;flex-direction:column}
-.cast .face{border-bottom:3px solid var(--line);background:var(--sky-b);border-radius:17px 17px 0 0}
+.cast .face{border-bottom:1px solid var(--line);background:var(--sky-b);border-radius:17px 17px 0 0}
 .cast .face svg{display:block;width:100%;height:auto}
 .cast .body{padding:16px 17px 18px;display:flex;flex-direction:column;gap:7px;flex:1}
 .cast h4{font-size:19px}
@@ -135,7 +134,7 @@ a{color:inherit}
   padding:20px 4px;border-bottom:2px dashed var(--rule);
 }
 @media(max-width:720px){.zone{grid-template-columns:44px 1fr;gap:14px}.zone .zdesc{grid-column:1/-1;padding-left:58px}}
-.zicon{width:52px;height:52px;border:3px solid var(--line);border-radius:14px;display:grid;place-items:center;box-shadow:3px 3px 0 var(--shadow)}
+.zicon{width:52px;height:52px;border:1px solid var(--line);border-radius:14px;display:grid;place-items:center;box-shadow:0 1px 4px var(--shadow)}
 .zicon svg{width:28px;height:28px}
 .zone h4{font-size:19px;margin-bottom:4px}
 .zone .znote{font:500 11.5px/1.4 "IBM Plex Mono",monospace;color:var(--ink-2);letter-spacing:.03em}
@@ -146,54 +145,54 @@ a{color:inherit}
 .phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:26px;align-items:start}
 .phonewrap{display:flex;flex-direction:column;gap:12px}
 .phone{
-  border:4px solid var(--line);border-radius:30px;background:var(--sky-b);
-  box-shadow:8px 8px 0 var(--shadow);overflow:hidden;position:relative;
+  border:1px solid var(--line);border-radius:30px;background:var(--sky-b);
+  box-shadow:0 6px 18px var(--shadow);overflow:hidden;position:relative;
   aspect-ratio:9/17;display:flex;flex-direction:column;
 }
 .phone .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:78px;height:15px;background:var(--line);border-radius:0 0 11px 11px;z-index:6}
 .phcap{font-size:13.5px;line-height:1.5;color:var(--ink-2)}
-.phcap b{display:block;font-family:"Baloo 2",sans-serif;font-size:16px;color:var(--ink);font-weight:700;margin-bottom:2px}
+.phcap b{display:block;font-family:Fraunces,Georgia,serif;font-size:16px;color:var(--ink);font-weight:700;margin-bottom:2px}
 
 /* game HUD bits */
 .hud{position:relative;flex:1;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--sky-a),var(--sky-b) 62%,var(--lawn) 62%)}
 .hudtop{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:22px 10px 8px;z-index:5}
 .tag{
   font:600 9.5px/1 "IBM Plex Mono",monospace;letter-spacing:.05em;background:var(--pill);
-  border:2.5px solid var(--line);border-radius:999px;padding:6px 9px;box-shadow:0 2.5px 0 var(--shadow);white-space:nowrap;
+  border:1px solid var(--line);border-radius:999px;padding:6px 9px;box-shadow:0 1px 3px var(--shadow);white-space:nowrap;
 }
 .tag--sun{background:var(--sun);color:#2A2118}
 .avatarrow{display:flex;align-items:center;gap:7px;padding:0 10px 8px;z-index:5}
-.av{width:44px;height:44px;border-radius:50%;border:3px solid var(--line);background:var(--sun);flex:none;overflow:hidden;box-shadow:0 3px 0 var(--shadow)}
+.av{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--sun);flex:none;overflow:hidden;box-shadow:0 1px 3px var(--shadow)}
 .av svg{display:block;width:100%;height:100%}
 .meters{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
 .meter{display:flex;align-items:center;gap:6px}
 .meter span{font:600 8.5px/1 "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;width:46px;flex:none;color:var(--ink)}
-.bar{flex:1;height:11px;border:2.5px solid var(--line);border-radius:999px;background:var(--pill);overflow:hidden}
+.bar{flex:1;height:11px;border:1px solid var(--line);border-radius:999px;background:var(--pill);overflow:hidden}
 .bar i{display:block;height:100%;border-radius:999px}
-.tasks{position:absolute;right:9px;top:96px;width:118px;z-index:5;background:var(--pill);border:3px solid var(--line);border-radius:14px;box-shadow:3px 3px 0 var(--shadow);padding:9px}
-.tasks h5{font:800 11px/1 "Baloo 2",sans-serif;letter-spacing:.02em;margin:0 0 7px}
-.tasks li{list-style:none;font:400 10.5px/1.35 Nunito,sans-serif;display:flex;gap:5px;margin-bottom:5px;color:var(--ink)}
+.tasks{position:absolute;right:9px;top:96px;width:118px;z-index:5;background:var(--pill);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 4px var(--shadow);padding:9px}
+.tasks h5{font:800 11px/1 Fraunces,Georgia,serif;letter-spacing:.02em;margin:0 0 7px}
+.tasks li{list-style:none;font:400 10.5px/1.35 "Source Sans 3",sans-serif;display:flex;gap:5px;margin-bottom:5px;color:var(--ink)}
 .tasks ul{margin:0;padding:0}
 .tasks li b{font-weight:800;flex:none}
 .tasks li.done{color:var(--ink-2);text-decoration:line-through}
 .scenefloor{margin-top:auto;position:relative;height:47%}
 .bubble{
   position:absolute;left:9px;right:9px;bottom:66px;z-index:5;
-  background:var(--pill);border:3px solid var(--line);border-radius:15px;padding:11px 12px;
-  box-shadow:4px 4px 0 var(--shadow);
+  background:var(--pill);border:1px solid var(--line);border-radius:15px;padding:11px 12px;
+  box-shadow:0 2px 6px var(--shadow);
 }
 .bubble::after{content:"";position:absolute;left:26px;bottom:-13px;width:0;height:0;border:11px solid transparent;border-top-color:var(--line);border-bottom:0}
 .bubble .who{font:600 9px/1 "IBM Plex Mono",monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--bottle);margin-bottom:5px}
-.bubble p{font:700 12.5px/1.35 Nunito,sans-serif}
+.bubble p{font:700 12.5px/1.35 "Source Sans 3",sans-serif}
 .choices{position:absolute;left:9px;right:9px;bottom:10px;z-index:5;display:flex;flex-direction:column;gap:5px}
-.choice{font:700 11px/1.25 Nunito,sans-serif;background:var(--card);border:2.5px solid var(--line);border-radius:11px;padding:8px 10px;box-shadow:0 3px 0 var(--shadow)}
+.choice{font:700 11px/1.25 "Source Sans 3",sans-serif;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:8px 10px;box-shadow:0 1px 3px var(--shadow)}
 .choice--hot{background:var(--sun);color:#2A2118}
 .alert{
   position:absolute;inset:auto 9px 10px 9px;z-index:7;background:var(--bottle);color:#FFF6E2;
-  border:3px solid var(--line);border-radius:15px;padding:11px 12px;box-shadow:4px 4px 0 var(--shadow);
+  border:1px solid var(--line);border-radius:15px;padding:11px 12px;box-shadow:0 2px 6px var(--shadow);
 }
-.alert b{display:block;font:800 14px/1.1 "Baloo 2",sans-serif;margin-bottom:3px}
-.alert p{font:600 11px/1.35 Nunito,sans-serif}
+.alert b{display:block;font:800 14px/1.1 Fraunces,Georgia,serif;margin-bottom:3px}
+.alert p{font:600 11px/1.35 "Source Sans 3",sans-serif}
 .burst{position:absolute;top:74px;left:50%;transform:translateX(-50%);z-index:6}
 .hud--kitchen{background:linear-gradient(180deg,var(--wall) 0%,var(--wall) 62%,var(--deck) 62%)}
 .miniscene{position:absolute;left:0;right:0;top:36%;z-index:2}
@@ -201,15 +200,15 @@ a{color:inherit}
 
 /* free-text modal */
 .modal{position:absolute;inset:0;background:rgba(42,33,24,.55);z-index:8;display:flex;align-items:center;padding:12px}
-.sheet{width:100%;background:var(--card);border:3px solid var(--line);border-radius:18px;box-shadow:5px 5px 0 var(--shadow);padding:13px}
+.sheet{width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 2px 6px var(--shadow);padding:13px}
 .sheet .k{font:600 9px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--jac);margin-bottom:6px;display:flex;justify-content:space-between}
-.sheet h5{font:800 15px/1.15 "Baloo 2",sans-serif;margin:0 0 8px}
-.field{border:2.5px dashed var(--rule);border-radius:11px;background:var(--sunk);padding:9px;min-height:74px;font:400 11.5px/1.45 Nunito,sans-serif;color:var(--ink-2)}
+.sheet h5{font:800 15px/1.15 Fraunces,Georgia,serif;margin:0 0 8px}
+.field{border:2.5px dashed var(--rule);border-radius:11px;background:var(--sunk);padding:9px;min-height:74px;font:400 11.5px/1.45 "Source Sans 3",sans-serif;color:var(--ink-2)}
 .field u{text-decoration:none;border-bottom:2px solid var(--bottle);animation:caret 1.1s steps(2) infinite}
 @keyframes caret{50%{border-color:transparent}}
 .sheetfoot{display:flex;justify-content:space-between;align-items:center;margin-top:9px}
 .sheetfoot .cnt{font:500 9.5px/1 "IBM Plex Mono",monospace;color:var(--ink-2)}
-.btn{font:800 11.5px/1 "Baloo 2",sans-serif;background:var(--lawn);border:2.5px solid var(--line);border-radius:10px;padding:8px 14px;box-shadow:0 3px 0 var(--shadow);color:#2A2118}
+.btn{font:800 11.5px/1 Fraunces,Georgia,serif;background:var(--lawn);border:1px solid var(--line);border-radius:10px;padding:8px 14px;box-shadow:0 1px 3px var(--shadow);color:#2A2118}
 
 /* ---------- RAMP CHART ---------- */
 .ramp{overflow-x:auto}
@@ -218,26 +217,26 @@ a{color:inherit}
 /* ---------- LEVELS ---------- */
 .levels{display:flex;flex-direction:column;gap:30px}
 .lvl{overflow:hidden}
-.lvlhead{display:flex;gap:16px;align-items:flex-start;padding:20px 22px;border-bottom:3px solid var(--line);background:var(--sunk)}
+.lvlhead{display:flex;gap:16px;align-items:flex-start;padding:20px 22px;border-bottom:1px solid var(--line);background:var(--sunk)}
 .num{
-  flex:none;width:56px;height:56px;border-radius:15px;border:3px solid var(--line);
-  display:grid;place-items:center;font:800 26px/1 "Baloo 2",sans-serif;color:#2A2118;
-  box-shadow:3px 3px 0 var(--shadow);
+  flex:none;width:56px;height:56px;border-radius:15px;border:1px solid var(--line);
+  display:grid;place-items:center;font:800 26px/1 Fraunces,Georgia,serif;color:#2A2118;
+  box-shadow:0 1px 4px var(--shadow);
 }
 .lvlhead h3{font-size:25px;margin-bottom:5px}
 .lvlmeta{display:flex;flex-wrap:wrap;gap:7px}
-.mini{font:600 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.05em;border:2px solid var(--line);border-radius:999px;padding:6px 9px;background:var(--card)}
+.mini{font:600 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.05em;border:1px solid var(--line);border-radius:999px;padding:6px 9px;background:var(--card)}
 .mini--text{background:var(--jac);color:#FFF6E2;border-color:var(--line)}
 .mini--timed{background:var(--bottle);color:#FFF6E2}
 .lvlbody{display:grid;grid-template-columns:1.15fr .85fr;gap:0}
 @media(max-width:800px){.lvlbody{grid-template-columns:1fr}}
-.lvlmain{padding:22px;display:flex;flex-direction:column;gap:16px;border-right:3px solid var(--line)}
-@media(max-width:800px){.lvlmain{border-right:0;border-bottom:3px solid var(--line)}}
+.lvlmain{padding:22px;display:flex;flex-direction:column;gap:16px;border-right:1px solid var(--line)}
+@media(max-width:800px){.lvlmain{border-right:0;border-bottom:1px solid var(--line)}}
 .lvlside{padding:22px;display:flex;flex-direction:column;gap:16px;background:var(--sunk)}
 .blk h5{font:600 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px}
 .blk p{font-size:15px;line-height:1.6}
 .script{border-left:4px solid var(--sun);padding:2px 0 2px 14px;font-size:15px;line-height:1.55}
-.script b{font-family:"Baloo 2",sans-serif;font-size:14px;display:block;color:var(--bottle)}
+.script b{font-family:Fraunces,Georgia,serif;font-size:14px;display:block;color:var(--bottle)}
 .script i{font-style:italic;color:var(--ink-2)}
 .cens{background:var(--ink);color:var(--paper);padding:1px 5px;border-radius:4px;font-weight:700;letter-spacing:.06em}
 .vars{display:flex;flex-direction:column;gap:8px;counter-reset:v}
@@ -246,38 +245,38 @@ a{color:inherit}
 .sig{display:flex;flex-direction:column;gap:7px}
 .sig li{list-style:none;display:flex;gap:9px;font-size:14.2px;line-height:1.45}
 .sig ul{margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
-.dot{flex:none;width:17px;height:17px;border-radius:50%;border:2.5px solid var(--line);margin-top:2px;display:grid;place-items:center;font:800 10px/1 "Baloo 2",sans-serif;color:#2A2118}
+.dot{flex:none;width:17px;height:17px;border-radius:50%;border:1px solid var(--line);margin-top:2px;display:grid;place-items:center;font:800 10px/1 Fraunces,Georgia,serif;color:#2A2118}
 .dot--y{background:var(--ok)} .dot--n{background:var(--stop);color:#FFF6E2}
-.guard{border:3px dashed var(--jac);border-radius:15px;padding:15px 16px;background:var(--card)}
+.guard{border:1px dashed var(--jac);border-radius:15px;padding:15px 16px;background:var(--card)}
 .guard h5{color:var(--jac)}
 .guard p{font-size:14.2px;line-height:1.55}
 
 /* ---------- TABLE ---------- */
-.tblwrap{overflow-x:auto;border:3px solid var(--line);border-radius:18px;box-shadow:6px 6px 0 var(--shadow);background:var(--card)}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px;box-shadow:0 2px 8px var(--shadow);background:var(--card)}
 table{border-collapse:collapse;width:100%;min-width:620px}
 th,td{text-align:left;padding:13px 16px;border-bottom:2px solid var(--rule);font-size:14.5px;vertical-align:top}
 th{font:600 10.5px/1.3 "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);background:var(--sunk)}
 tr:last-child td{border-bottom:0}
-td b{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15.5px}
-.band-pill{display:inline-block;font:800 11px/1 "Baloo 2",sans-serif;border:2.5px solid var(--line);border-radius:999px;padding:6px 11px;color:#2A2118}
+td b{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:15.5px}
+.band-pill{display:inline-block;font:800 11px/1 Fraunces,Georgia,serif;border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:#2A2118}
 
 /* ---------- BEATS ---------- */
 .beats{display:flex;flex-wrap:wrap;gap:10px}
 .beat{
-  display:flex;align-items:center;gap:9px;background:var(--card);border:2.5px solid var(--line);
-  border-radius:999px;padding:8px 15px 8px 9px;box-shadow:0 3px 0 var(--shadow);font-size:14px;font-weight:600;
+  display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);
+  border-radius:999px;padding:8px 15px 8px 9px;box-shadow:0 1px 3px var(--shadow);font-size:14px;font-weight:600;
 }
-.beat i{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font:800 11px/1 "Baloo 2",sans-serif;color:#2A2118;font-style:normal}
+.beat i{width:24px;height:24px;border-radius:50%;border:1px solid var(--line);flex:none;display:grid;place-items:center;font:800 11px/1 Fraunces,Georgia,serif;color:#2A2118;font-style:normal}
 
 /* ---------- SIGNOFF ---------- */
 .next{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
 .next li{list-style:none}
 .next ol{margin:0;padding:0;display:contents}
 .nextcard{padding:20px;display:flex;flex-direction:column;gap:8px;height:100%}
-.nextcard span{font:800 13px/1 "Baloo 2",sans-serif;color:var(--bottle)}
+.nextcard span{font:800 13px/1 Fraunces,Georgia,serif;color:var(--bottle)}
 .nextcard h4{font-size:18px}
 .nextcard p{font-size:14px;line-height:1.5;color:var(--ink-2)}
-footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--paper-2)}
+footer{padding:44px 0 60px;border-top:1px solid var(--line);background:var(--paper-2)}
 .foot{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:center;font-size:14px;color:var(--ink-2)}
 
 @media (prefers-reduced-motion: reduce){
@@ -290,170 +289,13 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
 :root[data-theme="dark"]{--fence:#4A4231}
 .rays{transform-origin:128px 86px;animation:spin 44s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.out{stroke:var(--line);stroke-width:5;stroke-linejoin:round;stroke-linecap:round}
-.thin{stroke:var(--line);stroke-width:3;stroke-linecap:round}
+.out{stroke:var(--line);stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.thin{stroke:var(--line);stroke-width:1.2;stroke-linecap:round}
 .miniscene .out,.cast .out,.av svg{stroke-linejoin:round}
 </style>
 
 <section class="hero">
-<svg class="scene" viewBox="0 0 1200 470" role="img" aria-label="Illustration of Pepaw's suburban cottage: a verandah with a green tin roof, jacaranda tree, Hills Hoist clothesline, Pepaw waiting on the deck and a student arriving up the front path.">
-  <defs>
-    <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="var(--sky-a)"/><stop offset="1" stop-color="var(--sky-b)"/>
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="1200" height="470" fill="url(#skyg)"/>
-
-  <!-- sun -->
-  <g class="rays" fill="none" stroke="var(--orb-ray)" stroke-width="9" stroke-linecap="round" opacity=".85">
-    <line x1="128" y1="8" x2="128" y2="30"/><line x1="128" y1="142" x2="128" y2="164"/>
-    <line x1="50" y1="86" x2="72" y2="86"/><line x1="184" y1="86" x2="206" y2="86"/>
-    <line x1="73" y1="31" x2="89" y2="47"/><line x1="167" y1="125" x2="183" y2="141"/>
-    <line x1="183" y1="31" x2="167" y2="47"/><line x1="89" y1="125" x2="73" y2="141"/>
-  </g>
-  <circle cx="128" cy="86" r="46" fill="var(--orb)" class="out"/>
-
-  <!-- back fence -->
-  <g class="out" fill="var(--fence)">
-    <rect x="880" y="286" width="300" height="90" rx="3"/>
-  </g>
-  <g class="thin" stroke="var(--line)" opacity=".5">
-    <line x1="930" y1="292" x2="930" y2="370"/><line x1="980" y1="292" x2="980" y2="370"/>
-    <line x1="1030" y1="292" x2="1030" y2="370"/><line x1="1080" y1="292" x2="1080" y2="370"/>
-    <line x1="1130" y1="292" x2="1130" y2="370"/>
-  </g>
-
-  <!-- hills hoist -->
-  <g class="out" fill="none">
-    <line x1="1010" y1="376" x2="1010" y2="228"/>
-    <line x1="944" y1="240" x2="1076" y2="240"/>
-    <line x1="1010" y1="228" x2="962" y2="262"/><line x1="1010" y1="228" x2="1058" y2="262"/>
-  </g>
-  <g class="out">
-    <rect x="958" y="240" width="26" height="34" rx="4" fill="var(--bottle)"/>
-    <rect x="994" y="240" width="26" height="30" rx="4" fill="var(--sun)"/>
-    <rect x="1030" y="240" width="26" height="36" rx="4" fill="var(--jac)"/>
-  </g>
-
-  <!-- jacaranda -->
-  <g class="out" fill="var(--brick)">
-    <path d="M228 376 L228 262 Q228 250 214 238 M228 300 Q232 288 250 280" fill="none" stroke-width="12"/>
-  </g>
-  <g class="out" fill="var(--jac)">
-    <circle cx="206" cy="222" r="48"/><circle cx="262" cy="240" r="38"/><circle cx="248" cy="188" r="36"/>
-  </g>
-
-  <!-- lawn -->
-  <rect x="0" y="372" width="1200" height="98" fill="var(--grass)"/>
-  <line x1="0" y1="372" x2="1200" y2="372" class="out"/>
-
-  <!-- front path -->
-  <path d="M540 376 L620 376 L700 470 L440 470 Z" fill="var(--deck)" class="out"/>
-
-  <!-- cottage facade -->
-  <g class="out">
-    <rect x="360" y="196" width="470" height="180" rx="4" fill="var(--wall)"/>
-  </g>
-  <g class="thin" opacity=".45">
-    <line x1="364" y1="226" x2="826" y2="226"/><line x1="364" y1="256" x2="826" y2="256"/>
-    <line x1="364" y1="286" x2="826" y2="286"/><line x1="364" y1="316" x2="826" y2="316"/>
-    <line x1="364" y1="346" x2="826" y2="346"/>
-  </g>
-
-  <!-- gable roof -->
-  <path d="M336 204 L595 102 L854 204 Z" fill="var(--roof)" class="out"/>
-  <path d="M595 102 L595 130" class="out" fill="none"/>
-
-  <!-- verandah roof + posts -->
-  <rect x="308" y="232" width="574" height="26" rx="7" fill="var(--roof)" class="out"/>
-  <g class="out" fill="var(--wall)">
-    <rect x="336" y="256" width="18" height="112" rx="3"/>
-    <rect x="586" y="256" width="18" height="112" rx="3"/>
-    <rect x="836" y="256" width="18" height="112" rx="3"/>
-  </g>
-
-  <!-- windows -->
-  <g class="out">
-    <rect x="408" y="276" width="98" height="78" rx="6" fill="var(--glass)"/>
-    <rect x="676" y="276" width="98" height="78" rx="6" fill="var(--glass)"/>
-  </g>
-  <g class="thin">
-    <line x1="457" y1="278" x2="457" y2="352"/><line x1="410" y1="315" x2="504" y2="315"/>
-    <line x1="725" y1="278" x2="725" y2="352"/><line x1="678" y1="315" x2="772" y2="315"/>
-  </g>
-  <!-- window boxes -->
-  <g class="out">
-    <rect x="398" y="348" width="118" height="20" rx="5" fill="var(--brick)"/>
-    <circle cx="420" cy="344" r="8" fill="var(--bottle)"/><circle cx="444" cy="340" r="9" fill="var(--sun)"/>
-    <circle cx="470" cy="344" r="8" fill="var(--bottle)"/><circle cx="494" cy="341" r="8" fill="var(--jac)"/>
-  </g>
-
-  <!-- door -->
-  <g class="out">
-    <rect x="536" y="266" width="84" height="102" rx="5" fill="var(--bottle)"/>
-    <circle cx="606" cy="320" r="5" fill="var(--sun)"/>
-  </g>
-
-  <!-- deck + steps -->
-  <g class="out">
-    <rect x="306" y="364" width="578" height="20" rx="5" fill="var(--deck)"/>
-    <rect x="530" y="384" width="96" height="16" rx="4" fill="var(--deck)"/>
-    <rect x="518" y="400" width="120" height="16" rx="4" fill="var(--deck)"/>
-  </g>
-
-  <!-- rocking chair -->
-  <g class="out"><path d="M790 332 L832 332 L832 344 L790 344 Z" fill="var(--deck)"/></g>
-  <g class="out" fill="none" stroke-width="6">
-    <path d="M792 344 L792 300 L820 300"/><path d="M792 344 L832 344 L832 366"/>
-    <path d="M780 370 Q808 382 838 370"/>
-  </g>
-
-  <!-- pot plant -->
-  <g class="out">
-    <path d="M340 364 L356 364 L352 340 L344 340 Z" fill="var(--brick)"/>
-    <circle cx="348" cy="328" r="14" fill="var(--tin)"/><circle cx="336" cy="336" r="10" fill="var(--tin)"/><circle cx="360" cy="336" r="10" fill="var(--tin)"/>
-  </g>
-
-  <!-- cat on the step -->
-  <g class="out">
-    <ellipse cx="572" cy="378" rx="19" ry="10" fill="var(--sun)"/>
-    <circle cx="591" cy="368" r="10" fill="var(--sun)"/>
-    <path d="M585 360 L587 352 L593 358 M595 359 L599 352 L601 361" fill="var(--sun)" stroke-width="3"/>
-    <path d="M553 376 Q541 372 545 362" fill="none" stroke-width="4"/>
-  </g>
-
-  <!-- PEPAW on the deck -->
-  <g class="out">
-    <rect x="660" y="330" width="13" height="36" rx="5" fill="var(--tin)"/>
-    <rect x="682" y="330" width="13" height="36" rx="5" fill="var(--tin)"/>
-    <rect x="650" y="292" width="56" height="46" rx="16" fill="var(--bottle)"/>
-    <rect x="638" y="300" width="14" height="34" rx="7" fill="var(--bottle)"/>
-    <rect x="704" y="296" width="14" height="34" rx="7" fill="var(--bottle)"/>
-    <circle cx="678" cy="272" r="22" fill="var(--skin-a)"/>
-    <path d="M655 268 Q660 246 682 248 Q700 250 702 266 Q690 258 668 262 Z" fill="var(--tin)"/>
-    <ellipse cx="678" cy="286" rx="12" ry="5" fill="var(--hair)"/>
-  </g>
-  <g class="thin" fill="none">
-    <circle cx="670" cy="272" r="7" fill="var(--glass)"/><circle cx="688" cy="272" r="7" fill="var(--glass)"/>
-    <line x1="677" y1="272" x2="681" y2="272"/>
-  </g>
-  <!-- walking stick -->
-  <line x1="722" y1="306" x2="730" y2="368" class="out" fill="none"/>
-
-  <!-- STUDENT arriving -->
-  <g class="out">
-    <rect x="186" y="412" width="13" height="34" rx="5" fill="var(--tin)"/>
-    <rect x="208" y="412" width="13" height="34" rx="5" fill="var(--tin)"/>
-    <rect x="176" y="378" width="26" height="34" rx="9" fill="var(--brick)"/>
-    <rect x="182" y="374" width="52" height="44" rx="15" fill="var(--jac)"/>
-    <rect x="228" y="352" width="13" height="34" rx="6" fill="var(--jac)" transform="rotate(22 234 369)"/>
-    <circle cx="208" cy="352" r="21" fill="var(--skin-b)"/>
-    <path d="M187 348 Q190 328 208 328 Q228 328 229 348 Z" fill="var(--sun)"/>
-    <path d="M185 348 L231 348" fill="none"/>
-  </g>
-  <g class="thin"><circle cx="201" cy="354" r="2.6" fill="var(--line)"/><circle cx="215" cy="354" r="2.6" fill="var(--line)"/>
-    <path d="M202 362 Q208 368 214 362" fill="none"/></g>
-</svg>
+<svg class="scene" viewBox="0 0 800 400" role="img" aria-label="The front verandah of Bruce’s cottage"><defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BCC0B4"/><stop offset="1" stop-color="#EEDCB6"/></linearGradient><linearGradient id="roofg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6C7772"/><stop offset="1" stop-color="#525C58"/></linearGradient><linearGradient id="wallg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4DBCA"/><stop offset="1" stop-color="#D2C7B2"/></linearGradient><linearGradient id="deckg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4AC8B"/><stop offset="1" stop-color="#A88F70"/></linearGradient><linearGradient id="grassg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8B9670"/><stop offset="1" stop-color="#727D5B"/></linearGradient><linearGradient id="floorg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B49874"/><stop offset="1" stop-color="#8E7454"/></linearGradient><linearGradient id="innerwall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DCD5C4"/><stop offset="1" stop-color="#C4BBA6"/></linearGradient><linearGradient id="glassg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBEBC6" stop-opacity="0.85"/><stop offset="1" stop-color="#A9B6B4" stop-opacity="0.7"/></linearGradient><radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FBEBC6" stop-opacity="0.72"/><stop offset="1" stop-color="#FBEBC6" stop-opacity="0"/></radialGradient></defs><rect width="800" height="400" fill="url(#sky)"/><path d="M 0 214 L 74 176 L 148 214 Z" fill="#8C948F" opacity="0.55"/><path d="M 660 210 L 730 172 L 800 210 Z" fill="#8C948F" opacity="0.55"/><g><ellipse cx="96" cy="168" rx="49.6" ry="38.5" fill="#4B573C"/><ellipse cx="61.4" cy="171.5" rx="8" ry="6.6" fill="#4B573C"/><ellipse cx="127.5" cy="140.6" rx="12" ry="9.8" fill="#5D6A4C"/><ellipse cx="97.4" cy="185.4" rx="7" ry="5.7" fill="#6E7B5B"/><ellipse cx="67.9" cy="148.4" rx="11" ry="9.0" fill="#4B573C"/><ellipse cx="150.1" cy="169.2" rx="6" ry="4.9" fill="#5D6A4C"/><ellipse cx="74.1" cy="181.5" rx="10" ry="8.2" fill="#6E7B5B"/><ellipse cx="101.0" cy="137.1" rx="5" ry="4.1" fill="#4B573C"/><ellipse cx="130.3" cy="201.8" rx="9" ry="7.4" fill="#5D6A4C"/><ellipse cx="63.4" cy="163.3" rx="13" ry="10.7" fill="#6E7B5B"/><ellipse cx="137.2" cy="150.3" rx="8" ry="6.6" fill="#4B573C"/><ellipse cx="89.5" cy="183.7" rx="12" ry="9.8" fill="#5D6A4C"/><ellipse cx="79.4" cy="143.9" rx="7" ry="5.7" fill="#6E7B5B"/><ellipse cx="144.9" cy="181.6" rx="11" ry="9.0" fill="#4B573C"/><ellipse cx="70.5" cy="175.0" rx="6" ry="4.9" fill="#5D6A4C"/><ellipse cx="114.6" cy="141.1" rx="10" ry="8.2" fill="#6E7B5B"/><ellipse cx="111.9" cy="206.9" rx="5" ry="4.1" fill="#4B573C"/><ellipse cx="68.9" cy="156.3" rx="9" ry="7.4" fill="#5D6A4C"/><ellipse cx="141.6" cy="161.5" rx="13" ry="10.7" fill="#6E7B5B"/><ellipse cx="59.9" cy="203.3" rx="8" ry="6.6" fill="#4B573C"/><ellipse cx="92.0" cy="142.4" rx="12" ry="9.8" fill="#5D6A4C"/><ellipse cx="134.4" cy="191.8" rx="7" ry="5.7" fill="#6E7B5B"/><ellipse cx="70.3" cy="168.5" rx="11" ry="9.0" fill="#4B573C"/><ellipse cx="125.1" cy="147.9" rx="6" ry="4.9" fill="#5D6A4C"/><ellipse cx="92.7" cy="207.4" rx="10" ry="8.2" fill="#6E7B5B"/><ellipse cx="77.0" cy="151.4" rx="5" ry="4.1" fill="#4B573C"/><ellipse cx="140.4" cy="172.6" rx="9" ry="7.4" fill="#5D6A4C"/></g><g><ellipse cx="714" cy="158" rx="46.4" ry="37.0" fill="#4B573C"/><ellipse cx="706.2" cy="196.6" rx="7" ry="5.7" fill="#4B573C"/><ellipse cx="697.3" cy="140.0" rx="11" ry="9.0" fill="#5D6A4C"/><ellipse cx="756.3" cy="165.3" rx="6" ry="4.9" fill="#6E7B5B"/><ellipse cx="664.0" cy="178.5" rx="10" ry="8.2" fill="#4B573C"/><ellipse cx="724.5" cy="134.5" rx="5" ry="4.1" fill="#5D6A4C"/><ellipse cx="733.6" cy="189.8" rx="9" ry="7.4" fill="#6E7B5B"/><ellipse cx="691.9" cy="151.1" rx="13" ry="10.7" fill="#4B573C"/><ellipse cx="749.7" cy="148.8" rx="8" ry="6.6" fill="#5D6A4C"/><ellipse cx="689.7" cy="191.5" rx="12" ry="9.8" fill="#6E7B5B"/><ellipse cx="706.9" cy="138.0" rx="7" ry="5.7" fill="#4B573C"/><ellipse cx="749.2" cy="174.7" rx="11" ry="9.0" fill="#5D6A4C"/><ellipse cx="658.9" cy="164.8" rx="6" ry="4.9" fill="#6E7B5B"/><ellipse cx="733.8" cy="139.3" rx="10" ry="8.2" fill="#4B573C"/><ellipse cx="717.8" cy="191.7" rx="5" ry="4.1" fill="#5D6A4C"/><ellipse cx="697.4" cy="146.8" rx="9" ry="7.4" fill="#6E7B5B"/><ellipse cx="750.4" cy="158.1" rx="13" ry="10.7" fill="#4B573C"/><ellipse cx="676.9" cy="182.8" rx="8" ry="6.6" fill="#5D6A4C"/><ellipse cx="716.4" cy="138.5" rx="12" ry="9.8" fill="#6E7B5B"/><ellipse cx="738.6" cy="181.6" rx="7" ry="5.7" fill="#4B573C"/><ellipse cx="660.5" cy="151.0" rx="11" ry="9.0" fill="#5D6A4C"/><ellipse cx="740.0" cy="145.9" rx="6" ry="4.9" fill="#6E7B5B"/><ellipse cx="702.5" cy="189.6" rx="10" ry="8.2" fill="#4B573C"/><ellipse cx="704.3" cy="144.3" rx="5" ry="4.1" fill="#5D6A4C"/><ellipse cx="746.8" cy="166.7" rx="9" ry="7.4" fill="#6E7B5B"/><ellipse cx="669.0" cy="171.8" rx="13" ry="10.7" fill="#4B573C"/><ellipse cx="724.6" cy="141.3" rx="8" ry="6.6" fill="#5D6A4C"/></g><path d="M 168 302 C 172 262 160 236 146 214" stroke="#7A6752" stroke-width="9" fill="none" stroke-linecap="round"/><g><ellipse cx="152" cy="196" rx="44.8" ry="32.6" fill="#847D9B"/><ellipse cx="163.2" cy="170.7" rx="13" ry="10.7" fill="#847D9B"/><ellipse cx="175.2" cy="227.7" rx="8" ry="6.6" fill="#9A93AE"/><ellipse cx="124.0" cy="188.7" rx="12" ry="9.8" fill="#ABA4BC"/><ellipse cx="192.5" cy="185.5" rx="7" ry="5.7" fill="#847D9B"/><ellipse cx="142.8" cy="208.4" rx="11" ry="9.0" fill="#9A93AE"/><ellipse cx="142.5" cy="174.2" rx="6" ry="4.9" fill="#ABA4BC"/><ellipse cx="192.5" cy="212.4" rx="10" ry="8.2" fill="#847D9B"/><ellipse cx="127.8" cy="199.2" rx="5" ry="4.1" fill="#9A93AE"/><ellipse cx="174.4" cy="175.5" rx="9" ry="7.4" fill="#ABA4BC"/><ellipse cx="157.7" cy="230.1" rx="13" ry="10.7" fill="#847D9B"/><ellipse cx="130.4" cy="183.4" rx="8" ry="6.6" fill="#9A93AE"/><ellipse cx="194.0" cy="195.3" rx="12" ry="9.8" fill="#ABA4BC"/><ellipse cx="112.2" cy="221.7" rx="7" ry="5.7" fill="#847D9B"/><ellipse cx="153.9" cy="174.3" rx="11" ry="9.0" fill="#9A93AE"/><ellipse cx="181.0" cy="219.8" rx="6" ry="4.9" fill="#ABA4BC"/><ellipse cx="129.0" cy="193.8" rx="10" ry="8.2" fill="#847D9B"/><ellipse cx="182.2" cy="182.3" rx="5" ry="4.1" fill="#9A93AE"/><ellipse cx="140.6" cy="228.5" rx="9" ry="7.4" fill="#ABA4BC"/><ellipse cx="138.7" cy="180.2" rx="13" ry="10.7" fill="#847D9B"/><ellipse cx="190.5" cy="204.4" rx="8" ry="6.6" fill="#9A93AE"/><ellipse cx="102.9" cy="210.9" rx="12" ry="9.8" fill="#ABA4BC"/><ellipse cx="164.2" cy="176.9" rx="7" ry="5.7" fill="#847D9B"/><ellipse cx="166.8" cy="224.0" rx="11" ry="9.0" fill="#9A93AE"/><ellipse cx="132.8" cy="189.2" rx="6" ry="4.9" fill="#ABA4BC"/><ellipse cx="186.0" cy="190.1" rx="10" ry="8.2" fill="#847D9B"/><ellipse cx="125.7" cy="223.2" rx="5" ry="4.1" fill="#9A93AE"/></g><rect x="0" y="296" width="800" height="104" fill="url(#grassg)"/><path d="M 0 296 C 180 290 620 292 800 296 L 800 306 C 600 300 200 302 0 308 Z" fill="#96A07C" opacity="0.5"/><rect x="196" y="150" width="470" height="150" fill="url(#wallg)"/><line x1="196" y1="160" x2="666" y2="160" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><line x1="196" y1="175" x2="666" y2="175" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><line x1="196" y1="190" x2="666" y2="190" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><line x1="196" y1="205" x2="666" y2="205" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><line x1="196" y1="220" x2="666" y2="220" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><line x1="196" y1="235" x2="666" y2="235" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><line x1="196" y1="250" x2="666" y2="250" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><line x1="196" y1="265" x2="666" y2="265" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><line x1="196" y1="280" x2="666" y2="280" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><line x1="196" y1="295" x2="666" y2="295" stroke="#B8AC96" stroke-width="1" opacity="0.55"/><path d="M 178 156 L 431 78 L 684 156 Z" fill="url(#roofg)"/><path d="M 178 156 L 431 78 L 431 88 L 196 158 Z" fill="#7C8782" opacity="0.7"/><rect x="176" y="152" width="510" height="9" rx="2" fill="#E8E1D2"/><rect x="166" y="186" width="530" height="11" rx="2" fill="#5C6763"/><rect x="166" y="197" width="530" height="7" fill="#4E5854" opacity="0.6"/><rect x="200" y="204" width="11" height="100" fill="#EDE6D6"/><rect x="208" y="204" width="4" height="100" fill="#C6BCA6"/><rect x="424" y="204" width="11" height="100" fill="#EDE6D6"/><rect x="432" y="204" width="4" height="100" fill="#C6BCA6"/><rect x="648" y="204" width="11" height="100" fill="#EDE6D6"/><rect x="656" y="204" width="4" height="100" fill="#C6BCA6"/><rect x="186" y="196" width="490" height="24" fill="#2E3328" opacity="0.13"/><rect x="180" y="300" width="500" height="16" fill="url(#deckg)"/><rect x="238" y="316" width="180" height="11" fill="#B49B7C"/><rect x="228" y="327" width="200" height="11" fill="#A88F70"/><rect x="300" y="206" width="72" height="96" rx="2" fill="#8C5B47"/><rect x="300" y="206" width="72" height="96" rx="2" fill="none" stroke="#6E4635" stroke-width="2"/><rect x="309" y="216" width="22" height="34" fill="#7B4E3C"/><rect x="341" y="216" width="22" height="34" fill="#7B4E3C"/><circle cx="362" cy="256" r="3.2" fill="#C7A25E"/><rect x="452" y="212" width="104" height="72" fill="url(#glassg)" stroke="#E3DACA" stroke-width="5"/><line x1="504" y1="212" x2="504" y2="284" stroke="#E3DACA" stroke-width="4"/><rect x="222" y="216" width="60" height="66" fill="url(#glassg)" stroke="#E3DACA" stroke-width="5"/><path d="M 592 302 L 630 302 L 625 272 L 597 272 Z" fill="#A8785F"/><rect x="594" y="266" width="34" height="8" rx="2" fill="#96684F"/><g><ellipse cx="611" cy="252" rx="17.6" ry="13.3" fill="#66754F"/><ellipse cx="606.5" cy="258.8" rx="10" ry="8.2" fill="#66754F"/><ellipse cx="606.0" cy="241.4" rx="5" ry="4.1" fill="#7E8C67"/><ellipse cx="629.6" cy="259.3" rx="9" ry="7.4" fill="#93A07C"/><ellipse cx="598.9" cy="253.9" rx="13" ry="10.7" fill="#66754F"/><ellipse cx="621.0" cy="241.9" rx="8" ry="6.6" fill="#7E8C67"/><ellipse cx="612.2" cy="258.0" rx="12" ry="9.8" fill="#93A07C"/><ellipse cx="600.2" cy="245.9" rx="7" ry="5.7" fill="#66754F"/><ellipse cx="630.2" cy="251.3" rx="11" ry="9.0" fill="#7E8C67"/><ellipse cx="603.8" cy="257.1" rx="6" ry="4.9" fill="#93A07C"/><ellipse cx="611.5" cy="241.2" rx="10" ry="8.2" fill="#66754F"/><ellipse cx="624.6" cy="262.9" rx="5" ry="4.1" fill="#7E8C67"/><ellipse cx="599.3" cy="251.1" rx="9" ry="7.4" fill="#93A07C"/><ellipse cx="624.8" cy="245.0" rx="13" ry="10.7" fill="#66754F"/><ellipse cx="609.4" cy="257.5" rx="8" ry="6.6" fill="#7E8C67"/><ellipse cx="604.1" cy="244.0" rx="12" ry="9.8" fill="#93A07C"/><ellipse cx="628.9" cy="255.7" rx="7" ry="5.7" fill="#66754F"/><ellipse cx="602.3" cy="255.0" rx="11" ry="9.0" fill="#7E8C67"/><ellipse cx="616.4" cy="242.3" rx="6" ry="4.9" fill="#93A07C"/><ellipse cx="618.3" cy="265.1" rx="10" ry="8.2" fill="#66754F"/><ellipse cx="600.9" cy="248.5" rx="5" ry="4.1" fill="#7E8C67"/><ellipse cx="626.8" cy="248.8" rx="9" ry="7.4" fill="#93A07C"/><ellipse cx="599.7" cy="264.9" rx="13" ry="10.7" fill="#66754F"/><ellipse cx="608.5" cy="243.3" rx="8" ry="6.6" fill="#7E8C67"/><ellipse cx="625.6" cy="259.4" rx="12" ry="9.8" fill="#93A07C"/><ellipse cx="601.9" cy="252.7" rx="7" ry="5.7" fill="#66754F"/><ellipse cx="620.4" cy="244.5" rx="11" ry="9.0" fill="#7E8C67"/></g><path d="M 196 302 L 226 302 L 222 280 L 200 280 Z" fill="#A8785F"/><g><ellipse cx="211" cy="268" rx="13.6" ry="10.4" fill="#66754F"/><ellipse cx="223.7" cy="265.4" rx="11" ry="9.0" fill="#66754F"/><ellipse cx="207.7" cy="271.8" rx="6" ry="4.9" fill="#7E8C67"/><ellipse cx="209.0" cy="260.9" rx="10" ry="8.2" fill="#93A07C"/><ellipse cx="222.6" cy="273.9" rx="5" ry="4.1" fill="#66754F"/><ellipse cx="203.6" cy="268.6" rx="9" ry="7.4" fill="#7E8C67"/><ellipse cx="218.6" cy="261.9" rx="13" ry="10.7" fill="#93A07C"/><ellipse cx="211.4" cy="278.9" rx="8" ry="6.6" fill="#66754F"/><ellipse cx="205.0" cy="263.6" rx="12" ry="9.8" fill="#7E8C67"/><ellipse cx="223.7" cy="268.5" rx="7" ry="5.7" fill="#93A07C"/><ellipse cx="198.0" cy="275.4" rx="11" ry="9.0" fill="#66754F"/><ellipse cx="212.4" cy="261.1" rx="6" ry="4.9" fill="#7E8C67"/><ellipse cx="218.8" cy="276.1" rx="10" ry="8.2" fill="#93A07C"/><ellipse cx="204.1" cy="266.9" rx="5" ry="4.1" fill="#66754F"/><ellipse cx="220.7" cy="264.2" rx="9" ry="7.4" fill="#7E8C67"/><ellipse cx="206.3" cy="278.1" rx="13" ry="10.7" fill="#93A07C"/><ellipse cx="207.6" cy="262.7" rx="8" ry="6.6" fill="#66754F"/><ellipse cx="222.3" cy="271.4" rx="12" ry="9.8" fill="#7E8C67"/><ellipse cx="195.6" cy="271.8" rx="7" ry="5.7" fill="#93A07C"/><ellipse cx="215.4" cy="262.2" rx="11" ry="9.0" fill="#66754F"/><ellipse cx="214.4" cy="277.2" rx="6" ry="4.9" fill="#7E8C67"/><ellipse cx="205.5" cy="265.5" rx="10" ry="8.2" fill="#93A07C"/><ellipse cx="221.5" cy="266.8" rx="5" ry="4.1" fill="#66754F"/><ellipse cx="202.0" cy="276.1" rx="9" ry="7.4" fill="#7E8C67"/><ellipse cx="210.4" cy="262.5" rx="13" ry="10.7" fill="#93A07C"/><ellipse cx="219.7" cy="273.6" rx="8" ry="6.6" fill="#66754F"/><ellipse cx="195.1" cy="268.0" rx="12" ry="9.8" fill="#7E8C67"/></g><g opacity="0.95"><path d="M 500 302 L 500 246 L 536 246" stroke="#8A6E4E" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M 498 276 L 542 276 L 542 302" stroke="#8A6E4E" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M 494 274 L 546 274 L 546 268 L 494 268 Z" fill="#9C8564"/><path d="M 490 306 Q 520 316 550 306" stroke="#8A6E4E" stroke-width="4" fill="none" stroke-linecap="round"/></g><g><ellipse cx="264" cy="296" rx="18" ry="9" fill="#C79A63"/><circle cx="280" cy="288" r="9" fill="#C79A63"/><path d="M 275 281 L 276 274 L 281 279 M 283 280 L 287 274 L 288 282" fill="#C79A63"/><path d="M 246 294 Q 236 290 240 282" stroke="#C79A63" stroke-width="4" fill="none" stroke-linecap="round"/></g><g transform="translate(470,300) scale(0.84)"><ellipse cx="0" cy="3" rx="31" ry="7" fill="#2E3328" opacity="0.16"/><path d="M -14 -80 L -16 -7 L -3 -7 L -2 -80 Z" fill="#6C6B63"/><path d="M 2 -80 L 3 -7 L 16 -7 L 14 -80 Z" fill="#5B5A53"/><ellipse cx="-10" cy="-4" rx="10.5" ry="5" fill="#4B423A"/><ellipse cx="10" cy="-4" rx="10.5" ry="5" fill="#4B423A"/><path d="M -20 -124 Q -24 -116 -23 -98 L -21 -76 L 21 -76 L 23 -98 Q 24 -116 20 -124 Q 0 -132 -20 -124 Z" fill="#7D845F"/><path d="M 4 -128 L 23 -98 L 21 -76 L 4 -76 Z" fill="#666C4C" opacity="0.55"/><path d="M -7 -128 L 0 -108 L 7 -128 Z" fill="#DFD8C7"/><path d="M -20 -122 C -31 -112 -32 -95 -30 -80 L -22 -79 C -24 -95 -23 -109 -14 -119 Z" fill="#7D845F"/><path d="M 20 -122 C 31 -112 32 -95 30 -80 L 22 -79 C 24 -95 23 -109 14 -119 Z" fill="#666C4C"/><circle cx="-26" cy="-75" r="5.4" fill="#D6AF8E"/><circle cx="26" cy="-75" r="5.4" fill="#D6AF8E"/><rect x="-6" y="-137" width="12" height="14" rx="4" fill="#BE9573"/><g transform="translate(0,-148) rotate(0)"><ellipse cx="0" cy="0" rx="13" ry="15" fill="#D6AF8E"/><path d="M -13 2 C -13 12 -7 15 0 15 C 7 15 13 12 13 2 C 11 9 -11 9 -13 2 Z" fill="#BE9573" opacity="0.35"/><ellipse cx="-13" cy="1" rx="3.4" ry="4.6" fill="#BE9573"/><path d="M -13.5 -3 C -14 -19 14 -19 13.5 -3 C 11 -11 -11 -11 -13.5 -3 Z" fill="#BCB6A8"/><path d="M -13.6 -3 C -14.4 2 -13.6 6 -12.6 8 C -13.4 2 -13.2 -1 -12.4 -4 Z" fill="#BCB6A8"/><path d="M 13.6 -3 C 14.4 2 13.6 6 12.6 8 C 13.4 2 13.2 -1 12.4 -4 Z" fill="#BCB6A8"/><rect x="-11.5" y="-6" width="9" height="7.5" rx="3" fill="#C9D6D6" fill-opacity="0.42" stroke="#4C463D" stroke-width="1.2"/><rect x="2.5" y="-6" width="9" height="7.5" rx="3" fill="#C9D6D6" fill-opacity="0.42" stroke="#4C463D" stroke-width="1.2"/><path d="M -2.5 -3 L 2.5 -3" stroke="#4C463D" stroke-width="1.2" fill="none"/><path d="M -7.5 5.5 C -4 3.6 4 3.6 7.5 5.5 C 4 7.6 -4 7.6 -7.5 5.5 Z" fill="#BCB6A8"/><path d="M -3.5 9.6 L 3.5 9.6" stroke="#9C7256" stroke-width="1.3" stroke-linecap="round" fill="none"/></g><path d="M 30 -78 L 34 -2" stroke="#8A6E4E" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M 26 -80 L 34 -80" stroke="#8A6E4E" stroke-width="4.5" stroke-linecap="round" fill="none"/></g><rect x="0" y="0" width="800" height="400" fill="rgba(214,158,78,0.15)"/></svg>
 
 <div class="wrap herotext">
   <div class="herogrid">
@@ -461,7 +303,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
       <span class="logo"><b>Pepaws&nbsp;Porch</b><span>Homeshare readiness assessment</span></span>
       <p class="tagline">Five days on the verandah. We find out how you handle the sixth.</p>
       <div class="chips">
-        <span class="chip chip--sun">Visual design · v1 for sign-off</span>
+        <span class="chip chip--sun">v2 · built and playable</span>
         <span class="chip">5 graded challenges</span>
         <span class="chip">~14 min run</span>
         <span class="chip">Mobile-first portrait</span>
@@ -469,7 +311,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
     </div>
     <div class="sticker pad">
       <div class="eyebrow">What this document is</div>
-      <p class="prose" style="font-size:15.5px">The art direction, screen design and scenario specification for the applicant screening game. It covers the look, the cast, the five assessed challenges and how each one is scored. <strong>Nothing here is built yet</strong> — sign this off and it becomes the build brief.</p>
+      <p class="prose" style="font-size:15.5px">The art direction, screen design and scenario specification for the applicant screening game, kept in step with the build. The game is finished and playable: fourteen days, one resident, five graded challenges, every response written to a spreadsheet the placement service reads. <strong>This document is the spec of record</strong> — where it and the game disagree, the game is right.</p>
     </div>
   </div>
 </div>
@@ -489,21 +331,21 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
 <section class="band band--sunk">
 <div class="wrap stack">
   <div class="eyebrow">Art direction · palette</div>
-  <h2 class="h2">Colour comes off an Australian street, not a candy shelf</h2>
-  <p class="prose">Saturated and high-contrast enough to read as a mobile game at arm's length, but every hue is lifted from something actually on the block — Colorbond roofing, a jacaranda in November, a bottlebrush, red brick. Thick <code class="mono">#2A2118</code> linework on everything keeps the sticker-book feel and holds the shapes together on small screens.</p>
+  <h2 class="h2">Colour comes off an Australian street in real light</h2>
+  <p class="prose">Every hue is lifted from something on the block — Colorbond gone chalky, a jacaranda past its best, weathered timber, red brick in the late afternoon. Desaturated on purpose: this is an assessment somebody sits before they move into a stranger's house, and a bright cartoon palette makes it read as a toy. Shapes separate by tone and soft shadow rather than heavy outlines, so the set looks lit rather than drawn.</p>
   <div class="swatches" style="margin-top:8px">
-    <div class="sw"><i style="background:#1F5A4C"></i><div><b>Cottage Green</b><code>#1F5A4C</code><p>Colorbond roof, verandah posts. The set's anchor.</p></div></div>
-    <div class="sw"><i style="background:#7B5EA7"></i><div><b>Jacaranda</b><code>#7B5EA7</code><p>Street tree, student's jumper, UI focus states.</p></div></div>
-    <div class="sw"><i style="background:#D9432C"></i><div><b>Bottlebrush</b><code>#D9432C</code><p>Front door and every interruption. Attention only.</p></div></div>
-    <div class="sw"><i style="background:#FFC24A"></i><div><b>Four O'Clock Sun</b><code>#FFC24A</code><p>Logo fill, primary taps, the cat.</p></div></div>
-    <div class="sw"><i style="background:#7FB749"></i><div><b>Buffalo Lawn</b><code>#7FB749</code><p>Ground plane, confirm buttons, rapport meter.</p></div></div>
-    <div class="sw"><i style="background:#C4674F"></i><div><b>Brick &amp; Terracotta</b><code>#C4674F</code><p>Pots, chimney, window boxes.</p></div></div>
-    <div class="sw"><i style="background:#F6F2E7"></i><div><b>Sun-bleached Paper</b><code>#F6F2E7</code><p>UI ground. Warm, never pure white.</p></div></div>
-    <div class="sw"><i style="background:#2A2118"></i><div><b>Linework Brown</b><code>#2A2118</code><p>Every outline, every shadow. Never black.</p></div></div>
+    <div class="sw"><i style="background:#5C6763"></i><div><b>Weathered Colorbond</b><code>#5C6763</code><p>Roof and verandah beam. The set's anchor.</p></div></div>
+    <div class="sw"><i style="background:#7E8A67"></i><div><b>Eucalypt</b><code>#7E8A67</code><p>Foliage, lawn, his cardigan, the rapport meter.</p></div></div>
+    <div class="sw"><i style="background:#A8563E"></i><div><b>Oxide Red</b><code>#A8563E</code><p>The front door, and every countdown bar. Attention only.</p></div></div>
+    <div class="sw"><i style="background:#C0904F"></i><div><b>Late Ochre</b><code>#C0904F</code><p>Four o'clock light, notices, the cat.</p></div></div>
+    <div class="sw"><i style="background:#8A82A0"></i><div><b>Spent Jacaranda</b><code>#8A82A0</code><p>The street tree in leaf-drop; the autonomy meter.</p></div></div>
+    <div class="sw"><i style="background:#B9A183"></i><div><b>Deck Timber</b><code>#B9A183</code><p>Verandah boards, the back step, the kitchen table.</p></div></div>
+    <div class="sw"><i style="background:#EFE9DD"></i><div><b>Sun-bleached Paper</b><code>#EFE9DD</code><p>UI ground. Warm, never pure white.</p></div></div>
+    <div class="sw"><i style="background:#31302B"></i><div><b>Soft Ink</b><code>#31302B</code><p>Type and the darkest tone. Never black.</p></div></div>
   </div>
   <div class="sticker pad" style="margin-top:22px">
-    <div class="eyebrow">Dark mode is dusk, not an inversion</div>
-    <p class="prose" style="font-size:15.5px">The porch already plays at three times of day — morning chores, afternoon light, evening. So the dark theme is simply the evening set: dusk-blue sky, warm window glass, lamplight on the deck. Switch your system theme and this page shows it. <strong>Level&nbsp;2 and Level&nbsp;5 are written for dusk and evening</strong>, so the palette does double duty as scene lighting.</p>
+    <div class="eyebrow">Light is a scene property, not a theme</div>
+    <p class="prose" style="font-size:15.5px">The game ships five lighting presets — <span class="mono">day</span>, <span class="mono">gold</span>, <span class="mono">grey</span>, <span class="mono">dusk</span>, <span class="mono">night</span> — and every day names one. Day&nbsp;6 is overcast on purpose, Day&nbsp;10 is dusk in a dim hallway, Day&nbsp;14 is night with a single lamp. <strong>The game commits to one visual world</strong> rather than following the viewer's theme; this document does follow it, so it reads either way.</p>
   </div>
 </div>
 </section>
@@ -514,17 +356,17 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
   <h2 class="h2">Chunky where it sells, precise where it scores</h2>
   <div class="spec" style="margin-top:6px">
     <div>
-      <div class="samp s1">Pepaw needs a hand</div>
+      <div class="samp s1">Bruce needs a hand</div>
       <dl>
-        <dt>Display — Baloo 2, 700/800</dt>
-        <dd>Titles, buttons, dialogue names, level cards. Rounded terminals, generous weight, holds a heavy outline without clogging. This is the game's voice.</dd>
+        <dt>Display — Fraunces, 600</dt>
+        <dd>Day cards, scenario prompts, the results headline. A soft serif with some warmth in it: old enough for the subject, not so formal it reads as a government form.</dd>
       </dl>
     </div>
     <div>
       <div class="samp s2">He says it's the internet company's fault.</div>
       <dl>
-        <dt>Body — Nunito, 400/700</dt>
-        <dd>All spoken dialogue, scenario text, coaching feedback. Humanist and soft enough to sit beside Baloo without a seam; readable at 12px inside a phone-width speech bubble.</dd>
+        <dt>Body — Source Sans 3, 400/600</dt>
+        <dd>Spoken dialogue, scenario text, choices, coaching feedback. Plain and quiet: it has to carry a 600-character answer without getting in the way.</dd>
       </dl>
     </div>
     <div>
@@ -541,58 +383,35 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
 <section class="band band--sunk">
 <div class="wrap stack">
   <div class="eyebrow">Art direction · cast</div>
-  <h2 class="h2">One porch, four residents, rotated per applicant</h2>
-  <p class="prose">Pepaw hosts the tutorial, but the graded scenarios are dealt from a roster of four. Two applicants sitting side by side get different residents and different scenario variants, so the test resists being memorised and passed around a student share-house. It also means <strong>no single character carries the discrimination scenario</strong> — it lands on whoever the deal gives you, which is closer to the truth and avoids writing one person as the bigot.</p>
+  <h2 class="h2">One resident, all fourteen days</h2>
+  <p class="prose">Bruce Whitlam, 82, retired fitter and turner, fifty-one years at 14 Ellerslie Street. He is the only person the applicant lives with, and the format is the reason: this is a one-time assessment, not a game anyone replays. A rotating roster would buy resistance to memorisation the test doesn't need, and it would cost the thing the test does need — <strong>a relationship that accumulates</strong>. By Day 8 you have made this man tea for a week, and that is exactly what makes Day 8 hard. His late wife Marion and his daughter Kath reach the applicant through him.</p>
   <div class="cast" style="margin-top:10px">
 
-    <article class="sticker cast-a"><div class="face"><svg viewBox="0 0 200 156" role="img" aria-label="Cartoon portrait of Pepaw Bruce, wearing a flat cap and round glasses">
-      <rect width="200" height="156" fill="var(--sky-b)"/><circle cx="100" cy="150" r="62" fill="var(--bottle)" class="out"/>
-      <circle cx="100" cy="82" r="42" fill="var(--skin-a)" class="out"/>
-      <path d="M56 76 Q62 34 102 36 Q138 38 143 72 Q120 58 76 66 Z" fill="var(--tin)" class="out"/>
-      <ellipse cx="100" cy="108" rx="22" ry="8" fill="var(--hair)" class="out"/>
-      <circle cx="86" cy="84" r="13" fill="var(--glass)" class="out"/><circle cx="118" cy="84" r="13" fill="var(--glass)" class="out"/>
-      <line x1="99" y1="84" x2="105" y2="84" class="out"/>
-      <circle cx="86" cy="84" r="3" fill="var(--line)"/><circle cx="118" cy="84" r="3" fill="var(--line)"/>
+    <article class="sticker"><div class="face"><svg viewBox="0 0 200 156" role="img" aria-label="Portrait of Bruce Whitlam">
+      <rect width="200" height="156" fill="var(--sky-b)"/><circle cx="100" cy="152" r="64" fill="var(--tin)"/>
+      <ellipse cx="100" cy="84" rx="42" ry="47" fill="#D6AF8E"/>
+      <path d="M 58 78 C 56 30 144 30 142 78 C 134 54 66 54 58 78 Z" fill="#BCB6A8"/>
+      <path d="M 57 80 C 54 96 57 110 61 118 C 57 98 57 88 59 76 Z" fill="#BCB6A8"/>
+      <path d="M 143 80 C 146 96 143 110 139 118 C 143 98 143 88 141 76 Z" fill="#BCB6A8"/>
+      <rect x="62" y="74" width="30" height="24" rx="10" fill="#C9D6D6" fill-opacity="0.45" stroke="#4C463D" stroke-width="2.4"/>
+      <rect x="108" y="74" width="30" height="24" rx="10" fill="#C9D6D6" fill-opacity="0.45" stroke="#4C463D" stroke-width="2.4"/>
+      <path d="M 92 84 L 108 84" stroke="#4C463D" stroke-width="2.4"/>
+      <circle cx="77" cy="86" r="3.4" fill="#31302B"/><circle cx="123" cy="86" r="3.4" fill="#31302B"/>
+      <path d="M 78 110 C 88 104 112 104 122 110 C 112 117 88 117 78 110 Z" fill="#BCB6A8"/>
+      <path d="M 90 124 L 110 124" stroke="#9C7256" stroke-width="2.6" stroke-linecap="round"/>
     </svg></div><div class="body">
-      <span class="role">Tutorial host · Day 1</span><h4>Pepaw — Bruce, 82</h4>
-      <p>Retired fitter and turner. Sharp, proud, deaf in one ear and pretending otherwise. Will insist he already tried turning it off and on again.</p>
+      <span class="role">The resident · every day</span><h4>Bruce Whitlam, 82</h4>
+      <p>Retired fitter and turner. Fifty-one years at number 14; the second bedroom has been empty since March. Sharp, proud, deaf on one side and pretending otherwise. He will insist he already tried turning it off and on again, and he will be wrong about the bins.</p>
     </div></article>
 
-    <article class="sticker"><div class="face"><svg viewBox="0 0 200 156" role="img" aria-label="Cartoon portrait of Nadia, wearing hoop earrings and a patterned scarf">
-      <rect width="200" height="156" fill="var(--sky-b)"/><circle cx="100" cy="150" r="62" fill="var(--jac)" class="out"/>
-      <circle cx="100" cy="84" r="42" fill="var(--skin-c)" class="out"/>
-      <path d="M58 82 Q54 36 100 36 Q146 36 142 82 Q132 56 100 58 Q68 60 58 82 Z" fill="var(--ink-2)" class="out"/>
-      <circle cx="60" cy="98" r="9" fill="none" class="out"/><circle cx="140" cy="98" r="9" fill="none" class="out"/>
-      <circle cx="86" cy="86" r="3.4" fill="var(--line)"/><circle cx="116" cy="86" r="3.4" fill="var(--line)"/>
-      <path d="M88 102 Q101 111 114 102" fill="none" class="out"/>
-    </svg></div><div class="body">
-      <span class="role">Roster</span><h4>Nadia, 79</h4>
-      <p>Came out from Tripoli in 1968. Cooks for six when two are eating. Warm, and very direct about what she thinks of the neighbours.</p>
+    <article class="sticker"><div class="body" style="padding:20px">
+      <span class="role">Never on screen</span><h4>Marion</h4>
+      <p>His wife. Died in 2024. She is a date circled in blue biro on the kitchen calendar from Day&nbsp;1, and a row of tomatoes he keeps going and won't let anyone else water. An applicant who notices her before Day&nbsp;6 has been paying attention; the game records whether they looked.</p>
     </div></article>
 
-    <article class="sticker"><div class="face"><svg viewBox="0 0 200 156" role="img" aria-label="Cartoon portrait of Marg, with curled white hair and large glasses">
-      <rect width="200" height="156" fill="var(--sky-b)"/><circle cx="100" cy="150" r="62" fill="var(--tin)" class="out"/>
-      <circle cx="100" cy="84" r="42" fill="var(--skin-a)" class="out"/>
-      <g class="out" fill="var(--hair)"><circle cx="70" cy="54" r="18"/><circle cx="100" cy="44" r="20"/><circle cx="130" cy="54" r="18"/><circle cx="58" cy="78" r="13"/><circle cx="142" cy="78" r="13"/></g>
-      <circle cx="84" cy="88" r="15" fill="var(--glass)" class="out"/><circle cx="120" cy="88" r="15" fill="var(--glass)" class="out"/>
-      <line x1="99" y1="88" x2="105" y2="88" class="out"/>
-      <circle cx="84" cy="88" r="3" fill="var(--line)"/><circle cx="120" cy="88" r="3" fill="var(--line)"/>
-      <path d="M88 110 Q100 116 112 110" fill="none" class="out"/>
-    </svg></div><div class="body">
-      <span class="role">Roster</span><h4>Marg, 88</h4>
-      <p>Lawn bowls on Thursdays, walker in the hall, four steps down to the clothesline she refuses to stop using. The mobility scenarios are hers by default.</p>
-    </div></article>
-
-    <article class="sticker"><div class="face"><svg viewBox="0 0 200 156" role="img" aria-label="Cartoon portrait of Des, with short grey hair and a hearing aid">
-      <rect width="200" height="156" fill="var(--sky-b)"/><circle cx="100" cy="150" r="62" fill="var(--sun)" class="out"/>
-      <circle cx="100" cy="84" r="42" fill="var(--skin-b)" class="out"/>
-      <path d="M60 74 Q64 40 100 40 Q136 40 140 74 Q120 62 100 62 Q80 62 60 74 Z" fill="var(--hair)" class="out"/>
-      <path d="M142 84 Q150 88 146 98" fill="none" class="out"/>
-      <circle cx="86" cy="88" r="3.4" fill="var(--line)"/><circle cx="116" cy="88" r="3.4" fill="var(--line)"/>
-      <path d="M88 104 L114 104" fill="none" class="out"/>
-    </svg></div><div class="body">
-      <span class="role">Roster</span><h4>Des, 74</h4>
-      <p>Widowed eighteen months. Quiet, tidy, plays down everything. Carries the low-mood and health-emergency variants most convincingly.</p>
+    <article class="sticker"><div class="body" style="padding:20px">
+      <span class="role">A voice on the landline</span><h4>Kath</h4>
+      <p>His daughter. Rings on Day&nbsp;7 and asks how he really is, with him sitting four feet away pretending to read. The applicant has to answer someone who has a right to know, in front of someone who would rather they didn't.</p>
     </div></article>
 
   </div>
@@ -610,7 +429,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
     <div class="zone">
       <div class="zicon" style="background:var(--deck)"><svg viewBox="0 0 24 24" fill="none" stroke="#2A2118" stroke-width="2.4" stroke-linecap="round"><path d="M3 10 12 3 21 10"/><path d="M5 10v10h14V10"/></svg></div>
       <div><h4>The Verandah</h4><div class="znote">HUB · ALL DAYS</div></div>
-      <p class="zdesc">Where each day opens and closes. Rocking chair, the cat, a view of the street. <em>Level 3 plays here</em> — neighbours walk past and Pepaw comments on them.</p>
+      <p class="zdesc">Where each day opens and closes. Rocking chair, the cat, a view of the street. <em>Level 3 plays here</em> — the family from number 18 walk past and Bruce comments on them.</p>
     </div>
 
     <div class="zone">
@@ -639,8 +458,8 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
 
     <div class="zone">
       <div class="zicon" style="background:var(--brick)"><svg viewBox="0 0 24 24" fill="none" stroke="#FFF6E2" stroke-width="2.4" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
-      <div><h4>Your Room</h4><div class="znote">DEBRIEF · BETWEEN DAYS</div></div>
-      <p class="zdesc">Where the day ends. The applicant reviews what happened, writes their coordinator check-in note, and sees their meters move. The only place feedback appears mid-run.</p>
+      <div><h4>The day card</h4><div class="znote">BETWEEN EVERY DAY</div></div>
+      <p class="zdesc">Not a room — the beat between them. Day number, title, time, and whether the day is assessed. It is the only pause in the run, and the only place the applicant sees the fortnight advancing. <em>Meters move in the top bar, and no other feedback appears until the end.</em></p>
     </div>
 
   </div>
@@ -715,14 +534,14 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
             <span class="tag tag--sun">DAY 6 / 14</span><span class="tag">4:15 pm</span><span class="tag" style="background:var(--bottle);color:#FFF6E2">LIVE</span>
           </div>
           <div class="avatarrow">
-            <span class="av" style="background:var(--jac)"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="var(--sky-b)"/><circle cx="50" cy="56" r="30" fill="var(--skin-b)"/><path d="M20 52 Q22 22 50 22 Q78 22 80 52 Q66 40 50 40 Q34 40 20 52 Z" fill="var(--hair)"/><circle cx="40" cy="58" r="3" fill="var(--line)"/><circle cx="60" cy="58" r="3" fill="var(--line)"/><path d="M40 72 L60 72" stroke="var(--line)" stroke-width="3" fill="none" stroke-linecap="round"/></svg></span>
+            <span class="av" style="background:var(--jac)"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="var(--sky-b)"/><circle cx="50" cy="56" r="30" fill="var(--skin-b)"/><path d="M20 52 Q22 22 50 22 Q78 22 80 52 Q66 40 50 40 Q34 40 20 52 Z" fill="var(--hair)"/><circle cx="40" cy="58" r="3" fill="var(--line)"/><circle cx="60" cy="58" r="3" fill="var(--line)"/><path d="M40 72 L60 72" stroke="var(--line)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></span>
             <div class="meters">
               <div class="meter"><span>Rapport</span><div class="bar"><i style="width:64%;background:var(--lawn)"></i></div></div>
               <div class="meter"><span>Auton.</span><div class="bar"><i style="width:81%;background:var(--jac)"></i></div></div>
               <div class="meter"><span>Safety</span><div class="bar"><i style="width:44%;background:var(--bottle)"></i></div></div>
             </div>
           </div>
-          <div class="miniscene"><svg viewBox="0 0 200 110" role="img" aria-label="Des sitting at the kitchen table with the curtains closed and breakfast untouched">
+          <div class="miniscene"><svg viewBox="0 0 200 110" role="img" aria-label="Bruce sitting at the kitchen table with the curtains closed and breakfast untouched">
             <g class="out" stroke-width="3.4">
               <rect x="8" y="16" width="56" height="58" rx="3" fill="var(--jac)"/>
               <line x1="4" y1="16" x2="68" y2="16"/><line x1="36" y1="20" x2="36" y2="70" stroke-width="2.4"/>
@@ -746,9 +565,9 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
           <div class="scenefloor">
             <div class="alert">
               <b>Something's not right</b>
-              <p>Des hasn't opened the curtains. Breakfast is still on the table and it's a quarter past four.</p>
+              <p>Bruce hasn't opened the curtains. Breakfast is still on the table and it's a quarter past four.</p>
             </div>
-            <div class="bubble" style="bottom:118px"><div class="who">Des</div><p>"I'm fine. Didn't feel like the bowls today, that's all."</p></div>
+            <div class="bubble" style="bottom:118px"><div class="who">Bruce</div><p>"I'm fine. Didn't feel like the bowls today, that's all."</p></div>
           </div>
         </div>
       </div>
@@ -760,7 +579,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
         <div class="notch"></div>
         <div class="hud">
           <div class="hudtop"><span class="tag tag--sun">DAY 6 / 14</span><span class="tag">4:16 pm</span><span class="tag">PAUSED</span></div>
-          <div class="avatarrow"><span class="av" style="background:var(--jac)"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="var(--sky-b)"/><circle cx="50" cy="56" r="30" fill="var(--skin-b)"/><path d="M20 52 Q22 22 50 22 Q78 22 80 52 Q66 40 50 40 Q34 40 20 52 Z" fill="var(--hair)"/><circle cx="40" cy="58" r="3" fill="var(--line)"/><circle cx="60" cy="58" r="3" fill="var(--line)"/><path d="M40 72 L60 72" stroke="var(--line)" stroke-width="3" fill="none" stroke-linecap="round"/></svg></span>
+          <div class="avatarrow"><span class="av" style="background:var(--jac)"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="var(--sky-b)"/><circle cx="50" cy="56" r="30" fill="var(--skin-b)"/><path d="M20 52 Q22 22 50 22 Q78 22 80 52 Q66 40 50 40 Q34 40 20 52 Z" fill="var(--hair)"/><circle cx="40" cy="58" r="3" fill="var(--line)"/><circle cx="60" cy="58" r="3" fill="var(--line)"/><path d="M40 72 L60 72" stroke="var(--line)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></span>
             <div class="meters">
               <div class="meter"><span>Rapport</span><div class="bar"><i style="width:64%;background:var(--lawn)"></i></div></div>
               <div class="meter"><span>Auton.</span><div class="bar"><i style="width:81%;background:var(--jac)"></i></div></div>
@@ -798,14 +617,14 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
         <line x1="46" y1="230" x2="890" y2="230"/><line x1="46" y1="180" x2="890" y2="180" stroke-dasharray="5 7"/>
         <line x1="46" y1="130" x2="890" y2="130" stroke-dasharray="5 7"/><line x1="46" y1="80" x2="890" y2="80" stroke-dasharray="5 7"/>
       </g>
-      <g class="out" stroke="var(--line)" stroke-width="4">
+      <g class="out" stroke="var(--line)" stroke-width="1.6">
         <path d="M70 46 L70 230 L190 230 L190 46" fill="var(--sun)"/>
         <path d="M232 46 L232 230 L352 230 L352 46" fill="var(--tin)"/>
         <rect x="394" y="80" width="120" height="150" rx="4" fill="var(--jac)"/>
         <rect x="556" y="163" width="120" height="67" rx="4" fill="var(--brick)"/>
         <rect x="718" y="180" width="120" height="50" rx="4" fill="var(--bottle)"/>
       </g>
-      <g stroke="var(--line)" stroke-width="4" stroke-dasharray="10 9" fill="none">
+      <g stroke="var(--line)" stroke-width="1.6" stroke-dasharray="10 9" fill="none">
         <line x1="70" y1="46" x2="190" y2="46"/><line x1="232" y1="46" x2="352" y2="46"/>
       </g>
       <g font-family="IBM Plex Mono, monospace" font-size="14" font-weight="600" fill="var(--ink)" text-anchor="middle">
@@ -813,7 +632,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
         <text x="454" y="70">45s</text><text x="616" y="153">20s</text><text x="778" y="170">15s</text>
       </g>
       <g text-anchor="middle" fill="var(--ink)">
-        <g font-family="Baloo 2, sans-serif" font-weight="800" font-size="17">
+        <g font-family="Fraunces,Georgia,serif" font-weight="800" font-size="17">
           <text x="130" y="262">Technology</text><text x="292" y="262">Low mood</text><text x="454" y="262">A remark</text><text x="616" y="262">Mobility</text><text x="778" y="262">Emergency</text>
         </g>
         <g font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--ink-2)" letter-spacing="1">
@@ -829,7 +648,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
 <div class="wrap stack">
   <div class="eyebrow">The five challenges</div>
   <h2 class="h2">What we ask, and what we're actually reading</h2>
-  <p class="prose">Each challenge has three randomised variants dealt at run time. Below is the shape of each — the trigger, the script, how the applicant answers, and the signals that separate a pass from a coaching note. <strong>Free-text answers are graded against the rubric shown, then sampled by a human assessor</strong>; nothing here auto-rejects anyone on its own.</p>
+  <p class="prose">Each challenge ships as one written scenario, in a fixed order, on a fixed day. What varies is not the deal — it is the applicant's own fortnight: whether they cleared the hallway on Day&nbsp;10 decides whether Bruce has his walker on Day&nbsp;11, and whether they looked at the calendar decides what they know on Day&nbsp;6. Below is the shape of each. <strong>Every free-text answer is matched against the rubric shown and then read in full by an assessor</strong>; nothing here rejects anyone on its own.</p>
 
   <div class="levels" style="margin-top:14px">
 
@@ -850,10 +669,9 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
         <div class="blk"><h5>Trigger</h5><p>Mid-chore, the telly is on the wrong input and the cricket isn't there. Bruce has been pressing buttons for ten minutes. The remote he's holding is the soundbar remote.</p></div>
         <div class="script"><b>Bruce</b>"I haven't touched a thing. It's done this on its own. That's what happens when they update it behind your back." <i>He hands you the wrong remote, firmly.</i></div>
         <div class="blk"><h5>The question</h5><p>A blank box: <em>"What do you do and say next?"</em> No options. 600 characters, as long as they like.</p></div>
-        <div class="blk"><h5>Variants</h5><div class="vars">
-          <div class="var"><b>1A</b><span>Wrong HDMI input. Straightforward fix, tests whether they explain or just do it.</span></div>
-          <div class="var"><b>1B</b><span>The tablet won't join the wi-fi. The password is on a card in a drawer he can't find.</span></div>
-          <div class="var"><b>1C</b><span>Hardest. He insists nothing is wrong and blames the internet company. Fixing it means first not winning the argument.</span></div>
+        <div class="blk"><h5>What decides it</h5><div class="vars">
+          <div class="var"><b>Fixed</b><span>Wrong input on the telly; he is holding the soundbar remote and insists he touched nothing.</span></div>
+          <div class="var"><b>Carries</b><span>Whether they asked how he takes his tea on Day 2 — the first sign of whether they ask or assume.</span></div>
         </div></div>
       </div>
       <div class="lvlside">
@@ -889,12 +707,11 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
     <div class="lvlbody">
       <div class="lvlmain">
         <div class="blk"><h5>Trigger</h5><p>Curtains still shut at 4pm. Breakfast untouched. Bowls cancelled. Answers have gone from paragraphs to three words. The kitchen calendar — hanging in the scene since Day 1 — has a date circled in biro.</p></div>
-        <div class="script"><b>Des</b>"I'm fine. Didn't feel like the bowls today, that's all." <i>He doesn't look up from the table.</i></div>
+        <div class="script"><b>Bruce</b>"I'm fine. Didn't feel like the bowls today, that's all." <i>He doesn't look up from the table.</i></div>
         <div class="blk"><h5>The question</h5><p>Three dialogue options first, then the box: <em>"What do you say next?"</em> The applicant can tap the calendar before answering — we log whether they did.</p></div>
-        <div class="blk"><h5>Variants</h5><div class="vars">
-          <div class="var"><b>2A</b><span>Flat day, no clear cause. Tests presence without interrogation.</span></div>
-          <div class="var"><b>2B</b><span>The circled date is his wife's anniversary. Rewards observation.</span></div>
-          <div class="var"><b>2C</b><span>Hardest. He discloses, then says "don't tell my daughter." Tests where confidentiality stops.</span></div>
+        <div class="blk"><h5>What decides it</h5><div class="vars">
+          <div class="var"><b>Fixed</b><span>Curtains shut at four, breakfast untouched, bowls cancelled. "I'm fine."</span></div>
+          <div class="var"><b>Optional</b><span>Two things can be examined before answering — the calendar and the table. Both are logged: an answer that names Marion after looking is different evidence from one that doesn't.</span></div>
         </div></div>
       </div>
       <div class="lvlside">
@@ -922,6 +739,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
         <h3>Something He Said</h3>
         <div class="lvlmeta">
           <span class="mini">DAY 8 · VERANDAH · 5:30 PM</span>
+          <span class="mini" style="background:var(--bottle);color:#F8F3E9">Mandatory</span>
           <span class="mini mini--timed">45s to first response</span>
           <span class="mini mini--text">→ free text</span>
           <span class="mini">Competency: boundaries without rupture</span>
@@ -934,10 +752,9 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
         <div class="script"><b>Resident</b>"Lovely people. Very clean. Not like the <span class="cens">****</span> that were in there before — you couldn't get a word of English out of them." <i>Said warmly, to you, as though you'll agree.</i></div>
         <div class="blk"><h5>Why it's written warmly</h5><p>The hard version of this isn't hostility — it's affection. An applicant who can push back on a shouted slur often can't push back on a kind old man saying something ugly over the peas, because the whole social pressure of the moment is to let it go. That gap is the thing we're measuring.</p></div>
         <div class="blk"><h5>The question</h5><p>Four dialogue options under a 45-second bar, then the box: <em>"You've got the rest of the fortnight with this person. What do you actually say?"</em></p></div>
-        <div class="blk"><h5>Variants</h5><div class="vars">
-          <div class="var"><b>3A</b><span>A generalisation about a group. Lowest heat, easiest to let slide.</span></div>
-          <div class="var"><b>3B</b><span>A censored slur about a passer-by. Clear-cut, tests whether they say anything at all.</span></div>
-          <div class="var"><b>3C</b><span>Hardest. Aimed at the applicant's own background, then walked back — "you're one of the good ones."</span></div>
+        <div class="blk"><h5>What decides it</h5><div class="vars">
+          <div class="var"><b>Fixed</b><span>A censored slur about the previous tenants at number 18, said warmly, expecting agreement.</span></div>
+          <div class="var"><b>Timed</b><span>Forty-five seconds to say something at all. Saying nothing is recorded as a choice, not as a blank.</span></div>
         </div></div>
       </div>
       <div class="lvlside">
@@ -957,7 +774,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
           </ul></div>
         <div class="guard">
           <h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;margin:0 0 8px">Design guards on this level</h5>
-          <p>Content-warned and opt-in on the run's title screen, with an equivalent alternative scenario for anyone who declines. Slurs are always censored — the assessment is about the applicant's response, never the words. The remark is dealt across the whole resident roster so it never characterises one person. And <strong>"I would not continue this placement"</strong> is a scored-valid answer with follow-up questions, not a failure.</p>
+          <p><strong>Mandatory.</strong> It is content-warned on the title screen and the applicant ticks to acknowledge it, but there is no alternative scenario and no skip: a certificate that might mean "was never asked" is not worth issuing. Slurs are always censored on screen — what is assessed is the response, never the words. The remark is written warmly rather than aggressively, because the hard version of this is affection, not hostility. And <strong>"I would not continue this placement"</strong> routes to a human assessor as a valid answer, never to a fail.</p>
         </div>
       </div>
     </div>
@@ -978,13 +795,12 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
     </div>
     <div class="lvlbody">
       <div class="lvlmain">
-        <div class="blk"><h5>Trigger</h5><p>Marg is going down to the Hills Hoist with a full basket. The back step has been flagged loose since Day 2. Her walker is in the hallway behind two boxes the applicant left there on Day 9 — if they tidied them, that obstacle isn't in the scene.</p></div>
-        <div class="script"><b>Marg</b>"I've been doing this step for fifty-one years. Sit down and drink your tea." <i>She's already got one hand on the rail that wobbles.</i></div>
+        <div class="blk"><h5>Trigger</h5><p>Bruce is at the back door with a full basket on his hip, heading for the line. The step has been loose since Day 5. His walker is in the hallway behind the applicant's own boxes — unless they cleared them on Day 10, in which case the scene doesn't mention it.</p></div>
+        <div class="script"><b>Bruce</b>"I've been doing this step for fifty-one years. Sit down and drink your tea." <i>He already has a hand on the rail that moves.</i></div>
         <div class="blk"><h5>The question</h5><p>A live scene with taps: the basket, her arm, the rail, the step, the walker, the phone. Twenty seconds. Then the box: <em>"Why did you do it that way?"</em></p></div>
-        <div class="blk"><h5>Variants</h5><div class="vars">
-          <div class="var"><b>4A</b><span>She makes it down. The test is what you fix afterwards — step, rail, hallway, or nothing.</span></div>
-          <div class="var"><b>4B</b><span>A stumble, not a fall. Tests offering an arm versus grabbing one.</span></div>
-          <div class="var"><b>4C</b><span>Hardest. She flatly refuses help. Choose between overriding her and mitigating around her.</span></div>
+        <div class="blk"><h5>What decides it</h5><div class="vars">
+          <div class="var"><b>Fixed</b><span>Full basket, loose second step, a rail that moves. Two timed decisions: before the step, and mid-stumble.</span></div>
+          <div class="var"><b>Carries</b><span>Day 5 — did they report the step. Day 10 — did they clear their boxes. If not, the scene says so out loud: his walker is still behind them.</span></div>
         </div></div>
       </div>
       <div class="lvlside">
@@ -1024,10 +840,9 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
         <div class="blk"><h5>Trigger</h5><p>You come in from your room. He's on the floor beside the fridge, awake but not making sense, skin cool, one arm not doing what he's telling it to. No warning card, no music sting — the game simply stops being a game.</p></div>
         <div class="script"><b>Bruce</b>"Don't you dare ring an ambulance. Do you know what they charge? Just give us a minute and a hand up." <i>His speech is slurred on one side.</i></div>
         <div class="blk"><h5>The question</h5><p>A sequence of fifteen-second actions, no undo, no free text under pressure. The scene ends when the ambulance is on the line — then the box: <em>"They've asked what's happened. Type exactly what you'd tell them."</em></p></div>
-        <div class="blk"><h5>Variants</h5><div class="vars">
-          <div class="var"><b>5A</b><span>Fall with confusion. FAST signs present.</span></div>
-          <div class="var"><b>5B</b><span>Chest pain, sweating, refuses to sit down.</span></div>
-          <div class="var"><b>5C</b><span>Hardest. Explicit refusal on cost grounds, repeated. You call anyway.</span></div>
+        <div class="blk"><h5>What decides it</h5><div class="vars">
+          <div class="var"><b>Fixed</b><span>On the kitchen floor, awake, slurred on one side, right hand not answering, skin cool — and an explicit refusal on cost grounds.</span></div>
+          <div class="var"><b>Carries</b><span>Day 13 — he said he went "a bit swimmy". An applicant who wrote that down has it to give the call-taker.</span></div>
         </div></div>
       </div>
       <div class="lvlside">
@@ -1059,17 +874,17 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
 <div class="wrap stack">
   <div class="eyebrow">Between the challenges</div>
   <h2 class="h2">The filler isn't filler — it's the control group</h2>
-  <p class="prose">Roughly eleven of the fourteen days are ordinary. Chores, tea, small talk, a magpie. These beats do three jobs: they build the relationship the hard levels then put at risk, they establish a baseline of how this applicant behaves when nothing is at stake, and they plant every prop the scenarios later use. Skipping them is itself a signal.</p>
+  <p class="prose">Nine of the fourteen days are ordinary, and short — one exchange, one decision, thirty seconds. They do three jobs: they build the relationship the hard days then put at risk, they establish a baseline of how this applicant behaves when nothing is at stake, and they plant the props the levels later use. Two of them set flags the assessed days read back.</p>
   <div class="beats" style="margin-top:10px">
-    <span class="beat"><i style="background:var(--sun)">☕</i>The tea round — he takes it a particular way and never says so twice</span>
-    <span class="beat"><i style="background:var(--lawn)">🧺</i>Hanging the washing before the southerly comes through</span>
-    <span class="beat"><i style="background:var(--jac)">🗑</i>Bins out on the right night, which changed in March</span>
-    <span class="beat"><i style="background:var(--brick)">🍅</i>Watering the tomatoes, which are his late wife's</span>
-    <span class="beat"><i style="background:var(--sun)">📞</i>His daughter rings and asks how he <em>really</em> is</span>
-    <span class="beat"><i style="background:var(--lawn)">🐦</i>Swooping season on the front path</span>
-    <span class="beat"><i style="background:var(--glass)">👓</i>The reading glasses, again</span>
-    <span class="beat"><i style="background:var(--jac)">📻</i>The cricket on the radio at a volume you'd rather it wasn't</span>
-    <span class="beat"><i style="background:var(--brick)">📦</i>Your boxes, still in the hallway</span>
+    <span class="beat"><i style="background:var(--deck)">1</i>Moving in — he shows you round, or he doesn't</span>
+    <span class="beat"><i style="background:var(--sun)">2</i>The tea round: he never says twice how he takes it</span>
+    <span class="beat"><i style="background:var(--jac)">4</i>Bin night — the collection moved to Mondays in March</span>
+    <span class="beat"><i style="background:var(--bottle)">5</i>The second step moves under your foot <em>· sets the hazard</em></span>
+    <span class="beat"><i style="background:var(--sun)">7</i>Kath rings and asks how he really is</span>
+    <span class="beat"><i style="background:var(--tin)">9</i>The cricket, through your wall, during a tutorial</span>
+    <span class="beat"><i style="background:var(--bottle)">10</i>Your boxes, still in the hallway <em>· sets the hazard</em></span>
+    <span class="beat"><i style="background:var(--brick)">12</i>Marion's tomatoes, and whether you ask</span>
+    <span class="beat"><i style="background:var(--bottle)">13</i>"Went a bit swimmy when I stood up" <em>· foreshadows Day 14</em></span>
   </div>
 </div>
 </section>
@@ -1080,7 +895,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
   <h2 class="h2">Three meters, one report, no silent rejections</h2>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:34px" class="twocol">
     <p class="prose">Every action and every typed answer moves three meters. <strong>Rapport</strong> is whether the resident wants you there. <strong>Autonomy</strong> is whether you left them in charge of their own house — the meter that punishes helpfulness. <strong>Safety</strong> is whether anyone got hurt, including you. They're deliberately in tension: the fastest way to raise Rapport in Level 3 is to laugh along, and that costs you elsewhere.</p>
-    <p class="prose">Multiple-choice and timed actions score deterministically. Free-text answers are scored against the published rubric by a model, and <strong>every borderline result plus a 10% random sample goes to a human assessor</strong> before any outcome is issued. Applicants see their transcript and the rubric they were marked against. That's the difference between a screening instrument and a quiz.</p>
+    <p class="prose">Choices and timed actions score deterministically. Written answers are matched against the published rubric by a keyword pass with a negation guard — so "I would <em>not</em> lift him" counts as the good answer it is, rather than the flag a naive match would raise. That pass produces a <strong>provisional</strong> band only. The full text of every answer, the signals it hit and missed, and the seconds it took all go to the workbook, and a person writes the outcome. Applicants are told this on the results screen in those words.</p>
   </div>
   <div class="tblwrap" style="margin-top:14px">
     <table>
@@ -1114,21 +929,43 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
 
 <section class="band">
 <div class="wrap stack">
-  <div class="eyebrow">On sign-off</div>
-  <h2 class="h2">What gets built first</h2>
-  <p class="prose">Approve the direction above and this becomes the build brief. The first playable is one vertical slice, not the whole fortnight — Day 3 through Level 1, end to end, in the real art. That proves the loop, the free-text capture and the grading pipeline against something you can hold.</p>
-  <div class="next" style="margin-top:12px">
-    <div class="sticker nextcard"><span>FIRST</span><h4>Playable slice</h4><p>Verandah and lounge, the chore loop, Level 1 with all three variants, and the free-text sheet writing to a real transcript.</p></div>
-    <div class="sticker nextcard"><span>THEN</span><h4>The other four</h4><p>Levels 2 through 5 with their scenes, plus the eleven filler beats and the prop planting they depend on.</p></div>
-    <div class="sticker nextcard"><span>THEN</span><h4>Rubric &amp; assessor view</h4><p>Grading against the published rubric, the review queue, and the report an applicant and a coordinator both receive.</p></div>
-    <div class="sticker nextcard"><span>BEFORE LAUNCH</span><h4>Validation</h4><p>Run it past placement coordinators and a panel of current homeshare residents. If the scenarios don't ring true to them, they don't ship.</p></div>
+  <div class="eyebrow">Where the answers go</div>
+  <h2 class="h2">Every run lands in one spreadsheet</h2>
+  <p class="prose">The game finishes by writing a single JSON document per participant into the artifact's record store, keyed on a participant id. Nothing is emailed and nothing is scraped out of a screenshot: the assessor opens a workbook.</p>
+
+  <div class="zones" style="margin-top:12px">
+    <div class="zone">
+      <div class="zicon" style="background:var(--tin)"><svg viewBox="0 0 24 24" fill="none" stroke="#F8F3E9" stroke-width="2" stroke-linecap="round"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg></div>
+      <div><h4>1 · The run</h4><div class="znote">IN THE BROWSER</div></div>
+      <p class="zdesc">Consent, name and email, then fourteen days. Progress is kept in the browser as you go, so a refresh at Day 11 does not cost eleven days. <em>Every choice, every timer expiry and every typed answer is recorded with its timestamp.</em></p>
+    </div>
+    <div class="zone">
+      <div class="zicon" style="background:var(--jac)"><svg viewBox="0 0 24 24" fill="none" stroke="#F8F3E9" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div>
+      <div><h4>2 · The record</h4><div class="znote">SUBMISSIONS / &lt;ID&gt;</div></div>
+      <p class="zdesc">One document per participant: meters, provisional band, the reasons behind it, all five written answers with their rubric signals, and all eighteen choices. <em>If the store is unreachable the results screen says so plainly</em> and hands the applicant their own file instead.</p>
+    </div>
+    <div class="zone">
+      <div class="zicon" style="background:var(--lawn)"><svg viewBox="0 0 24 24" fill="none" stroke="#F8F3E9" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></div>
+      <div><h4>3 · The workbook</h4><div class="znote">.XLSX · FOUR SHEETS</div></div>
+      <p class="zdesc"><em>Submissions</em> — one row per applicant, with empty columns the assessor fills in by hand. <em>Free text</em> — one row per written answer, full text alongside the signals it hit. <em>Choices</em> — every decision and the meter movement it caused. <em>Rubric</em> — the signal set, generated from the game so it cannot drift.</p>
+    </div>
+    <div class="zone">
+      <div class="zicon" style="background:var(--brick)"><svg viewBox="0 0 24 24" fill="none" stroke="#F8F3E9" stroke-width="2" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div><h4>4 · The decision</h4><div class="znote">A PERSON, IN THE SHEET</div></div>
+      <p class="zdesc">The assessor writes their name, the real outcome and their notes into the four columns kept for them. <em>Re-syncing never overwrites those columns</em> — new runs are added around them.</p>
+    </div>
   </div>
-  <div class="sticker pad" style="margin-top:22px;border-style:dashed">
-    <div class="eyebrow">Open questions for you</div>
+
+  <div class="sticker pad" style="margin-top:20px">
+    <div class="eyebrow">Two ways out of the game</div>
+    <p class="prose" style="font-size:15.5px">The applicant can download their own run as a workbook from the results screen — the same four sheets, one participant. An assessor opens the game at <span class="mono">#assessor</span> to list every submission and export them all at once. Both build the file in the browser with no third-party library, so the export works whether or not a CDN is reachable.</p>
+  </div>
+
+  <div class="sticker pad" style="margin-top:16px;border-style:dashed">
+    <div class="eyebrow">Two things to decide before you hand this to applicants</div>
     <div class="prose" style="font-size:15.5px;display:flex;flex-direction:column;gap:9px">
-      <p><strong>1. Roster or fixed resident?</strong> The four-resident rotation is my recommendation — it resists memorisation and keeps the Level 3 remark from characterising one person. It also costs four character rigs instead of one.</p>
-      <p><strong>2. Fourteen days or seven?</strong> Fourteen gives the filler beats room to earn the relationship. Seven gets the run under ten minutes. I've speced fourteen; say the word and I'll compress.</p>
-      <p><strong>3. Does Level 3 stay opt-in?</strong> I've designed it opt-in with an alternative scenario. If it's mandatory the assessment is stronger and the accessibility story is weaker — that's a policy call, not a design one.</p>
+      <p><strong>1. Who can open it.</strong> An artifact with a record store is organization-internal: every participant has to be signed in to your workspace. That is fine for a pilot with a known cohort. For public applicants it needs a hosted deployment with its own sign-in, and the game is written so only the storage call has to change.</p>
+      <p><strong>2. Who reads the writing.</strong> The rubric produces a provisional band and nothing more. The instrument only means something if a named person reads all five answers — budget roughly ten minutes per applicant, and decide now who that is.</p>
     </div>
   </div>
 </div>
@@ -1136,7 +973,7 @@ footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--pap
 
 <footer>
 <div class="wrap foot">
-  <div><strong style="font-family:'Baloo 2',sans-serif;font-size:19px;color:var(--ink)">Pepaws Porch</strong><br>Visual design v1 · for sign-off</div>
+  <div><strong style="font-family:Fraunces,Georgia,serif;font-size:19px;color:var(--ink)">Pepaws Porch</strong><br>Visual design v1 · for sign-off</div>
   <div class="mono" style="font-size:12.5px;letter-spacing:.06em">SUBURBAN COTTAGE · 14 DAYS · 5 GRADED CHALLENGES</div>
 </div>
 </footer>
