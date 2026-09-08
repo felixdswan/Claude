@@ -1,0 +1,1142 @@
+<title>Pepaws Porch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F6F2E7; --paper-2:#EDE5D1; --card:#FFFDF6; --sunk:#E7DDC4;
+  --ink:#2A2118; --ink-2:#6B5C4A; --line:#2A2118; --rule:#D8CDB2;
+  --tin:#1F5A4C; --jac:#7B5EA7; --bottle:#D9432C; --sun:#FFC24A;
+  --lawn:#7FB749; --brick:#C4674F; --sky-a:#A8DCEC; --sky-b:#E6F3F2;
+  --deck:#E3C58E; --roof:#1F5A4C; --wall:#FFF6E2; --glass:#BFE3EE;
+  --shadow:#2A2118; --pill:#FFFDF6;
+  --ok:#3E8E5A; --warn:#E08A1E; --stop:#C4321F;
+  --grass:#7FB749; --orb:#FFC24A; --orb-ray:#FFC24A;
+}
+:root:not([data-theme="light"]) { }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#161C22; --paper-2:#10151B; --card:#212A32; --sunk:#1A222A;
+    --ink:#F3EEE1; --ink-2:#A9A091; --line:#0C1116; --rule:#33404B;
+    --tin:#3FA189; --jac:#B198DD; --bottle:#FF6E55; --sun:#FFB13D;
+    --lawn:#94C95C; --brick:#D4826A; --sky-a:#2C3A5A; --sky-b:#4A3F63;
+    --deck:#6E5B3E; --roof:#17453A; --wall:#3A3226; --glass:#F2C25B;
+    --shadow:#0C1116; --pill:#2A343D;
+    --ok:#5FBF80; --warn:#F0AB4A; --stop:#F0705C;
+    --grass:#3E5F2A; --orb:#EDE7D2; --orb-ray:#8E93B8;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#161C22; --paper-2:#10151B; --card:#212A32; --sunk:#1A222A;
+  --ink:#F3EEE1; --ink-2:#A9A091; --line:#0C1116; --rule:#33404B;
+  --tin:#3FA189; --jac:#B198DD; --bottle:#FF6E55; --sun:#FFB13D;
+  --lawn:#94C95C; --brick:#D4826A; --sky-a:#2C3A5A; --sky-b:#4A3F63;
+  --deck:#6E5B3E; --roof:#17453A; --wall:#3A3226; --glass:#F2C25B;
+  --shadow:#0C1116; --pill:#2A343D;
+  --ok:#5FBF80; --warn:#F0AB4A; --stop:#F0705C;
+  --grass:#3E5F2A; --orb:#EDE7D2; --orb-ray:#8E93B8;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font:400 16.5px/1.65 Nunito,"Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Baloo 2",Nunito,system-ui,sans-serif;font-weight:800;line-height:1.08;text-wrap:balance;margin:0}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--bottle);outline-offset:3px;border-radius:4px}
+
+.wrap{max-width:1140px;margin:0 auto;padding:0 26px}
+.band{padding:60px 0;border-top:3px solid var(--line)}
+.band--sunk{background:var(--paper-2)}
+.stack{display:flex;flex-direction:column;gap:18px}
+.prose{max-width:64ch;font-size:17px;color:var(--ink-2)}
+.prose strong{color:var(--ink);font-weight:700}
+
+.eyebrow{
+  font:600 11.5px/1 "IBM Plex Mono",ui-monospace,monospace;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);
+  display:flex;align-items:center;gap:9px;margin-bottom:14px;
+}
+.eyebrow::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--bottle);border:2px solid var(--line);flex:none}
+.h2{font-size:clamp(28px,4.2vw,44px);letter-spacing:-.01em}
+.h3{font-size:21px;letter-spacing:-.005em}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;background:var(--paper)}
+.scene{display:block;width:100%;height:auto}
+.herotext{padding:44px 0 34px}
+.logo{display:inline-flex;flex-direction:column;gap:2px}
+.logo b{
+  font-family:"Baloo 2",sans-serif;font-weight:800;
+  font-size:clamp(46px,9vw,96px);line-height:.92;letter-spacing:-.02em;
+  color:var(--sun);
+  -webkit-text-stroke:5px var(--line);paint-order:stroke fill;
+  text-shadow:0 7px 0 var(--line);
+}
+.logo span{
+  font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--ink-2);padding-left:5px;margin-top:16px;
+}
+.tagline{font-size:clamp(19px,2.4vw,25px);font-weight:700;font-family:"Baloo 2",sans-serif;max-width:26ch;line-height:1.25;margin-top:20px}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
+.chip{
+  font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.05em;
+  background:var(--pill);border:2.5px solid var(--line);border-radius:999px;
+  padding:9px 14px;box-shadow:0 3px 0 var(--shadow);
+}
+.chip--sun{background:var(--sun);color:#2A2118}
+.herogrid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:end}
+@media(max-width:860px){.herogrid{grid-template-columns:1fr;gap:26px;align-items:start}}
+
+/* ---------- STICKER CARD ---------- */
+.sticker{
+  background:var(--card);border:3px solid var(--line);border-radius:20px;
+  box-shadow:6px 6px 0 var(--shadow);
+}
+.pad{padding:24px}
+
+/* ---------- PALETTE ---------- */
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:14px}
+.sw{border:3px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:5px 5px 0 var(--shadow);background:var(--card)}
+.sw i{display:block;height:76px;border-bottom:3px solid var(--line)}
+.sw div{padding:10px 12px 12px}
+.sw b{display:block;font-family:"Baloo 2",sans-serif;font-size:15.5px;font-weight:700}
+.sw code{font:500 11.5px/1.5 "IBM Plex Mono",monospace;color:var(--ink-2);letter-spacing:.04em}
+.sw p{font-size:12.5px;color:var(--ink-2);line-height:1.4;margin-top:5px}
+
+/* ---------- TYPE SPECIMEN ---------- */
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:18px}
+.spec>div{border-left:4px solid var(--jac);padding-left:16px}
+.spec .samp{font-size:38px;line-height:1.05;margin-bottom:8px}
+.s1{font-family:"Baloo 2",sans-serif;font-weight:800;color:var(--tin)}
+.s2{font-family:Nunito,sans-serif;font-weight:700}
+.s3{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:28px!important}
+.spec dt{font:600 11px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin-bottom:5px}
+.spec dd{margin:0 0 9px;font-size:14.5px;line-height:1.5}
+
+/* ---------- CAST ---------- */
+.cast{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:18px}
+.cast article{display:flex;flex-direction:column}
+.cast .face{border-bottom:3px solid var(--line);background:var(--sky-b);border-radius:17px 17px 0 0}
+.cast .face svg{display:block;width:100%;height:auto}
+.cast .body{padding:16px 17px 18px;display:flex;flex-direction:column;gap:7px;flex:1}
+.cast h4{font-size:19px}
+.cast .role{font:600 11px/1 "IBM Plex Mono",monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--bottle)}
+.cast p{font-size:14px;line-height:1.5;color:var(--ink-2)}
+</style>
+<style>
+/* ---------- SET / ZONES ---------- */
+.zones{display:flex;flex-direction:column;border-top:2px dashed var(--rule)}
+.zone{
+  display:grid;grid-template-columns:52px 190px 1fr;gap:20px;align-items:start;
+  padding:20px 4px;border-bottom:2px dashed var(--rule);
+}
+@media(max-width:720px){.zone{grid-template-columns:44px 1fr;gap:14px}.zone .zdesc{grid-column:1/-1;padding-left:58px}}
+.zicon{width:52px;height:52px;border:3px solid var(--line);border-radius:14px;display:grid;place-items:center;box-shadow:3px 3px 0 var(--shadow)}
+.zicon svg{width:28px;height:28px}
+.zone h4{font-size:19px;margin-bottom:4px}
+.zone .znote{font:500 11.5px/1.4 "IBM Plex Mono",monospace;color:var(--ink-2);letter-spacing:.03em}
+.zdesc{font-size:14.8px;line-height:1.55;color:var(--ink-2)}
+.zdesc em{color:var(--ink);font-style:normal;font-weight:700}
+
+/* ---------- PHONE MOCKUPS ---------- */
+.phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:26px;align-items:start}
+.phonewrap{display:flex;flex-direction:column;gap:12px}
+.phone{
+  border:4px solid var(--line);border-radius:30px;background:var(--sky-b);
+  box-shadow:8px 8px 0 var(--shadow);overflow:hidden;position:relative;
+  aspect-ratio:9/17;display:flex;flex-direction:column;
+}
+.phone .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:78px;height:15px;background:var(--line);border-radius:0 0 11px 11px;z-index:6}
+.phcap{font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.phcap b{display:block;font-family:"Baloo 2",sans-serif;font-size:16px;color:var(--ink);font-weight:700;margin-bottom:2px}
+
+/* game HUD bits */
+.hud{position:relative;flex:1;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--sky-a),var(--sky-b) 62%,var(--lawn) 62%)}
+.hudtop{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:22px 10px 8px;z-index:5}
+.tag{
+  font:600 9.5px/1 "IBM Plex Mono",monospace;letter-spacing:.05em;background:var(--pill);
+  border:2.5px solid var(--line);border-radius:999px;padding:6px 9px;box-shadow:0 2.5px 0 var(--shadow);white-space:nowrap;
+}
+.tag--sun{background:var(--sun);color:#2A2118}
+.avatarrow{display:flex;align-items:center;gap:7px;padding:0 10px 8px;z-index:5}
+.av{width:44px;height:44px;border-radius:50%;border:3px solid var(--line);background:var(--sun);flex:none;overflow:hidden;box-shadow:0 3px 0 var(--shadow)}
+.av svg{display:block;width:100%;height:100%}
+.meters{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.meter{display:flex;align-items:center;gap:6px}
+.meter span{font:600 8.5px/1 "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;width:46px;flex:none;color:var(--ink)}
+.bar{flex:1;height:11px;border:2.5px solid var(--line);border-radius:999px;background:var(--pill);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px}
+.tasks{position:absolute;right:9px;top:96px;width:118px;z-index:5;background:var(--pill);border:3px solid var(--line);border-radius:14px;box-shadow:3px 3px 0 var(--shadow);padding:9px}
+.tasks h5{font:800 11px/1 "Baloo 2",sans-serif;letter-spacing:.02em;margin:0 0 7px}
+.tasks li{list-style:none;font:400 10.5px/1.35 Nunito,sans-serif;display:flex;gap:5px;margin-bottom:5px;color:var(--ink)}
+.tasks ul{margin:0;padding:0}
+.tasks li b{font-weight:800;flex:none}
+.tasks li.done{color:var(--ink-2);text-decoration:line-through}
+.scenefloor{margin-top:auto;position:relative;height:47%}
+.bubble{
+  position:absolute;left:9px;right:9px;bottom:66px;z-index:5;
+  background:var(--pill);border:3px solid var(--line);border-radius:15px;padding:11px 12px;
+  box-shadow:4px 4px 0 var(--shadow);
+}
+.bubble::after{content:"";position:absolute;left:26px;bottom:-13px;width:0;height:0;border:11px solid transparent;border-top-color:var(--line);border-bottom:0}
+.bubble .who{font:600 9px/1 "IBM Plex Mono",monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--bottle);margin-bottom:5px}
+.bubble p{font:700 12.5px/1.35 Nunito,sans-serif}
+.choices{position:absolute;left:9px;right:9px;bottom:10px;z-index:5;display:flex;flex-direction:column;gap:5px}
+.choice{font:700 11px/1.25 Nunito,sans-serif;background:var(--card);border:2.5px solid var(--line);border-radius:11px;padding:8px 10px;box-shadow:0 3px 0 var(--shadow)}
+.choice--hot{background:var(--sun);color:#2A2118}
+.alert{
+  position:absolute;inset:auto 9px 10px 9px;z-index:7;background:var(--bottle);color:#FFF6E2;
+  border:3px solid var(--line);border-radius:15px;padding:11px 12px;box-shadow:4px 4px 0 var(--shadow);
+}
+.alert b{display:block;font:800 14px/1.1 "Baloo 2",sans-serif;margin-bottom:3px}
+.alert p{font:600 11px/1.35 Nunito,sans-serif}
+.burst{position:absolute;top:74px;left:50%;transform:translateX(-50%);z-index:6}
+.hud--kitchen{background:linear-gradient(180deg,var(--wall) 0%,var(--wall) 62%,var(--deck) 62%)}
+.miniscene{position:absolute;left:0;right:0;top:36%;z-index:2}
+.miniscene svg{display:block;width:100%;height:auto}
+
+/* free-text modal */
+.modal{position:absolute;inset:0;background:rgba(42,33,24,.55);z-index:8;display:flex;align-items:center;padding:12px}
+.sheet{width:100%;background:var(--card);border:3px solid var(--line);border-radius:18px;box-shadow:5px 5px 0 var(--shadow);padding:13px}
+.sheet .k{font:600 9px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--jac);margin-bottom:6px;display:flex;justify-content:space-between}
+.sheet h5{font:800 15px/1.15 "Baloo 2",sans-serif;margin:0 0 8px}
+.field{border:2.5px dashed var(--rule);border-radius:11px;background:var(--sunk);padding:9px;min-height:74px;font:400 11.5px/1.45 Nunito,sans-serif;color:var(--ink-2)}
+.field u{text-decoration:none;border-bottom:2px solid var(--bottle);animation:caret 1.1s steps(2) infinite}
+@keyframes caret{50%{border-color:transparent}}
+.sheetfoot{display:flex;justify-content:space-between;align-items:center;margin-top:9px}
+.sheetfoot .cnt{font:500 9.5px/1 "IBM Plex Mono",monospace;color:var(--ink-2)}
+.btn{font:800 11.5px/1 "Baloo 2",sans-serif;background:var(--lawn);border:2.5px solid var(--line);border-radius:10px;padding:8px 14px;box-shadow:0 3px 0 var(--shadow);color:#2A2118}
+
+/* ---------- RAMP CHART ---------- */
+.ramp{overflow-x:auto}
+.ramp svg{display:block;min-width:640px;width:100%;height:auto}
+
+/* ---------- LEVELS ---------- */
+.levels{display:flex;flex-direction:column;gap:30px}
+.lvl{overflow:hidden}
+.lvlhead{display:flex;gap:16px;align-items:flex-start;padding:20px 22px;border-bottom:3px solid var(--line);background:var(--sunk)}
+.num{
+  flex:none;width:56px;height:56px;border-radius:15px;border:3px solid var(--line);
+  display:grid;place-items:center;font:800 26px/1 "Baloo 2",sans-serif;color:#2A2118;
+  box-shadow:3px 3px 0 var(--shadow);
+}
+.lvlhead h3{font-size:25px;margin-bottom:5px}
+.lvlmeta{display:flex;flex-wrap:wrap;gap:7px}
+.mini{font:600 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.05em;border:2px solid var(--line);border-radius:999px;padding:6px 9px;background:var(--card)}
+.mini--text{background:var(--jac);color:#FFF6E2;border-color:var(--line)}
+.mini--timed{background:var(--bottle);color:#FFF6E2}
+.lvlbody{display:grid;grid-template-columns:1.15fr .85fr;gap:0}
+@media(max-width:800px){.lvlbody{grid-template-columns:1fr}}
+.lvlmain{padding:22px;display:flex;flex-direction:column;gap:16px;border-right:3px solid var(--line)}
+@media(max-width:800px){.lvlmain{border-right:0;border-bottom:3px solid var(--line)}}
+.lvlside{padding:22px;display:flex;flex-direction:column;gap:16px;background:var(--sunk)}
+.blk h5{font:600 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px}
+.blk p{font-size:15px;line-height:1.6}
+.script{border-left:4px solid var(--sun);padding:2px 0 2px 14px;font-size:15px;line-height:1.55}
+.script b{font-family:"Baloo 2",sans-serif;font-size:14px;display:block;color:var(--bottle)}
+.script i{font-style:italic;color:var(--ink-2)}
+.cens{background:var(--ink);color:var(--paper);padding:1px 5px;border-radius:4px;font-weight:700;letter-spacing:.06em}
+.vars{display:flex;flex-direction:column;gap:8px;counter-reset:v}
+.var{display:flex;gap:10px;font-size:14.2px;line-height:1.5}
+.var b{flex:none;font:600 10.5px/1.5 "IBM Plex Mono",monospace;color:var(--ink-2);width:56px}
+.sig{display:flex;flex-direction:column;gap:7px}
+.sig li{list-style:none;display:flex;gap:9px;font-size:14.2px;line-height:1.45}
+.sig ul{margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.dot{flex:none;width:17px;height:17px;border-radius:50%;border:2.5px solid var(--line);margin-top:2px;display:grid;place-items:center;font:800 10px/1 "Baloo 2",sans-serif;color:#2A2118}
+.dot--y{background:var(--ok)} .dot--n{background:var(--stop);color:#FFF6E2}
+.guard{border:3px dashed var(--jac);border-radius:15px;padding:15px 16px;background:var(--card)}
+.guard h5{color:var(--jac)}
+.guard p{font-size:14.2px;line-height:1.55}
+
+/* ---------- TABLE ---------- */
+.tblwrap{overflow-x:auto;border:3px solid var(--line);border-radius:18px;box-shadow:6px 6px 0 var(--shadow);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th,td{text-align:left;padding:13px 16px;border-bottom:2px solid var(--rule);font-size:14.5px;vertical-align:top}
+th{font:600 10.5px/1.3 "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);background:var(--sunk)}
+tr:last-child td{border-bottom:0}
+td b{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15.5px}
+.band-pill{display:inline-block;font:800 11px/1 "Baloo 2",sans-serif;border:2.5px solid var(--line);border-radius:999px;padding:6px 11px;color:#2A2118}
+
+/* ---------- BEATS ---------- */
+.beats{display:flex;flex-wrap:wrap;gap:10px}
+.beat{
+  display:flex;align-items:center;gap:9px;background:var(--card);border:2.5px solid var(--line);
+  border-radius:999px;padding:8px 15px 8px 9px;box-shadow:0 3px 0 var(--shadow);font-size:14px;font-weight:600;
+}
+.beat i{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font:800 11px/1 "Baloo 2",sans-serif;color:#2A2118;font-style:normal}
+
+/* ---------- SIGNOFF ---------- */
+.next{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.next li{list-style:none}
+.next ol{margin:0;padding:0;display:contents}
+.nextcard{padding:20px;display:flex;flex-direction:column;gap:8px;height:100%}
+.nextcard span{font:800 13px/1 "Baloo 2",sans-serif;color:var(--bottle)}
+.nextcard h4{font-size:18px}
+.nextcard p{font-size:14px;line-height:1.5;color:var(--ink-2)}
+footer{padding:44px 0 60px;border-top:3px solid var(--line);background:var(--paper-2)}
+.foot{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:center;font-size:14px;color:var(--ink-2)}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+<style>
+:root{--skin-a:#F2C9A0;--skin-b:#C68A5C;--skin-c:#8D5A3B;--hair:#EDE7DA;--fence:#D9C79E}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--fence:#4A4231}}
+:root[data-theme="dark"]{--fence:#4A4231}
+.rays{transform-origin:128px 86px;animation:spin 44s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.out{stroke:var(--line);stroke-width:5;stroke-linejoin:round;stroke-linecap:round}
+.thin{stroke:var(--line);stroke-width:3;stroke-linecap:round}
+.miniscene .out,.cast .out,.av svg{stroke-linejoin:round}
+</style>
+
+<section class="hero">
+<svg class="scene" viewBox="0 0 1200 470" role="img" aria-label="Illustration of Pepaw's suburban cottage: a verandah with a green tin roof, jacaranda tree, Hills Hoist clothesline, Pepaw waiting on the deck and a student arriving up the front path.">
+  <defs>
+    <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--sky-a)"/><stop offset="1" stop-color="var(--sky-b)"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="470" fill="url(#skyg)"/>
+
+  <!-- sun -->
+  <g class="rays" fill="none" stroke="var(--orb-ray)" stroke-width="9" stroke-linecap="round" opacity=".85">
+    <line x1="128" y1="8" x2="128" y2="30"/><line x1="128" y1="142" x2="128" y2="164"/>
+    <line x1="50" y1="86" x2="72" y2="86"/><line x1="184" y1="86" x2="206" y2="86"/>
+    <line x1="73" y1="31" x2="89" y2="47"/><line x1="167" y1="125" x2="183" y2="141"/>
+    <line x1="183" y1="31" x2="167" y2="47"/><line x1="89" y1="125" x2="73" y2="141"/>
+  </g>
+  <circle cx="128" cy="86" r="46" fill="var(--orb)" class="out"/>
+
+  <!-- back fence -->
+  <g class="out" fill="var(--fence)">
+    <rect x="880" y="286" width="300" height="90" rx="3"/>
+  </g>
+  <g class="thin" stroke="var(--line)" opacity=".5">
+    <line x1="930" y1="292" x2="930" y2="370"/><line x1="980" y1="292" x2="980" y2="370"/>
+    <line x1="1030" y1="292" x2="1030" y2="370"/><line x1="1080" y1="292" x2="1080" y2="370"/>
+    <line x1="1130" y1="292" x2="1130" y2="370"/>
+  </g>
+
+  <!-- hills hoist -->
+  <g class="out" fill="none">
+    <line x1="1010" y1="376" x2="1010" y2="228"/>
+    <line x1="944" y1="240" x2="1076" y2="240"/>
+    <line x1="1010" y1="228" x2="962" y2="262"/><line x1="1010" y1="228" x2="1058" y2="262"/>
+  </g>
+  <g class="out">
+    <rect x="958" y="240" width="26" height="34" rx="4" fill="var(--bottle)"/>
+    <rect x="994" y="240" width="26" height="30" rx="4" fill="var(--sun)"/>
+    <rect x="1030" y="240" width="26" height="36" rx="4" fill="var(--jac)"/>
+  </g>
+
+  <!-- jacaranda -->
+  <g class="out" fill="var(--brick)">
+    <path d="M228 376 L228 262 Q228 250 214 238 M228 300 Q232 288 250 280" fill="none" stroke-width="12"/>
+  </g>
+  <g class="out" fill="var(--jac)">
+    <circle cx="206" cy="222" r="48"/><circle cx="262" cy="240" r="38"/><circle cx="248" cy="188" r="36"/>
+  </g>
+
+  <!-- lawn -->
+  <rect x="0" y="372" width="1200" height="98" fill="var(--grass)"/>
+  <line x1="0" y1="372" x2="1200" y2="372" class="out"/>
+
+  <!-- front path -->
+  <path d="M540 376 L620 376 L700 470 L440 470 Z" fill="var(--deck)" class="out"/>
+
+  <!-- cottage facade -->
+  <g class="out">
+    <rect x="360" y="196" width="470" height="180" rx="4" fill="var(--wall)"/>
+  </g>
+  <g class="thin" opacity=".45">
+    <line x1="364" y1="226" x2="826" y2="226"/><line x1="364" y1="256" x2="826" y2="256"/>
+    <line x1="364" y1="286" x2="826" y2="286"/><line x1="364" y1="316" x2="826" y2="316"/>
+    <line x1="364" y1="346" x2="826" y2="346"/>
+  </g>
+
+  <!-- gable roof -->
+  <path d="M336 204 L595 102 L854 204 Z" fill="var(--roof)" class="out"/>
+  <path d="M595 102 L595 130" class="out" fill="none"/>
+
+  <!-- verandah roof + posts -->
+  <rect x="308" y="232" width="574" height="26" rx="7" fill="var(--roof)" class="out"/>
+  <g class="out" fill="var(--wall)">
+    <rect x="336" y="256" width="18" height="112" rx="3"/>
+    <rect x="586" y="256" width="18" height="112" rx="3"/>
+    <rect x="836" y="256" width="18" height="112" rx="3"/>
+  </g>
+
+  <!-- windows -->
+  <g class="out">
+    <rect x="408" y="276" width="98" height="78" rx="6" fill="var(--glass)"/>
+    <rect x="676" y="276" width="98" height="78" rx="6" fill="var(--glass)"/>
+  </g>
+  <g class="thin">
+    <line x1="457" y1="278" x2="457" y2="352"/><line x1="410" y1="315" x2="504" y2="315"/>
+    <line x1="725" y1="278" x2="725" y2="352"/><line x1="678" y1="315" x2="772" y2="315"/>
+  </g>
+  <!-- window boxes -->
+  <g class="out">
+    <rect x="398" y="348" width="118" height="20" rx="5" fill="var(--brick)"/>
+    <circle cx="420" cy="344" r="8" fill="var(--bottle)"/><circle cx="444" cy="340" r="9" fill="var(--sun)"/>
+    <circle cx="470" cy="344" r="8" fill="var(--bottle)"/><circle cx="494" cy="341" r="8" fill="var(--jac)"/>
+  </g>
+
+  <!-- door -->
+  <g class="out">
+    <rect x="536" y="266" width="84" height="102" rx="5" fill="var(--bottle)"/>
+    <circle cx="606" cy="320" r="5" fill="var(--sun)"/>
+  </g>
+
+  <!-- deck + steps -->
+  <g class="out">
+    <rect x="306" y="364" width="578" height="20" rx="5" fill="var(--deck)"/>
+    <rect x="530" y="384" width="96" height="16" rx="4" fill="var(--deck)"/>
+    <rect x="518" y="400" width="120" height="16" rx="4" fill="var(--deck)"/>
+  </g>
+
+  <!-- rocking chair -->
+  <g class="out"><path d="M790 332 L832 332 L832 344 L790 344 Z" fill="var(--deck)"/></g>
+  <g class="out" fill="none" stroke-width="6">
+    <path d="M792 344 L792 300 L820 300"/><path d="M792 344 L832 344 L832 366"/>
+    <path d="M780 370 Q808 382 838 370"/>
+  </g>
+
+  <!-- pot plant -->
+  <g class="out">
+    <path d="M340 364 L356 364 L352 340 L344 340 Z" fill="var(--brick)"/>
+    <circle cx="348" cy="328" r="14" fill="var(--tin)"/><circle cx="336" cy="336" r="10" fill="var(--tin)"/><circle cx="360" cy="336" r="10" fill="var(--tin)"/>
+  </g>
+
+  <!-- cat on the step -->
+  <g class="out">
+    <ellipse cx="572" cy="378" rx="19" ry="10" fill="var(--sun)"/>
+    <circle cx="591" cy="368" r="10" fill="var(--sun)"/>
+    <path d="M585 360 L587 352 L593 358 M595 359 L599 352 L601 361" fill="var(--sun)" stroke-width="3"/>
+    <path d="M553 376 Q541 372 545 362" fill="none" stroke-width="4"/>
+  </g>
+
+  <!-- PEPAW on the deck -->
+  <g class="out">
+    <rect x="660" y="330" width="13" height="36" rx="5" fill="var(--tin)"/>
+    <rect x="682" y="330" width="13" height="36" rx="5" fill="var(--tin)"/>
+    <rect x="650" y="292" width="56" height="46" rx="16" fill="var(--bottle)"/>
+    <rect x="638" y="300" width="14" height="34" rx="7" fill="var(--bottle)"/>
+    <rect x="704" y="296" width="14" height="34" rx="7" fill="var(--bottle)"/>
+    <circle cx="678" cy="272" r="22" fill="var(--skin-a)"/>
+    <path d="M655 268 Q660 246 682 248 Q700 250 702 266 Q690 258 668 262 Z" fill="var(--tin)"/>
+    <ellipse cx="678" cy="286" rx="12" ry="5" fill="var(--hair)"/>
+  </g>
+  <g class="thin" fill="none">
+    <circle cx="670" cy="272" r="7" fill="var(--glass)"/><circle cx="688" cy="272" r="7" fill="var(--glass)"/>
+    <line x1="677" y1="272" x2="681" y2="272"/>
+  </g>
+  <!-- walking stick -->
+  <line x1="722" y1="306" x2="730" y2="368" class="out" fill="none"/>
+
+  <!-- STUDENT arriving -->
+  <g class="out">
+    <rect x="186" y="412" width="13" height="34" rx="5" fill="var(--tin)"/>
+    <rect x="208" y="412" width="13" height="34" rx="5" fill="var(--tin)"/>
+    <rect x="176" y="378" width="26" height="34" rx="9" fill="var(--brick)"/>
+    <rect x="182" y="374" width="52" height="44" rx="15" fill="var(--jac)"/>
+    <rect x="228" y="352" width="13" height="34" rx="6" fill="var(--jac)" transform="rotate(22 234 369)"/>
+    <circle cx="208" cy="352" r="21" fill="var(--skin-b)"/>
+    <path d="M187 348 Q190 328 208 328 Q228 328 229 348 Z" fill="var(--sun)"/>
+    <path d="M185 348 L231 348" fill="none"/>
+  </g>
+  <g class="thin"><circle cx="201" cy="354" r="2.6" fill="var(--line)"/><circle cx="215" cy="354" r="2.6" fill="var(--line)"/>
+    <path d="M202 362 Q208 368 214 362" fill="none"/></g>
+</svg>
+
+<div class="wrap herotext">
+  <div class="herogrid">
+    <div>
+      <span class="logo"><b>Pepaws&nbsp;Porch</b><span>Homeshare readiness assessment</span></span>
+      <p class="tagline">Five days on the verandah. We find out how you handle the sixth.</p>
+      <div class="chips">
+        <span class="chip chip--sun">Visual design · v1 for sign-off</span>
+        <span class="chip">5 graded challenges</span>
+        <span class="chip">~14 min run</span>
+        <span class="chip">Mobile-first portrait</span>
+      </div>
+    </div>
+    <div class="sticker pad">
+      <div class="eyebrow">What this document is</div>
+      <p class="prose" style="font-size:15.5px">The art direction, screen design and scenario specification for the applicant screening game. It covers the look, the cast, the five assessed challenges and how each one is scored. <strong>Nothing here is built yet</strong> — sign this off and it becomes the build brief.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="band">
+<div class="wrap stack">
+  <div class="eyebrow">The read</div>
+  <h2 class="h2">A cheerful game on the surface. A structured assessment underneath.</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:34px" class="twocol">
+    <p class="prose">Applicants arrive expecting a form. They get a sunlit cottage, a resident who needs the telly fixed, and a fortnight that quietly gets harder. The candy-coloured surface is doing real work: it lowers the guard that a written test raises, so what we score is closer to how someone actually behaves in a stranger's kitchen.</p>
+    <p class="prose">Underneath, every beat maps to a competency a placement coordinator would otherwise have to guess at — patience with technology, reading low mood, holding a boundary, assisting without taking over, and acting in an emergency. Comparable in function to a Working With Children Check or an RSA: a short, standardised, evidenced gate before placement.</p>
+  </div>
+</div>
+</section>
+
+<section class="band band--sunk">
+<div class="wrap stack">
+  <div class="eyebrow">Art direction · palette</div>
+  <h2 class="h2">Colour comes off an Australian street, not a candy shelf</h2>
+  <p class="prose">Saturated and high-contrast enough to read as a mobile game at arm's length, but every hue is lifted from something actually on the block — Colorbond roofing, a jacaranda in November, a bottlebrush, red brick. Thick <code class="mono">#2A2118</code> linework on everything keeps the sticker-book feel and holds the shapes together on small screens.</p>
+  <div class="swatches" style="margin-top:8px">
+    <div class="sw"><i style="background:#1F5A4C"></i><div><b>Cottage Green</b><code>#1F5A4C</code><p>Colorbond roof, verandah posts. The set's anchor.</p></div></div>
+    <div class="sw"><i style="background:#7B5EA7"></i><div><b>Jacaranda</b><code>#7B5EA7</code><p>Street tree, student's jumper, UI focus states.</p></div></div>
+    <div class="sw"><i style="background:#D9432C"></i><div><b>Bottlebrush</b><code>#D9432C</code><p>Front door and every interruption. Attention only.</p></div></div>
+    <div class="sw"><i style="background:#FFC24A"></i><div><b>Four O'Clock Sun</b><code>#FFC24A</code><p>Logo fill, primary taps, the cat.</p></div></div>
+    <div class="sw"><i style="background:#7FB749"></i><div><b>Buffalo Lawn</b><code>#7FB749</code><p>Ground plane, confirm buttons, rapport meter.</p></div></div>
+    <div class="sw"><i style="background:#C4674F"></i><div><b>Brick &amp; Terracotta</b><code>#C4674F</code><p>Pots, chimney, window boxes.</p></div></div>
+    <div class="sw"><i style="background:#F6F2E7"></i><div><b>Sun-bleached Paper</b><code>#F6F2E7</code><p>UI ground. Warm, never pure white.</p></div></div>
+    <div class="sw"><i style="background:#2A2118"></i><div><b>Linework Brown</b><code>#2A2118</code><p>Every outline, every shadow. Never black.</p></div></div>
+  </div>
+  <div class="sticker pad" style="margin-top:22px">
+    <div class="eyebrow">Dark mode is dusk, not an inversion</div>
+    <p class="prose" style="font-size:15.5px">The porch already plays at three times of day — morning chores, afternoon light, evening. So the dark theme is simply the evening set: dusk-blue sky, warm window glass, lamplight on the deck. Switch your system theme and this page shows it. <strong>Level&nbsp;2 and Level&nbsp;5 are written for dusk and evening</strong>, so the palette does double duty as scene lighting.</p>
+  </div>
+</div>
+</section>
+
+<section class="band">
+<div class="wrap stack">
+  <div class="eyebrow">Art direction · type</div>
+  <h2 class="h2">Chunky where it sells, precise where it scores</h2>
+  <div class="spec" style="margin-top:6px">
+    <div>
+      <div class="samp s1">Pepaw needs a hand</div>
+      <dl>
+        <dt>Display — Baloo 2, 700/800</dt>
+        <dd>Titles, buttons, dialogue names, level cards. Rounded terminals, generous weight, holds a heavy outline without clogging. This is the game's voice.</dd>
+      </dl>
+    </div>
+    <div>
+      <div class="samp s2">He says it's the internet company's fault.</div>
+      <dl>
+        <dt>Body — Nunito, 400/700</dt>
+        <dd>All spoken dialogue, scenario text, coaching feedback. Humanist and soft enough to sit beside Baloo without a seam; readable at 12px inside a phone-width speech bubble.</dd>
+      </dl>
+    </div>
+    <div>
+      <div class="samp s3">RAPPORT 71 · 0:14</div>
+      <dl>
+        <dt>Utility — IBM Plex Mono, 500</dt>
+        <dd>Timers, meters, level codes, rubric labels, the assessor's report. The deliberate seam: the moment you're being measured, the type stops being friendly.</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="band band--sunk">
+<div class="wrap stack">
+  <div class="eyebrow">Art direction · cast</div>
+  <h2 class="h2">One porch, four residents, rotated per applicant</h2>
+  <p class="prose">Pepaw hosts the tutorial, but the graded scenarios are dealt from a roster of four. Two applicants sitting side by side get different residents and different scenario variants, so the test resists being memorised and passed around a student share-house. It also means <strong>no single character carries the discrimination scenario</strong> — it lands on whoever the deal gives you, which is closer to the truth and avoids writing one person as the bigot.</p>
+  <div class="cast" style="margin-top:10px">
+
+    <article class="sticker cast-a"><div class="face"><svg viewBox="0 0 200 156" role="img" aria-label="Cartoon portrait of Pepaw Bruce, wearing a flat cap and round glasses">
+      <rect width="200" height="156" fill="var(--sky-b)"/><circle cx="100" cy="150" r="62" fill="var(--bottle)" class="out"/>
+      <circle cx="100" cy="82" r="42" fill="var(--skin-a)" class="out"/>
+      <path d="M56 76 Q62 34 102 36 Q138 38 143 72 Q120 58 76 66 Z" fill="var(--tin)" class="out"/>
+      <ellipse cx="100" cy="108" rx="22" ry="8" fill="var(--hair)" class="out"/>
+      <circle cx="86" cy="84" r="13" fill="var(--glass)" class="out"/><circle cx="118" cy="84" r="13" fill="var(--glass)" class="out"/>
+      <line x1="99" y1="84" x2="105" y2="84" class="out"/>
+      <circle cx="86" cy="84" r="3" fill="var(--line)"/><circle cx="118" cy="84" r="3" fill="var(--line)"/>
+    </svg></div><div class="body">
+      <span class="role">Tutorial host · Day 1</span><h4>Pepaw — Bruce, 82</h4>
+      <p>Retired fitter and turner. Sharp, proud, deaf in one ear and pretending otherwise. Will insist he already tried turning it off and on again.</p>
+    </div></article>
+
+    <article class="sticker"><div class="face"><svg viewBox="0 0 200 156" role="img" aria-label="Cartoon portrait of Nadia, wearing hoop earrings and a patterned scarf">
+      <rect width="200" height="156" fill="var(--sky-b)"/><circle cx="100" cy="150" r="62" fill="var(--jac)" class="out"/>
+      <circle cx="100" cy="84" r="42" fill="var(--skin-c)" class="out"/>
+      <path d="M58 82 Q54 36 100 36 Q146 36 142 82 Q132 56 100 58 Q68 60 58 82 Z" fill="var(--ink-2)" class="out"/>
+      <circle cx="60" cy="98" r="9" fill="none" class="out"/><circle cx="140" cy="98" r="9" fill="none" class="out"/>
+      <circle cx="86" cy="86" r="3.4" fill="var(--line)"/><circle cx="116" cy="86" r="3.4" fill="var(--line)"/>
+      <path d="M88 102 Q101 111 114 102" fill="none" class="out"/>
+    </svg></div><div class="body">
+      <span class="role">Roster</span><h4>Nadia, 79</h4>
+      <p>Came out from Tripoli in 1968. Cooks for six when two are eating. Warm, and very direct about what she thinks of the neighbours.</p>
+    </div></article>
+
+    <article class="sticker"><div class="face"><svg viewBox="0 0 200 156" role="img" aria-label="Cartoon portrait of Marg, with curled white hair and large glasses">
+      <rect width="200" height="156" fill="var(--sky-b)"/><circle cx="100" cy="150" r="62" fill="var(--tin)" class="out"/>
+      <circle cx="100" cy="84" r="42" fill="var(--skin-a)" class="out"/>
+      <g class="out" fill="var(--hair)"><circle cx="70" cy="54" r="18"/><circle cx="100" cy="44" r="20"/><circle cx="130" cy="54" r="18"/><circle cx="58" cy="78" r="13"/><circle cx="142" cy="78" r="13"/></g>
+      <circle cx="84" cy="88" r="15" fill="var(--glass)" class="out"/><circle cx="120" cy="88" r="15" fill="var(--glass)" class="out"/>
+      <line x1="99" y1="88" x2="105" y2="88" class="out"/>
+      <circle cx="84" cy="88" r="3" fill="var(--line)"/><circle cx="120" cy="88" r="3" fill="var(--line)"/>
+      <path d="M88 110 Q100 116 112 110" fill="none" class="out"/>
+    </svg></div><div class="body">
+      <span class="role">Roster</span><h4>Marg, 88</h4>
+      <p>Lawn bowls on Thursdays, walker in the hall, four steps down to the clothesline she refuses to stop using. The mobility scenarios are hers by default.</p>
+    </div></article>
+
+    <article class="sticker"><div class="face"><svg viewBox="0 0 200 156" role="img" aria-label="Cartoon portrait of Des, with short grey hair and a hearing aid">
+      <rect width="200" height="156" fill="var(--sky-b)"/><circle cx="100" cy="150" r="62" fill="var(--sun)" class="out"/>
+      <circle cx="100" cy="84" r="42" fill="var(--skin-b)" class="out"/>
+      <path d="M60 74 Q64 40 100 40 Q136 40 140 74 Q120 62 100 62 Q80 62 60 74 Z" fill="var(--hair)" class="out"/>
+      <path d="M142 84 Q150 88 146 98" fill="none" class="out"/>
+      <circle cx="86" cy="88" r="3.4" fill="var(--line)"/><circle cx="116" cy="88" r="3.4" fill="var(--line)"/>
+      <path d="M88 104 L114 104" fill="none" class="out"/>
+    </svg></div><div class="body">
+      <span class="role">Roster</span><h4>Des, 74</h4>
+      <p>Widowed eighteen months. Quiet, tidy, plays down everything. Carries the low-mood and health-emergency variants most convincingly.</p>
+    </div></article>
+
+  </div>
+</div>
+</section>
+<style>@media(max-width:760px){.twocol{grid-template-columns:1fr!important}}</style>
+
+<section class="band">
+<div class="wrap stack">
+  <div class="eyebrow">The set</div>
+  <h2 class="h2">Six rooms, one cottage, everything reachable in two taps</h2>
+  <p class="prose">A single side-scrolling cottage rather than a level select. The applicant swipes between zones the way they'd walk through the house, and every zone holds both routine chores and the props that scenarios detonate from. Props are planted days before they matter — the calendar in the kitchen is hanging there from Day&nbsp;1.</p>
+  <div class="zones" style="margin-top:12px">
+
+    <div class="zone">
+      <div class="zicon" style="background:var(--deck)"><svg viewBox="0 0 24 24" fill="none" stroke="#2A2118" stroke-width="2.4" stroke-linecap="round"><path d="M3 10 12 3 21 10"/><path d="M5 10v10h14V10"/></svg></div>
+      <div><h4>The Verandah</h4><div class="znote">HUB · ALL DAYS</div></div>
+      <p class="zdesc">Where each day opens and closes. Rocking chair, the cat, a view of the street. <em>Level 3 plays here</em> — neighbours walk past and Pepaw comments on them.</p>
+    </div>
+
+    <div class="zone">
+      <div class="zicon" style="background:var(--glass)"><svg viewBox="0 0 24 24" fill="none" stroke="#2A2118" stroke-width="2.4" stroke-linecap="round"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <div><h4>The Lounge</h4><div class="znote">TECH · DAYS 1–4</div></div>
+      <p class="zdesc">Telly, set-top box, a tablet the grandkids set up, a landline. <em>Level 1 plays here.</em> Also where the filler beats live: tea, the crossword, finding the reading glasses.</p>
+    </div>
+
+    <div class="zone">
+      <div class="zicon" style="background:var(--sun)"><svg viewBox="0 0 24 24" fill="none" stroke="#2A2118" stroke-width="2.4" stroke-linecap="round"><path d="M4 4h16v6H4zM4 14h16v6H4z"/><path d="M8 7h.01M8 17h.01"/></svg></div>
+      <div><h4>The Kitchen</h4><div class="znote">MOOD + EMERGENCY</div></div>
+      <p class="zdesc">The wall calendar, the fridge photos, an uneaten breakfast. <em>Levels 2 and 5 both play here</em> — the room the applicant thinks is safe is the one that turns.</p>
+    </div>
+
+    <div class="zone">
+      <div class="zicon" style="background:var(--jac)"><svg viewBox="0 0 24 24" fill="none" stroke="#FFF6E2" stroke-width="2.4" stroke-linecap="round"><path d="M4 20V8l8-4 8 4v12"/><path d="M10 20v-6h4v6"/></svg></div>
+      <div><h4>The Hallway</h4><div class="znote">MOBILITY · HAZARDS</div></div>
+      <p class="zdesc">Narrow, dim, a rug that lifts, the walker parked by the door. Where the applicant's own boxes accumulate if they never tidy them. <em>Level 4 stages from here.</em></p>
+    </div>
+
+    <div class="zone">
+      <div class="zicon" style="background:var(--lawn)"><svg viewBox="0 0 24 24" fill="none" stroke="#2A2118" stroke-width="2.4" stroke-linecap="round"><path d="M12 21V8"/><path d="M4 9h16"/><path d="M12 4v4"/><path d="M7 9l5-5 5 5"/></svg></div>
+      <div><h4>The Backyard</h4><div class="znote">CHORES · THE STEP</div></div>
+      <p class="zdesc">Hills Hoist, tomato pots, the bins, a magpie in season. The loose back step is flagged as a hazard on Day 2 and is the trip point in <em>Level 4</em>.</p>
+    </div>
+
+    <div class="zone">
+      <div class="zicon" style="background:var(--brick)"><svg viewBox="0 0 24 24" fill="none" stroke="#FFF6E2" stroke-width="2.4" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+      <div><h4>Your Room</h4><div class="znote">DEBRIEF · BETWEEN DAYS</div></div>
+      <p class="zdesc">Where the day ends. The applicant reviews what happened, writes their coordinator check-in note, and sees their meters move. The only place feedback appears mid-run.</p>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<section class="band band--sunk">
+<div class="wrap stack">
+  <div class="eyebrow">Screen design</div>
+  <h2 class="h2">Three states carry the whole game</h2>
+  <p class="prose">Portrait phone, thumb-reachable controls, nothing important above the top third. The chore loop is the baseline; an interruption slides in over it; free-text takes the full sheet. Everything else is a variation on these three.</p>
+  <div class="phones" style="margin-top:16px">
+
+    <div class="phonewrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="hud">
+          <div class="hudtop">
+            <span class="tag tag--sun">DAY 3 / 14</span><span class="tag">9:40 am</span><span class="tag">2/5 DONE</span>
+          </div>
+          <div class="avatarrow">
+            <span class="av"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="var(--sky-b)"/><circle cx="50" cy="56" r="30" fill="var(--skin-a)"/><path d="M20 50 Q24 20 52 22 Q76 24 79 46 Q62 34 34 40 Z" fill="var(--tin)"/><ellipse cx="50" cy="74" rx="15" ry="5" fill="var(--hair)"/><circle cx="40" cy="56" r="8" fill="var(--glass)"/><circle cx="62" cy="56" r="8" fill="var(--glass)"/></svg></span>
+            <div class="meters">
+              <div class="meter"><span>Rapport</span><div class="bar"><i style="width:72%;background:var(--lawn)"></i></div></div>
+              <div class="meter"><span>Auton.</span><div class="bar"><i style="width:88%;background:var(--jac)"></i></div></div>
+              <div class="meter"><span>Safety</span><div class="bar"><i style="width:60%;background:var(--sun)"></i></div></div>
+            </div>
+          </div>
+          <div class="tasks">
+            <h5>This morning</h5>
+            <ul>
+              <li class="done"><b>✓</b> Bins to the kerb</li>
+              <li class="done"><b>✓</b> Kettle on</li>
+              <li><b>○</b> Hang the washing</li>
+              <li><b>○</b> Water the tomatoes</li>
+              <li><b>○</b> Bruce's 10am tablets</li>
+            </ul>
+          </div>
+          <div class="miniscene"><svg viewBox="0 0 200 110" role="img" aria-label="Bruce standing beside a wheelie bin on the lawn">
+            <g class="out" stroke-width="3.4">
+              <rect x="22" y="50" width="42" height="48" rx="4" fill="var(--tin)"/>
+              <rect x="17" y="40" width="52" height="11" rx="4" fill="var(--roof)"/>
+              <circle cx="30" cy="100" r="5" fill="var(--line)"/><circle cx="56" cy="100" r="5" fill="var(--line)"/>
+              <rect x="134" y="80" width="8" height="18" rx="3" fill="var(--tin)"/>
+              <rect x="148" y="80" width="8" height="18" rx="3" fill="var(--tin)"/>
+              <rect x="129" y="56" width="32" height="26" rx="9" fill="var(--bottle)"/>
+              <rect x="120" y="60" width="9" height="20" rx="4" fill="var(--bottle)"/>
+              <circle cx="145" cy="42" r="13" fill="var(--skin-a)"/>
+              <path d="M131 40 Q134 26 147 27 Q158 28 159 38 Q150 33 137 36 Z" fill="var(--tin)"/>
+              <ellipse cx="145" cy="49" rx="7" ry="3" fill="var(--hair)"/>
+            </g>
+            <g stroke="var(--line)" stroke-width="2"><circle cx="140" cy="42" r="4.5" fill="var(--glass)"/><circle cx="151" cy="42" r="4.5" fill="var(--glass)"/></g>
+          </svg></div>
+          <div class="scenefloor">
+            <div class="bubble"><div class="who">Bruce</div><p>"Leave the bins, love — Tuesday's not till tomorrow."</p></div>
+            <div class="choices">
+              <div class="choice choice--hot">"You're right, I'll bring them back."</div>
+              <div class="choice">"The council changed it, I'll show you the notice."</div>
+              <div class="choice">Say nothing, leave them out.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="phcap"><b>1 · The chore loop</b>Baseline gameplay. Timed tasks, a resident who has opinions, and three meters that never reset. Most minutes of the run look like this — which is what makes the interruptions land.</p>
+    </div>
+
+    <div class="phonewrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="hud hud--kitchen">
+          <div class="hudtop">
+            <span class="tag tag--sun">DAY 6 / 14</span><span class="tag">4:15 pm</span><span class="tag" style="background:var(--bottle);color:#FFF6E2">LIVE</span>
+          </div>
+          <div class="avatarrow">
+            <span class="av" style="background:var(--jac)"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="var(--sky-b)"/><circle cx="50" cy="56" r="30" fill="var(--skin-b)"/><path d="M20 52 Q22 22 50 22 Q78 22 80 52 Q66 40 50 40 Q34 40 20 52 Z" fill="var(--hair)"/><circle cx="40" cy="58" r="3" fill="var(--line)"/><circle cx="60" cy="58" r="3" fill="var(--line)"/><path d="M40 72 L60 72" stroke="var(--line)" stroke-width="3" fill="none" stroke-linecap="round"/></svg></span>
+            <div class="meters">
+              <div class="meter"><span>Rapport</span><div class="bar"><i style="width:64%;background:var(--lawn)"></i></div></div>
+              <div class="meter"><span>Auton.</span><div class="bar"><i style="width:81%;background:var(--jac)"></i></div></div>
+              <div class="meter"><span>Safety</span><div class="bar"><i style="width:44%;background:var(--bottle)"></i></div></div>
+            </div>
+          </div>
+          <div class="miniscene"><svg viewBox="0 0 200 110" role="img" aria-label="Des sitting at the kitchen table with the curtains closed and breakfast untouched">
+            <g class="out" stroke-width="3.4">
+              <rect x="8" y="16" width="56" height="58" rx="3" fill="var(--jac)"/>
+              <line x1="4" y1="16" x2="68" y2="16"/><line x1="36" y1="20" x2="36" y2="70" stroke-width="2.4"/>
+              <rect x="150" y="10" width="42" height="34" rx="3" fill="var(--card)"/>
+              <line x1="150" y1="22" x2="192" y2="22" stroke-width="2.4"/>
+              <circle cx="178" cy="34" r="6" fill="var(--bottle)"/>
+              <rect x="84" y="80" width="98" height="8" rx="3" fill="var(--brick)"/>
+              <rect x="92" y="88" width="7" height="18" rx="2" fill="var(--brick)"/>
+              <rect x="167" y="88" width="7" height="18" rx="2" fill="var(--brick)"/>
+              <ellipse cx="150" cy="79" rx="15" ry="5" fill="var(--card)"/>
+              <rect x="96" y="58" width="30" height="24" rx="9" fill="var(--tin)"/>
+              <circle cx="111" cy="46" r="13" fill="var(--skin-b)"/>
+              <path d="M98 42 Q100 32 111 32 Q122 32 124 42 Q118 38 111 38 Q104 38 98 42 Z" fill="var(--hair)"/>
+              <rect x="120" y="66" width="26" height="8" rx="4" fill="var(--tin)"/>
+            </g>
+            <g stroke="var(--line)" stroke-width="2.4" stroke-linecap="round">
+              <line x1="106" y1="47" x2="108" y2="47"/><line x1="114" y1="47" x2="116" y2="47"/>
+              <line x1="105" y1="55" x2="117" y2="55"/>
+            </g>
+          </svg></div>
+          <div class="scenefloor">
+            <div class="alert">
+              <b>Something's not right</b>
+              <p>Des hasn't opened the curtains. Breakfast is still on the table and it's a quarter past four.</p>
+            </div>
+            <div class="bubble" style="bottom:118px"><div class="who">Des</div><p>"I'm fine. Didn't feel like the bowls today, that's all."</p></div>
+          </div>
+        </div>
+      </div>
+      <p class="phcap"><b>2 · The interruption</b>Scenarios arrive unannounced, mid-chore, with the task list still running. The red card is the only place bottlebrush is used — it means <em>stop what you're doing</em> and nothing else.</p>
+    </div>
+
+    <div class="phonewrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="hud">
+          <div class="hudtop"><span class="tag tag--sun">DAY 6 / 14</span><span class="tag">4:16 pm</span><span class="tag">PAUSED</span></div>
+          <div class="avatarrow"><span class="av" style="background:var(--jac)"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="var(--sky-b)"/><circle cx="50" cy="56" r="30" fill="var(--skin-b)"/><path d="M20 52 Q22 22 50 22 Q78 22 80 52 Q66 40 50 40 Q34 40 20 52 Z" fill="var(--hair)"/><circle cx="40" cy="58" r="3" fill="var(--line)"/><circle cx="60" cy="58" r="3" fill="var(--line)"/><path d="M40 72 L60 72" stroke="var(--line)" stroke-width="3" fill="none" stroke-linecap="round"/></svg></span>
+            <div class="meters">
+              <div class="meter"><span>Rapport</span><div class="bar"><i style="width:64%;background:var(--lawn)"></i></div></div>
+              <div class="meter"><span>Auton.</span><div class="bar"><i style="width:81%;background:var(--jac)"></i></div></div>
+              <div class="meter"><span>Safety</span><div class="bar"><i style="width:44%;background:var(--bottle)"></i></div></div>
+            </div>
+          </div>
+          <div class="modal">
+            <div class="sheet">
+              <div class="k"><span>In your own words</span><span>L2 · 02</span></div>
+              <h5>What do you say next?</h5>
+              <div class="field">I'd sit down at the table with him rather than standing over him, and say I'd noticed the curtains were still shut. I wouldn't try to talk him into going to bowls<u>&nbsp;</u></div>
+              <div class="sheetfoot"><span class="cnt">218 / 600 · no time limit</span><span class="btn">Send it</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="phcap"><b>3 · Say it in your own words</b>A blank box, no options, no clock. Used wherever a multiple choice would teach the answer. This is the surface the human assessor actually reads.</p>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<section class="band">
+<div class="wrap stack">
+  <div class="eyebrow">The ramp</div>
+  <h2 class="h2">The room to think shrinks as the fortnight goes on</h2>
+  <p class="prose">Difficulty in <em>Pepaws Porch</em> isn't more taps per minute — it's less time and less certainty. The first two challenges have no clock at all, because we want considered answers we can read. From Level&nbsp;3 the response window closes, and by Level&nbsp;5 the applicant has fifteen seconds, which is roughly what they'd have on a real kitchen floor.</p>
+  <div class="sticker pad ramp" style="margin-top:8px">
+    <svg viewBox="0 0 900 320" role="img" aria-label="Bar chart of the response window for each of the five challenges. Levels 1 and 2 have no time limit, Level 3 allows 45 seconds, Level 4 allows 20 seconds, Level 5 allows 15 seconds.">
+      <g class="mono" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-2)">
+        <text x="10" y="234">0s</text><text x="10" y="184">15</text><text x="10" y="134">30</text><text x="10" y="84">45</text>
+      </g>
+      <g stroke="var(--rule)" stroke-width="2">
+        <line x1="46" y1="230" x2="890" y2="230"/><line x1="46" y1="180" x2="890" y2="180" stroke-dasharray="5 7"/>
+        <line x1="46" y1="130" x2="890" y2="130" stroke-dasharray="5 7"/><line x1="46" y1="80" x2="890" y2="80" stroke-dasharray="5 7"/>
+      </g>
+      <g class="out" stroke="var(--line)" stroke-width="4">
+        <path d="M70 46 L70 230 L190 230 L190 46" fill="var(--sun)"/>
+        <path d="M232 46 L232 230 L352 230 L352 46" fill="var(--tin)"/>
+        <rect x="394" y="80" width="120" height="150" rx="4" fill="var(--jac)"/>
+        <rect x="556" y="163" width="120" height="67" rx="4" fill="var(--brick)"/>
+        <rect x="718" y="180" width="120" height="50" rx="4" fill="var(--bottle)"/>
+      </g>
+      <g stroke="var(--line)" stroke-width="4" stroke-dasharray="10 9" fill="none">
+        <line x1="70" y1="46" x2="190" y2="46"/><line x1="232" y1="46" x2="352" y2="46"/>
+      </g>
+      <g font-family="IBM Plex Mono, monospace" font-size="14" font-weight="600" fill="var(--ink)" text-anchor="middle">
+        <text x="130" y="34">no limit</text><text x="292" y="34">no limit</text>
+        <text x="454" y="70">45s</text><text x="616" y="153">20s</text><text x="778" y="170">15s</text>
+      </g>
+      <g text-anchor="middle" fill="var(--ink)">
+        <g font-family="Baloo 2, sans-serif" font-weight="800" font-size="17">
+          <text x="130" y="262">Technology</text><text x="292" y="262">Low mood</text><text x="454" y="262">A remark</text><text x="616" y="262">Mobility</text><text x="778" y="262">Emergency</text>
+        </g>
+        <g font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--ink-2)" letter-spacing="1">
+          <text x="130" y="284">L1 · DAY 3</text><text x="292" y="284">L2 · DAY 6</text><text x="454" y="284">L3 · DAY 8</text><text x="616" y="284">L4 · DAY 11</text><text x="778" y="284">L5 · DAY 14</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+</div>
+</section>
+
+<section class="band band--sunk">
+<div class="wrap stack">
+  <div class="eyebrow">The five challenges</div>
+  <h2 class="h2">What we ask, and what we're actually reading</h2>
+  <p class="prose">Each challenge has three randomised variants dealt at run time. Below is the shape of each — the trigger, the script, how the applicant answers, and the signals that separate a pass from a coaching note. <strong>Free-text answers are graded against the rubric shown, then sampled by a human assessor</strong>; nothing here auto-rejects anyone on its own.</p>
+
+  <div class="levels" style="margin-top:14px">
+
+  <article class="sticker lvl">
+    <div class="lvlhead">
+      <div class="num" style="background:var(--sun)">1</div>
+      <div>
+        <h3>The Telly's Gone Wrong</h3>
+        <div class="lvlmeta">
+          <span class="mini">DAY 3 · LOUNGE · 9:40 AM</span>
+          <span class="mini mini--text">Free text · no timer</span>
+          <span class="mini">Competency: patience &amp; teaching</span>
+        </div>
+      </div>
+    </div>
+    <div class="lvlbody">
+      <div class="lvlmain">
+        <div class="blk"><h5>Trigger</h5><p>Mid-chore, the telly is on the wrong input and the cricket isn't there. Bruce has been pressing buttons for ten minutes. The remote he's holding is the soundbar remote.</p></div>
+        <div class="script"><b>Bruce</b>"I haven't touched a thing. It's done this on its own. That's what happens when they update it behind your back." <i>He hands you the wrong remote, firmly.</i></div>
+        <div class="blk"><h5>The question</h5><p>A blank box: <em>"What do you do and say next?"</em> No options. 600 characters, as long as they like.</p></div>
+        <div class="blk"><h5>Variants</h5><div class="vars">
+          <div class="var"><b>1A</b><span>Wrong HDMI input. Straightforward fix, tests whether they explain or just do it.</span></div>
+          <div class="var"><b>1B</b><span>The tablet won't join the wi-fi. The password is on a card in a drawer he can't find.</span></div>
+          <div class="var"><b>1C</b><span>Hardest. He insists nothing is wrong and blames the internet company. Fixing it means first not winning the argument.</span></div>
+        </div></div>
+      </div>
+      <div class="lvlside">
+        <div class="sig"><h5 class="blk" style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Reading well</h5>
+          <ul>
+            <li><span class="dot dot--y">✓</span><span>Does it <b>with</b> him — hands stay off the device unless invited</span></li>
+            <li><span class="dot dot--y">✓</span><span>Narrates the steps in plain words, no jargon</span></li>
+            <li><span class="dot dot--y">✓</span><span>Offers to write it down or label the remote</span></li>
+            <li><span class="dot dot--y">✓</span><span>Lets him be right about something</span></li>
+          </ul></div>
+        <div class="sig"><h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Coaching note</h5>
+          <ul>
+            <li><span class="dot dot--n">!</span><span>"I'll just do it" — speed over teaching</span></li>
+            <li><span class="dot dot--n">!</span><span>Corrects his account of what happened</span></li>
+            <li><span class="dot dot--n">!</span><span>Any variation on "it's easy, look"</span></li>
+          </ul></div>
+      </div>
+    </div>
+  </article>
+
+  <article class="sticker lvl">
+    <div class="lvlhead">
+      <div class="num" style="background:var(--tin);color:#FFF6E2">2</div>
+      <div>
+        <h3>A Quiet Day</h3>
+        <div class="lvlmeta">
+          <span class="mini">DAY 6 · KITCHEN · 4:15 PM · OVERCAST</span>
+          <span class="mini mini--text">Choice ladder → free text</span>
+          <span class="mini">Competency: noticing, not fixing</span>
+        </div>
+      </div>
+    </div>
+    <div class="lvlbody">
+      <div class="lvlmain">
+        <div class="blk"><h5>Trigger</h5><p>Curtains still shut at 4pm. Breakfast untouched. Bowls cancelled. Answers have gone from paragraphs to three words. The kitchen calendar — hanging in the scene since Day 1 — has a date circled in biro.</p></div>
+        <div class="script"><b>Des</b>"I'm fine. Didn't feel like the bowls today, that's all." <i>He doesn't look up from the table.</i></div>
+        <div class="blk"><h5>The question</h5><p>Three dialogue options first, then the box: <em>"What do you say next?"</em> The applicant can tap the calendar before answering — we log whether they did.</p></div>
+        <div class="blk"><h5>Variants</h5><div class="vars">
+          <div class="var"><b>2A</b><span>Flat day, no clear cause. Tests presence without interrogation.</span></div>
+          <div class="var"><b>2B</b><span>The circled date is his wife's anniversary. Rewards observation.</span></div>
+          <div class="var"><b>2C</b><span>Hardest. He discloses, then says "don't tell my daughter." Tests where confidentiality stops.</span></div>
+        </div></div>
+      </div>
+      <div class="lvlside">
+        <div class="sig"><h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Reading well</h5>
+          <ul>
+            <li><span class="dot dot--y">✓</span><span>Sits down. Changes their own posture before his mood</span></li>
+            <li><span class="dot dot--y">✓</span><span>Names what they noticed without diagnosing it</span></li>
+            <li><span class="dot dot--y">✓</span><span>Offers company, not a solution or an outing</span></li>
+            <li><span class="dot dot--y">✓</span><span>Knows the line: low mood is logged, risk is escalated tonight</span></li>
+          </ul></div>
+        <div class="sig"><h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Coaching note</h5>
+          <ul>
+            <li><span class="dot dot--n">!</span><span>Forced brightness — "let's get you out of the house!"</span></li>
+            <li><span class="dot dot--n">!</span><span>Any sentence beginning "at least…"</span></li>
+            <li><span class="dot dot--n">!</span><span>Promising to keep a risk disclosure secret</span></li>
+          </ul></div>
+      </div>
+    </div>
+  </article>
+
+  <article class="sticker lvl">
+    <div class="lvlhead">
+      <div class="num" style="background:var(--jac);color:#FFF6E2">3</div>
+      <div>
+        <h3>Something He Said</h3>
+        <div class="lvlmeta">
+          <span class="mini">DAY 8 · VERANDAH · 5:30 PM</span>
+          <span class="mini mini--timed">45s to first response</span>
+          <span class="mini mini--text">→ free text</span>
+          <span class="mini">Competency: boundaries without rupture</span>
+        </div>
+      </div>
+    </div>
+    <div class="lvlbody">
+      <div class="lvlmain">
+        <div class="blk"><h5>Trigger</h5><p>You're both on the verandah shelling peas. The new family two doors down walks past with their shopping. The resident waves at them, pleasantly, and then says something.</p></div>
+        <div class="script"><b>Resident</b>"Lovely people. Very clean. Not like the <span class="cens">****</span> that were in there before — you couldn't get a word of English out of them." <i>Said warmly, to you, as though you'll agree.</i></div>
+        <div class="blk"><h5>Why it's written warmly</h5><p>The hard version of this isn't hostility — it's affection. An applicant who can push back on a shouted slur often can't push back on a kind old man saying something ugly over the peas, because the whole social pressure of the moment is to let it go. That gap is the thing we're measuring.</p></div>
+        <div class="blk"><h5>The question</h5><p>Four dialogue options under a 45-second bar, then the box: <em>"You've got the rest of the fortnight with this person. What do you actually say?"</em></p></div>
+        <div class="blk"><h5>Variants</h5><div class="vars">
+          <div class="var"><b>3A</b><span>A generalisation about a group. Lowest heat, easiest to let slide.</span></div>
+          <div class="var"><b>3B</b><span>A censored slur about a passer-by. Clear-cut, tests whether they say anything at all.</span></div>
+          <div class="var"><b>3C</b><span>Hardest. Aimed at the applicant's own background, then walked back — "you're one of the good ones."</span></div>
+        </div></div>
+      </div>
+      <div class="lvlside">
+        <div class="sig"><h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Reading well</h5>
+          <ul>
+            <li><span class="dot dot--y">✓</span><span>Says something. Silence is scored as a miss, not neutral</span></li>
+            <li><span class="dot dot--y">✓</span><span>Separates the person from the remark — no character verdict</span></li>
+            <li><span class="dot dot--y">✓</span><span>States their own position rather than debating his</span></li>
+            <li><span class="dot dot--y">✓</span><span>Knows abuse directed at them is reportable, not part of the deal</span></li>
+            <li><span class="dot dot--y">✓</span><span>Can name what they'd tell the coordinator, and when</span></li>
+          </ul></div>
+        <div class="sig"><h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Coaching note</h5>
+          <ul>
+            <li><span class="dot dot--n">!</span><span>Laughing along, or a change of subject as strategy</span></li>
+            <li><span class="dot dot--n">!</span><span>A lecture that ends the relationship on Day 8</span></li>
+            <li><span class="dot dot--n">!</span><span>Absorbing abuse about themselves as "just how they are"</span></li>
+          </ul></div>
+        <div class="guard">
+          <h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;margin:0 0 8px">Design guards on this level</h5>
+          <p>Content-warned and opt-in on the run's title screen, with an equivalent alternative scenario for anyone who declines. Slurs are always censored — the assessment is about the applicant's response, never the words. The remark is dealt across the whole resident roster so it never characterises one person. And <strong>"I would not continue this placement"</strong> is a scored-valid answer with follow-up questions, not a failure.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="sticker lvl">
+    <div class="lvlhead">
+      <div class="num" style="background:var(--brick);color:#FFF6E2">4</div>
+      <div>
+        <h3>The Third Step</h3>
+        <div class="lvlmeta">
+          <span class="mini">DAY 11 · BACKYARD · 8:05 AM</span>
+          <span class="mini mini--timed">20s action window</span>
+          <span class="mini mini--text">→ free text</span>
+          <span class="mini">Competency: assist without taking over</span>
+        </div>
+      </div>
+    </div>
+    <div class="lvlbody">
+      <div class="lvlmain">
+        <div class="blk"><h5>Trigger</h5><p>Marg is going down to the Hills Hoist with a full basket. The back step has been flagged loose since Day 2. Her walker is in the hallway behind two boxes the applicant left there on Day 9 — if they tidied them, that obstacle isn't in the scene.</p></div>
+        <div class="script"><b>Marg</b>"I've been doing this step for fifty-one years. Sit down and drink your tea." <i>She's already got one hand on the rail that wobbles.</i></div>
+        <div class="blk"><h5>The question</h5><p>A live scene with taps: the basket, her arm, the rail, the step, the walker, the phone. Twenty seconds. Then the box: <em>"Why did you do it that way?"</em></p></div>
+        <div class="blk"><h5>Variants</h5><div class="vars">
+          <div class="var"><b>4A</b><span>She makes it down. The test is what you fix afterwards — step, rail, hallway, or nothing.</span></div>
+          <div class="var"><b>4B</b><span>A stumble, not a fall. Tests offering an arm versus grabbing one.</span></div>
+          <div class="var"><b>4C</b><span>Hardest. She flatly refuses help. Choose between overriding her and mitigating around her.</span></div>
+        </div></div>
+      </div>
+      <div class="lvlside">
+        <div class="sig"><h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Reading well</h5>
+          <ul>
+            <li><span class="dot dot--y">✓</span><span>Offers an arm — never takes one, never lifts</span></li>
+            <li><span class="dot dot--y">✓</span><span>Asks before carrying the basket, and accepts no</span></li>
+            <li><span class="dot dot--y">✓</span><span>Clears their own boxes out of the hallway</span></li>
+            <li><span class="dot dot--y">✓</span><span>Moves at her pace, stands on the downhill side</span></li>
+            <li><span class="dot dot--y">✓</span><span>Reports the step to the coordinator the same day</span></li>
+          </ul></div>
+        <div class="sig"><h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Coaching note</h5>
+          <ul>
+            <li><span class="dot dot--n">!</span><span>Any lift, catch or pull. Physically the worst option available</span></li>
+            <li><span class="dot dot--n">!</span><span>Moving her walker without telling her where it went</span></li>
+            <li><span class="dot dot--n">!</span><span>Doing the whole job for her to save the time</span></li>
+          </ul></div>
+      </div>
+    </div>
+  </article>
+
+  <article class="sticker lvl">
+    <div class="lvlhead">
+      <div class="num" style="background:var(--bottle);color:#FFF6E2">5</div>
+      <div>
+        <h3>On the Kitchen Floor</h3>
+        <div class="lvlmeta">
+          <span class="mini">DAY 14 · KITCHEN · 7:50 PM</span>
+          <span class="mini mini--timed">15s per action</span>
+          <span class="mini mini--text">→ handover statement</span>
+          <span class="mini">Competency: emergency response</span>
+        </div>
+      </div>
+    </div>
+    <div class="lvlbody">
+      <div class="lvlmain">
+        <div class="blk"><h5>Trigger</h5><p>You come in from your room. He's on the floor beside the fridge, awake but not making sense, skin cool, one arm not doing what he's telling it to. No warning card, no music sting — the game simply stops being a game.</p></div>
+        <div class="script"><b>Bruce</b>"Don't you dare ring an ambulance. Do you know what they charge? Just give us a minute and a hand up." <i>His speech is slurred on one side.</i></div>
+        <div class="blk"><h5>The question</h5><p>A sequence of fifteen-second actions, no undo, no free text under pressure. The scene ends when the ambulance is on the line — then the box: <em>"They've asked what's happened. Type exactly what you'd tell them."</em></p></div>
+        <div class="blk"><h5>Variants</h5><div class="vars">
+          <div class="var"><b>5A</b><span>Fall with confusion. FAST signs present.</span></div>
+          <div class="var"><b>5B</b><span>Chest pain, sweating, refuses to sit down.</span></div>
+          <div class="var"><b>5C</b><span>Hardest. Explicit refusal on cost grounds, repeated. You call anyway.</span></div>
+        </div></div>
+      </div>
+      <div class="lvlside">
+        <div class="sig"><h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Reading well</h5>
+          <ul>
+            <li><span class="dot dot--y">✓</span><span><b>Triple zero inside the first window</b>, refusal notwithstanding</span></li>
+            <li><span class="dot dot--y">✓</span><span>Does not move him. Stays down at his level, keeps him warm</span></li>
+            <li><span class="dot dot--y">✓</span><span>Gives the street address unprompted; unlocks the front door</span></li>
+            <li><span class="dot dot--y">✓</span><span>Stays on the line. Notes the time it started</span></li>
+            <li><span class="dot dot--y">✓</span><span>Coordinator and family <em>after</em> the ambulance, not before</span></li>
+          </ul></div>
+        <div class="sig"><h5 style="font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px">Hard stop</h5>
+          <ul>
+            <li><span class="dot dot--n">!</span><span>Helping him up off the floor</span></li>
+            <li><span class="dot dot--n">!</span><span>Ringing the daughter, or searching symptoms, first</span></li>
+            <li><span class="dot dot--n">!</span><span>Honouring the refusal and waiting to see how he goes</span></li>
+          </ul>
+          <p style="font-size:13.5px;line-height:1.5;color:var(--ink-2);margin-top:4px">Any of these routes the run to a human assessor with a mandatory first-aid module before re-sit. The game never quietly fails someone on this level — a person tells them.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  </div>
+</div>
+</section>
+
+<section class="band">
+<div class="wrap stack">
+  <div class="eyebrow">Between the challenges</div>
+  <h2 class="h2">The filler isn't filler — it's the control group</h2>
+  <p class="prose">Roughly eleven of the fourteen days are ordinary. Chores, tea, small talk, a magpie. These beats do three jobs: they build the relationship the hard levels then put at risk, they establish a baseline of how this applicant behaves when nothing is at stake, and they plant every prop the scenarios later use. Skipping them is itself a signal.</p>
+  <div class="beats" style="margin-top:10px">
+    <span class="beat"><i style="background:var(--sun)">☕</i>The tea round — he takes it a particular way and never says so twice</span>
+    <span class="beat"><i style="background:var(--lawn)">🧺</i>Hanging the washing before the southerly comes through</span>
+    <span class="beat"><i style="background:var(--jac)">🗑</i>Bins out on the right night, which changed in March</span>
+    <span class="beat"><i style="background:var(--brick)">🍅</i>Watering the tomatoes, which are his late wife's</span>
+    <span class="beat"><i style="background:var(--sun)">📞</i>His daughter rings and asks how he <em>really</em> is</span>
+    <span class="beat"><i style="background:var(--lawn)">🐦</i>Swooping season on the front path</span>
+    <span class="beat"><i style="background:var(--glass)">👓</i>The reading glasses, again</span>
+    <span class="beat"><i style="background:var(--jac)">📻</i>The cricket on the radio at a volume you'd rather it wasn't</span>
+    <span class="beat"><i style="background:var(--brick)">📦</i>Your boxes, still in the hallway</span>
+  </div>
+</div>
+</section>
+
+<section class="band band--sunk">
+<div class="wrap stack">
+  <div class="eyebrow">Scoring</div>
+  <h2 class="h2">Three meters, one report, no silent rejections</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:34px" class="twocol">
+    <p class="prose">Every action and every typed answer moves three meters. <strong>Rapport</strong> is whether the resident wants you there. <strong>Autonomy</strong> is whether you left them in charge of their own house — the meter that punishes helpfulness. <strong>Safety</strong> is whether anyone got hurt, including you. They're deliberately in tension: the fastest way to raise Rapport in Level 3 is to laugh along, and that costs you elsewhere.</p>
+    <p class="prose">Multiple-choice and timed actions score deterministically. Free-text answers are scored against the published rubric by a model, and <strong>every borderline result plus a 10% random sample goes to a human assessor</strong> before any outcome is issued. Applicants see their transcript and the rubric they were marked against. That's the difference between a screening instrument and a quiz.</p>
+  </div>
+  <div class="tblwrap" style="margin-top:14px">
+    <table>
+      <thead><tr><th>Outcome</th><th>What it means</th><th>What happens next</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="band-pill" style="background:var(--lawn)">Certified</span></td>
+          <td><b>Ready to place.</b> Level 5 clean, no hard stops, all three meters above threshold at the end of the fortnight.</td>
+          <td>Certificate issued, valid 24 months. Coaching notes attached to the placement file for the coordinator.</td>
+        </tr>
+        <tr>
+          <td><span class="band-pill" style="background:var(--sun)">Certified with notes</span></td>
+          <td><b>Ready, with a watch item.</b> Sound on safety, but a pattern worth naming — took over too often, or went quiet in Level 3.</td>
+          <td>Certified. Two specific coaching notes go to the coordinator and to the applicant, in the same words.</td>
+        </tr>
+        <tr>
+          <td><span class="band-pill" style="background:var(--jac);color:#FFF6E2">Not yet</span></td>
+          <td><b>A gap, not a verdict.</b> One challenge clearly missed, or an emergency hard stop.</td>
+          <td>Named module — first aid, or boundaries and reporting — then a re-sit with a different resident and fresh variants. No cap on attempts.</td>
+        </tr>
+        <tr>
+          <td><span class="band-pill" style="background:var(--bottle);color:#FFF6E2">Assessor review</span></td>
+          <td><b>A human reads it.</b> Anything the rubric can't confidently score, including every "I would not continue this placement".</td>
+          <td>Reviewed within five business days by a person, who writes the outcome. Never auto-issued in either direction.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+<section class="band">
+<div class="wrap stack">
+  <div class="eyebrow">On sign-off</div>
+  <h2 class="h2">What gets built first</h2>
+  <p class="prose">Approve the direction above and this becomes the build brief. The first playable is one vertical slice, not the whole fortnight — Day 3 through Level 1, end to end, in the real art. That proves the loop, the free-text capture and the grading pipeline against something you can hold.</p>
+  <div class="next" style="margin-top:12px">
+    <div class="sticker nextcard"><span>FIRST</span><h4>Playable slice</h4><p>Verandah and lounge, the chore loop, Level 1 with all three variants, and the free-text sheet writing to a real transcript.</p></div>
+    <div class="sticker nextcard"><span>THEN</span><h4>The other four</h4><p>Levels 2 through 5 with their scenes, plus the eleven filler beats and the prop planting they depend on.</p></div>
+    <div class="sticker nextcard"><span>THEN</span><h4>Rubric &amp; assessor view</h4><p>Grading against the published rubric, the review queue, and the report an applicant and a coordinator both receive.</p></div>
+    <div class="sticker nextcard"><span>BEFORE LAUNCH</span><h4>Validation</h4><p>Run it past placement coordinators and a panel of current homeshare residents. If the scenarios don't ring true to them, they don't ship.</p></div>
+  </div>
+  <div class="sticker pad" style="margin-top:22px;border-style:dashed">
+    <div class="eyebrow">Open questions for you</div>
+    <div class="prose" style="font-size:15.5px;display:flex;flex-direction:column;gap:9px">
+      <p><strong>1. Roster or fixed resident?</strong> The four-resident rotation is my recommendation — it resists memorisation and keeps the Level 3 remark from characterising one person. It also costs four character rigs instead of one.</p>
+      <p><strong>2. Fourteen days or seven?</strong> Fourteen gives the filler beats room to earn the relationship. Seven gets the run under ten minutes. I've speced fourteen; say the word and I'll compress.</p>
+      <p><strong>3. Does Level 3 stay opt-in?</strong> I've designed it opt-in with an alternative scenario. If it's mandatory the assessment is stronger and the accessibility story is weaker — that's a policy call, not a design one.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer>
+<div class="wrap foot">
+  <div><strong style="font-family:'Baloo 2',sans-serif;font-size:19px;color:var(--ink)">Pepaws Porch</strong><br>Visual design v1 · for sign-off</div>
+  <div class="mono" style="font-size:12.5px;letter-spacing:.06em">SUBURBAN COTTAGE · 14 DAYS · 5 GRADED CHALLENGES</div>
+</div>
+</footer>
