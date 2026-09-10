@@ -1513,22 +1513,33 @@ function assessorWorkbook(records){
   ];
 }
 
-function offerFile(filename, sheets, statusId){
-  var bytes;
-  try { bytes = xlsxMini(sheets); }
-  catch (e){ setStatus(statusId, "no", "Could not build the workbook."); return; }
+function offerDownload(filename, data, statusId){
   getCap("downloads").then(function(d){
     if (!d){ setStatus(statusId, "no", "Downloads are not available in this view."); return; }
     setStatus(statusId, "wait", "Waiting for you to confirm the download…");
-    d.save({filename: filename, data: bytes}).then(function(){
-      setStatus(statusId, "ok", "Saved " + filename + ".");
+    d.save({filename: filename, data: data}).then(function(){
+      setStatus(statusId, "ok", "Saved " + filename + ". Check your downloads folder.");
     }, function(err){
       var code = (err && err.code) || "unavailable";
-      if (code === "declined") setStatus(statusId, "wait", "Download cancelled.");
+      if (code === "declined") setStatus(statusId, "wait", "Download cancelled — nothing was saved.");
       else if (code === "rate_limited") setStatus(statusId, "wait", "A download prompt is already open. Finish that one first.");
       else setStatus(statusId, "no", "Download failed (" + code + ").");
     });
   });
+}
+
+function offerFile(filename, sheets, statusId){
+  var bytes;
+  try { bytes = xlsxMini(sheets); }
+  catch (e){ setStatus(statusId, "no", "Could not build the workbook."); return; }
+  offerDownload(filename, bytes, statusId);
+}
+
+function offerJson(filename, records, statusId){
+  var text;
+  try { text = JSON.stringify(records, null, 2); }
+  catch (e){ setStatus(statusId, "no", "Could not build the file."); return; }
+  offerDownload(filename, text, statusId);
 }
 
 /* ============================================================
@@ -1597,8 +1608,10 @@ function renderAssessor(){
     + '<div class="scroll"><div class="pad">'
     + '<h1 style="font-size:26px">Submissions</h1>'
     + '<p class="sub">Every run written to the placement record, newest first. Bands are provisional: the assessor column is what counts, and it is filled in by a person. Anyone who can open this artifact can open this page — it is a convenience, not an access control.</p>'
+    + '<p class="sub"><b>Export workbook</b> gives you the spreadsheet to read and mark up. <b>Export raw JSON</b> gives you the file <span class="mono">scripts/sync_responses.py</span> merges into the tracked workbook, keeping any assessor columns you have already filled in.</p>'
     + '<div class="arow"><button class="cont" id="refresh">Refresh</button>'
     + '<button class="cont primary" id="exp">Export workbook (.xlsx)</button>'
+    + '<button class="cont" id="expjson">Export raw JSON</button>'
     + '<span class="pill" id="src">reading…</span></div>'
     + '<div class="status" id="astat"><span class="dotled wait"></span><span>Reading the placement record…</span></div>'
     + '<div class="awrap"><table class="atable" id="atable"><thead><tr>'
@@ -1650,16 +1663,39 @@ function renderAssessor(){
     if (!records.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
     offerFile("pepaws-porch-responses.xlsx", assessorWorkbook(records), "astat");
   };
+  el("#expjson").onclick = function(){
+    if (!records.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
+    offerJson("pepaws-porch-submissions.json", records, "astat");
+  };
   load();
 }
 
 /* ============================================================
    BOOT
    ============================================================ */
+function hashIsAssessor(){
+  return (location.hash || "").replace(/^#/, "").toLowerCase() === "assessor";
+}
+
 function boot(){
   S = freshState();
-  if ((location.hash || "").replace("#", "").toLowerCase() === "assessor"){ S.view = "assessor"; }
+  if (hashIsAssessor()) S.view = "assessor";
   render();
 }
+
+/* The hash gets typed into the address bar of a tab that is already open, so
+   route on it whenever it changes rather than only at load. A run in progress
+   is already persisted; the title screen offers to resume it on the way back. */
+window.addEventListener("hashchange", function(){
+  clearTimer();
+  if (hashIsAssessor()){
+    if (S && S.view === "assessor") return;
+    if (S && S.pid && !S.submittedAt && S.view === "play") save();
+    S = freshState(); S.view = "assessor"; render();
+  } else if (S && S.view === "assessor"){
+    S = freshState(); render();
+  }
+});
+
 boot();
 </script>

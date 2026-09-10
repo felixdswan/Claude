@@ -28,33 +28,64 @@ Difficulty ramps by shrinking the room to think, not by adding taps.
     scripts/export-rubric.js     regenerates data/rubric.json from the game
     scripts/test-playthrough.js  automated playthroughs in a real browser
 
-## Where the answers go
+## Getting the responses out
 
-1. **The run.** Progress is kept in `localStorage`, so a refresh on Day 11 doesn't cost
-   eleven days. Every choice, timer expiry and typed answer is recorded with its timing.
-2. **The record.** On finishing, the game writes one JSON document per participant to the
-   artifact's record store at `submissions/<participant id>`. If the store is unreachable
-   the results screen says so and hands the applicant their own workbook instead.
-3. **The workbook.** Export the documents, then:
+**The assessor page is a URL, not a button.** Take the game's URL and put `#assessor`
+on the end:
 
-       python3 scripts/sync_responses.py <json_dir>
+    https://claude.ai/code/artifact/4d7de4dd-fd7c-412b-aee0-ea20877da4b0#assessor
 
-   Rows are keyed on participant id, so re-running the same export is safe. Four sheets:
+Open it in a **new tab**. (Typing the hash into a tab that already has the game open now
+works too, but a fresh tab is the reliable habit.) You get a table of every completed run,
+newest first, and two buttons.
 
-   - **Submissions** — one row per applicant, plus four columns the assessor fills in
-     by hand. A re-sync never overwrites those.
-   - **Free text** — one row per written answer: full text, rubric signals hit and
-     missed, characters, seconds.
-   - **Choices** — every decision and the meter movement it caused.
-   - **Rubric** — the signal set, generated from the game so it can't drift.
+### Just want the spreadsheet?
 
-4. **The decision.** A person reads the writing and fills in `assessor`,
-   `assessor_outcome`, `assessor_notes`, `reviewed_at`.
+Click **Export workbook (.xlsx)**, confirm the download prompt, done. That file has all
+participants across four sheets. No Python, no JSON, no sync script.
 
-An assessor can also open the game at `#assessor` to list every submission and export them
-all as one workbook. Applicants can download their own run from the results screen. Both
-build the file in the browser — no third-party library, so the export works whether or not
-a CDN is reachable.
+### Want to accumulate runs into the tracked workbook?
+
+Use this when you're marking work up over time and want your own assessor columns kept.
+
+1. On the same page, click **Export raw JSON** and confirm the download.
+2. Point the sync script at the file you just downloaded:
+
+       python3 scripts/sync_responses.py ~/Downloads/pepaws-porch-submissions.json
+
+That merges into `data/pepaws-porch-responses.xlsx`. Re-running with the same file is
+safe — rows are keyed on participant id, so a participant is replaced rather than
+duplicated, and `assessor`, `assessor_outcome`, `assessor_notes` and `reviewed_at` are
+never overwritten by a sync.
+
+Needs `pip install openpyxl` once.
+
+### If something doesn't work
+
+| What you see | What it means |
+|---|---|
+| The game, not a table | The hash didn't take. Open the `#assessor` URL in a new tab. |
+| "The shared record is not available in this view" | You're opening the local file, or the record store isn't reachable. It only works on the published artifact. |
+| "No submissions yet" | Nobody has finished a run. Only *completed* fourteen-day runs are written; abandoning halfway stores nothing. |
+| "Download cancelled" | The confirmation prompt was dismissed. Click the button again. |
+| `0 submission(s) merged` | Wrong file. It wants the **Export raw JSON** download, not the .xlsx. |
+
+### The sheets
+
+- **Submissions** — one row per applicant, plus four empty columns for the assessor.
+- **Free text** — one row per written answer: full text, rubric signals hit and missed,
+  characters, seconds.
+- **Choices** — every decision and the meter movement it caused.
+- **Rubric** — the signal set, generated from the game so it can't drift.
+
+A person then fills in `assessor`, `assessor_outcome`, `assessor_notes`, `reviewed_at`.
+
+### What the game stores, and when
+
+Progress is kept in `localStorage` as you play, so a refresh on Day 11 doesn't cost eleven
+days. On finishing, one JSON document per participant is written to the artifact's record
+store at `submissions/<participant id>`. If that write fails, the results screen says so
+and offers the applicant their own workbook to send on instead.
 
 ## Scoring
 

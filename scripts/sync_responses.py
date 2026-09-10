@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 """Merge Pepaws Porch submissions into the backend workbook.
 
-The game writes each completed run to the artifact's record store as one JSON
-document under `submissions/<participant id>`. Export those documents to a
-directory, then point this script at it:
+Getting the input file:
 
-    python3 scripts/sync_responses.py <json_dir>
+  1. Open the game with #assessor on the end of its URL, in a NEW tab.
+     (Typing the hash into a tab that already has the game open works too now,
+     but a fresh tab is the reliable habit.)
+  2. Click "Export raw JSON". Confirm the download.
+  3. Point this script at the file you just downloaded:
+
+         python3 scripts/sync_responses.py ~/Downloads/pepaws-porch-submissions.json
+
+It also accepts a single submission document, or a directory containing either.
 
 Rows are keyed on participant id, so re-running with the same export is safe —
-an existing participant's rows are replaced, not duplicated. The workbook is
-created on first run.
+an existing participant's rows are replaced, not duplicated, and the four
+assessor columns are never overwritten. The workbook is created on first run.
+
+If you only want a spreadsheet to read, you do not need this script at all:
+"Export workbook (.xlsx)" on the same page gives you one directly.
 
 Sheets
     Submissions   one row per participant, plus the assessor's own columns
@@ -96,8 +105,27 @@ def write_rows(ws, cols, rows):
             ws.cell(row=r, column=c, value=row.get(name))
 
 
+def unwrap(doc):
+    """Peel any wrapper an export tool put around the submission body."""
+    for _ in range(4):
+        if not isinstance(doc, dict) or doc.get("pid"):
+            break
+        for key in ("data", "document", "fields", "value"):
+            inner = doc.get(key)
+            if isinstance(inner, dict):
+                doc = inner
+                break
+        else:
+            break
+    return doc
+
+
 def load_documents(path):
-    """Every *.json under path, each one submission document."""
+    """Accepts, in any combination:
+         - the assessor view's "Export raw JSON" file (a list of submissions)
+         - a single submission document
+         - a directory of either
+    """
     docs, skipped = [], []
     if os.path.isfile(path):
         candidates = [path]
@@ -107,21 +135,34 @@ def load_documents(path):
             for f in sorted(files):
                 if f.lower().endswith(".json"):
                     candidates.append(os.path.join(base, f))
+        if not candidates:
+            skipped.append(f"{path}: no .json files found in this directory")
+
     for f in candidates:
+        name = os.path.basename(f)
         try:
             with open(f, encoding="utf-8") as fh:
-                doc = json.load(fh)
+                payload = json.load(fh)
         except (OSError, ValueError) as e:
-            skipped.append(f"{os.path.basename(f)}: {e}")
+            skipped.append(f"{name}: {e}")
             continue
-        # An exported document may be wrapped by the export tool.
-        for key in ("data", "document", "fields"):
-            if isinstance(doc, dict) and key in doc and isinstance(doc[key], dict) and "pid" not in doc:
-                doc = doc[key]
-        if isinstance(doc, dict) and doc.get("pid"):
-            docs.append(doc)
-        else:
-            skipped.append(f"{os.path.basename(f)}: no participant id (pid)")
+
+        # A list of submissions, or an object wrapping one.
+        if isinstance(payload, dict):
+            for key in ("documents", "submissions", "records", "docs", "items"):
+                if isinstance(payload.get(key), list):
+                    payload = payload[key]
+                    break
+        items = payload if isinstance(payload, list) else [payload]
+
+        found = 0
+        for item in items:
+            doc = unwrap(item)
+            if isinstance(doc, dict) and doc.get("pid"):
+                docs.append(doc)
+                found += 1
+        if not found:
+            skipped.append(f"{name}: no submissions found (no participant id in it)")
     return docs, skipped
 
 
@@ -209,7 +250,9 @@ def rebuild_rubric_sheet(wb):
 
 def main():
     ap = argparse.ArgumentParser(description="Merge Pepaws Porch submissions into the backend workbook.")
-    ap.add_argument("json_dir", nargs="?", help="directory (or file) of exported submission JSON documents")
+    ap.add_argument("json_dir", nargs="?", metavar="JSON",
+                    help='the "Export raw JSON" file from the game\'s #assessor page '
+                         "(or a single submission document, or a directory of either)")
     ap.add_argument("--workbook", default=DEFAULT_WORKBOOK, help="workbook to create or update")
     args = ap.parse_args()
 
@@ -265,10 +308,15 @@ def main():
 
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     print(f"{args.workbook}")
-    print(f"  {len(incoming)} document(s) merged, {len(new_subs)} participant(s) total  [{stamp}]")
+    print(f"  {len(incoming)} submission(s) merged, {len(new_subs)} participant(s) total  [{stamp}]")
     print(f"  free-text rows: {len(new_ft)}   choice rows: {len(new_ch)}")
     for s in skipped:
         print(f"  skipped {s}")
+    if args.json_dir and not incoming:
+        print()
+        print("  Nothing was merged. That input held no submissions.")
+        print("  Get the right file: open the game with #assessor on the end of its URL,")
+        print("  then click 'Export raw JSON' and pass the downloaded file to this script.")
 
 
 if __name__ == "__main__":
