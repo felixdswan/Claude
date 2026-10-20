@@ -51,7 +51,11 @@ that hides staff-only rows. Beside it, set the pairing status, suggested homeown
 watch-point, and click **Save review**. Those fields are kept separately from the applicant's
 answers and shown in the profile.
 
-- **Search** and the status filter narrow the queue.
+- Profiles with threatening language, drug references, a possible welfare concern or very low
+  safety awareness are marked **Needs attention**, with the words quoted in the watch-point.
+  Threats and drug references also keep the applicant out of automatic matching. The checks are
+  plain word lists, so they catch the obvious and miss the subtle: still read the answers.
+- **Search** and the status filter (including **Needs attention**) narrow the queue.
 - **Add profile files** imports `.json` profiles that applicants emailed in.
 - **Download JSON** saves the open profile. **Export all** saves the whole queue as one file.
 - If an applicant played more than once, a run picker appears. The latest run opens first.
@@ -96,7 +100,7 @@ offers the download fallback, and the desk shows profile files you add without s
 
     node scripts/test-playthrough.js /tmp/pepaws-out
 
-plays a best run, a worst run and a timed-out run against a stand-in record store, checks each
+plays a best run, a worst run, a hostile run and a timed-out run against a stand-in record store, checks each
 stored profile against the template's contract, exercises the staff desk, and saves screenshots
 of every scene.
 

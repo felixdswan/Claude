@@ -189,6 +189,21 @@ The screening game (`game/pepaws-porch.html`) builds the profile itself. There i
 | Post | Five short pages after Day 14 | every other Pre and Post field above; `meta.stages.postGame` |
 | Staff | Staff desk (`#staff`) | `meta.pairingStatus`, `meta.suggestedFor`, `checks.*`, `screening.watchPoint` |
 
+### Automatic checks
+
+Everything the applicant writes, in the game and in the final questions, is checked against plain word lists. Each hit is quoted for staff, and the profile is marked **Needs attention** on the staff desk.
+
+| Flag in `screening.flags` | Effect |
+|---|---|
+| `threatening_language` | Lowers Connection, Respect and Reliability, and sets `screening.profile` to `transactional_guest`, which keeps the applicant out of automatic matching |
+| `drug_references` | As above |
+| `welfare_concern` | Staff follow-up only. The applicant is shown Lifeline and Beyond Blue numbers |
+| `demeaning_language` | Lowers Connection and Respect |
+| `low_safety_awareness` | Awareness of 3 or less; quotes the unsafe choices |
+| `answers_to_check` | Contradictory or impossible answers, such as smoking but needing a smoke-free home |
+
+A negation just before a match ("I would never hurt her") doesn't count, and "granny flat" isn't flagged. The game writes a summary of every hit into `screening.watchPoint`; staff can rewrite it on the desk. Applicants under 18 can't submit the final questions.
+
 A few Post answers start pre-filled from the game and stay editable: `support.helpTypes` (from offering company, cooking or phone help) and `interests.homeownerBackground` (from the homeowner career the applicant's discipline selected).
 
 The game saves the profile twice: once when Day 14 ends, so staff see the result even if the questions are left unfinished, and again when the questions are submitted.

@@ -97,6 +97,12 @@ const TEXT = {
     D10: "I want to understand where her view comes from and listen properly, and I'd like her to know I feel at home living here and respect her.",
     D13: "Thank you for letting me be part of your home. I'm sorry I wasn't always there, and I'd like us to keep talking honestly together."
   },
+  hostile: { /* a deliberately unsuitable applicant: sensible clicks, hostile writing */
+    D3: "ok jit you old as this my house now jitty",
+    D5: "i gotta study granny give me some gummy gummy wagwan",
+    D10: "nah get on with cacking it im ready for the house",
+    D13: "give me that gummy gummy granny or else tm will be a bad day for you"
+  },
   worst: {
     D3: "Just want a reference letter and some contacts from her network. That is about it really.",
     D5: "I'd make an excuse and avoid the whole thing. I wouldn't tell her where I was going either.",
@@ -120,14 +126,14 @@ async function play(page, mode, { letTimerRun = false } = {}) {
     if (st.phase === "reply" || st.t === "say") { await page.click("#next"); continue; }
     if (st.t === "choice") {
       if (letTimerRun && st.timer) { await page.waitForFunction(() => window.S.phase === "reply", null, { timeout: (st.timer + 3) * 1000 }); continue; }
-      const pick = st.scores.indexOf(mode === "best" ? Math.max(...st.scores) : Math.min(...st.scores));
+      const pick = st.scores.indexOf(mode === "worst" ? Math.min(...st.scores) : Math.max(...st.scores));
       await page.click(`.opt[data-i="${pick}"]`);
       continue;
     }
     if (st.t === "text") { await page.fill("#ta", TEXT[mode][st.id]); await page.click("#send"); continue; }
     if (st.t === "multi") {
       const boxes = await page.$$("[data-multi]");
-      if (mode === "best") { await boxes[0].check(); await boxes[3].check(); } else await boxes[2].check();
+      if (mode !== "worst") { await boxes[0].check(); await boxes[3].check(); } else await boxes[2].check();
       await page.click("#multi-submit");
       continue;
     }
@@ -135,23 +141,29 @@ async function play(page, mode, { letTimerRun = false } = {}) {
   throw new Error("run did not finish");
 }
 
-async function answerQuestions(page) {
+async function answerQuestions(page, extra = {}) {
   const fill = { age: "21", phone: "0491 570 156", ecName: "Claire Graffet", ecPhone: "0491 570 110", university: "UTS",
     course: "Bachelor of Nursing", campus: "UTS City campus, Ultimo", moveInDate: "2027-02-01", rentBudgetWeekly: "200", languages: "English, Italian" };
   const pick = { gender: "Female", studentType: "domestic", yearOfStudy: "2", transport: "public transport", maxCommuteMins: "40",
     stayMonths: "12", homeownerGender: "female", otherLodgers: "none", hoursPerWeek: "8-10" };
   const yes = { smoker: "false", needsSmokeFree: "true", okWithPets: "true", petAllergy: "false" };
+  Object.assign(fill, extra.fill); Object.assign(pick, extra.pick); Object.assign(yes, extra.yes);
   for (let p = 0; p < 5; p++) {
     await page.waitForSelector("#qnext");
     if (p === 0) {
       await page.click("#qnext");   // nothing filled: validation must stop us
       if (!(await page.$(".qfield.bad"))) errors.push("questionnaire: empty page 1 was accepted");
+      if (extra.fill && extra.fill.age === "19") {  // under 18 must be refused
+        await page.fill("#q-age", "16"); await page.click("#qnext");
+        if (!(await page.$("#qf-age.bad"))) errors.push("questionnaire: age 16 was accepted");
+      }
     }
     for (const [k, v] of Object.entries(fill)) if (await page.$("#q-" + k)) await page.fill("#q-" + k, v);
     for (const [k, v] of Object.entries(pick)) if (await page.$("#q-" + k)) await page.selectOption("#q-" + k, v);
     for (const [k, v] of Object.entries(yes)) if (await page.$("#q-" + k)) await page.click(`[data-one="${k}"][data-v="${v}"]`);
     if (await page.$("#q-campusDays")) { for (const d of ["Mon", "Tue", "Wed"]) await page.click(`[data-multi="campusDays"][data-v="${d}"]`); }
     if (await page.$("#q-hobbies")) { await page.click('[data-multi="hobbies"][data-v="Gardening"]'); await page.fill('[data-q="hobbies__other"]', "Choir, Crime novels"); }
+    for (const [k, v] of Object.entries(extra.text || {})) if (await page.$(`[data-q="${k}"]`)) await page.fill(`[data-q="${k}"]`, v);
     if (p === 4) {
       const pressed = await page.$$eval('[data-multi="helpTypes"][aria-pressed="true"]', (x) => x.length);
       if (!pressed) await page.click('[data-multi="helpTypes"][data-v="Gardening"]');
@@ -245,6 +257,34 @@ async function checkContract(browser, base, profile, label) {
       const dl = await page.evaluate(() => window.__downloads.map((d) => d.filename));
       if (!dl.length) errors.push("staff: export all produced no download");
     }
+    await ctx.close();
+  }
+
+  /* a hostile applicant: good clicks must not hide what they wrote */
+  {
+    const { ctx, page } = await newPage(browser, base);
+    await page.fill("#fname", "Felix Swan"); await page.fill("#femail", "f@student.uts.edu.au");
+    await page.check("#c1"); await page.check("#c2"); await page.click("#begin");
+    await play(page, "hostile");
+    await answerQuestions(page, {
+      fill: { age: "19", workHours: "52", rentBudgetWeekly: "2", bedtime: "04:00", wakeTime: "04:01" },
+      pick: { studentType: "international" },
+      yes: { smoker: "true", needsSmokeFree: "true", okWithPets: "true", petAllergy: "true" },
+      text: { hobbies__other: "crack", canOffer__other: "how to clean a crack pipe", wantsToLearn__other: "meth", lifeGoals: "die",
+              socialNote: "I do crack", diet: "I am allergic to elderly energy" }
+    });
+    const doc = await page.evaluate(() => window.__store["profiles/applicant-1"]);
+    const sc = doc.profile.screening;
+    for (const f of ["threatening_language", "drug_references", "welfare_concern", "demeaning_language", "answers_to_check"])
+      if (sc.flags.indexOf(f) === -1) errors.push("hostile: missing flag " + f);
+    if (sc.profile !== "transactional_guest") errors.push("hostile: profile was " + sc.profile);
+    if (!sc.watchPoint) errors.push("hostile: no automatic watch-point");
+    if (!doc.attention) errors.push("hostile: not marked as needing attention");
+    if (!(await page.isVisible("text=Lifeline"))) errors.push("hostile: no support line shown for a welfare concern");
+    const neg = await page.evaluate(() => { const before = S.concerns.length; const h = scanText("t", "I would never hurt her, and I don't do drugs. The granny flat step needs fixing."); S.concerns.length = before; return h.length; });
+    if (neg) errors.push("hostile: negated or innocent text was flagged");
+    report.hostile = { type: sc.profile, meters: sc.meters, flags: sc.flags, watchPoint: sc.watchPoint };
+    await page.screenshot({ path: path.join(OUT, "results-hostile.png"), fullPage: true });
     await ctx.close();
   }
 

@@ -1070,7 +1070,7 @@ function freshState(){
     di: 0, si: 0, phase: "step",
     meters: {connection: START_METER, respect: START_METER, reliability: START_METER, awareness: START_METER},
     flags: {}, tags: {}, scenarioSelections: {}, pathByDay: {}, redemption: null, redemptionOutcome: "",
-    motivation: "", responses: [], choices: [], pending: null, stepEnteredAt: null,
+    motivation: "", responses: [], choices: [], concerns: [], pending: null, stepEnteredAt: null,
     q: {}, qPage: 0, qPrefilled: false, synced: false
   };
 }
@@ -1487,6 +1487,46 @@ function renderReply(){
   el("#next").onclick = function(){ S.pending = null; nextStep(); };
 }
 
+/* ---------- automatic checks on everything the applicant writes ----------
+   Plain word lists, so staff can see exactly why something was flagged. A hit
+   quotes the words for staff; threats and drug references also lower the
+   meters and keep the profile out of automatic matching. A negation just
+   before a match ("I would never hurt her") doesn't count. */
+var CONCERNS = [
+  {id:"threatening_language", serious:true, label:"Threatening or hostile language",
+   re:/\b(or else|bad day for you|you'?ll regret|watch (your|ur) back|(hurt|hit|kill|smack|bash|punch) (you|her|marg)|hurry up and die|(cark|cack)(ing)? it|kick the bucket|(this|it'?s|this is) my (house|home)( now)?|kick (you|her) out|you'?re (useless|a burden))\b/i},
+  {id:"drug_references", serious:true, label:"References to illegal drugs",
+   re:/\b(meth|methamphetamine|heroin|cocaine|crack ?(pipe|cocaine|head)|(smoke|smoking|do|doing|sell|selling|deal|dealing) (crack|ice|meth|drugs|weed|coke)|on (crack|meth)|^crack$)\b/i},
+  {id:"welfare_concern", label:"Possible welfare concern",
+   re:/\b(want(ed)? to die|wanna die|kill myself|suicid\w*|end (it all|my life)|self[- ]harm|^(to )?die$)/i},
+  {id:"demeaning_language", label:"Demeaning, ageist or crude language",
+   re:/\b((?<!my )granny(?! flat)|old (hag|bag|bat|biddy|cow|chook)|boomer|senile|geezer|wrinkl(y|ies)|crone|you old|elderly energy|f+u+c+k\w*|shit|bitch|cunt|stfu|shut up)\b/i}
+];
+var NEG_BEFORE = /(?:\b(?:not|never|no|nor|without|wouldn'?t|won'?t|don'?t|didn'?t|can'?t|couldn'?t|shouldn'?t)\b|\w+n['’]t\b)[^.!?;]{0,26}$/i;
+function firstUnnegated(re, text){
+  var g = new RegExp(re.source, re.flags + "g"), m;
+  while ((m = g.exec(text)) !== null){
+    if (!NEG_BEFORE.test(text.slice(Math.max(0, m.index - 30), m.index))){
+      var from = Math.max(0, m.index - 28), to = Math.min(text.length, m.index + m[0].length + 28);
+      var cut = text.slice(from, to);
+      if (from > 0) cut = cut.replace(/^\S*\s/, "…");
+      if (to < text.length) cut = cut.replace(/\s\S*$/, "…");
+      return cut.replace(/\s+/g, " ").trim();
+    }
+    if (g.lastIndex === m.index) g.lastIndex++;
+  }
+  return null;
+}
+function scanText(source, text, fromQuestions){
+  var hits = [];
+  CONCERNS.forEach(function(k){
+    var excerpt = firstUnnegated(k.re, String(text || "").replace(/[‘’]/g, "'"));
+    if (excerpt){ hits.push(k); S.concerns.push({id: k.id, source: source, excerpt: excerpt, q: !!fromQuestions}); }
+  });
+  return hits;
+}
+function hasSeriousConcern(){ return S.concerns.some(function(c){ return CONCERNS.filter(function(k){ return k.id === c.id; })[0].serious; }); }
+
 function renderText(day, step){
   var p = el("#panel");
   p.innerHTML =
@@ -1508,7 +1548,13 @@ function renderText(day, step){
   send.onclick = function(){
     var answer = ta.value.trim();
     if (answer.length < step.min) return;
-    var outcome = (step.outcomes || []).filter(function(c){ return c.match.test(answer); })[0] || null;
+    var hits = scanText("Day " + day.n, answer);
+    var serious = hits.some(function(k){ return k.serious; });
+    var outcome = serious ? null : (step.outcomes || []).filter(function(c){ return c.match.test(answer); })[0] || null;
+    if (serious){
+      applyFx(impact(-2, -2, -1, 0));
+      if (day.n === 13) S.redemptionOutcome = "redemption_hostile";
+    } else if (hits.length) applyFx(impact(-1, -1, 0, 0));
     if (outcome){
       if (outcome.tag) S.tags[outcome.tag] = true;
       if (outcome.flag) S.flags[outcome.flag] = true;
@@ -1517,7 +1563,8 @@ function renderText(day, step){
     }
     S.responses.push({
       id: step.id, day: day.n, prompt: step.prompt, answer: answer,
-      chars: answer.length, seconds: secsSince(S.stepEnteredAt), outcome: outcome ? outcome.id : ""
+      chars: answer.length, seconds: secsSince(S.stepEnteredAt), outcome: outcome ? outcome.id : "",
+      concerns: hits.map(function(k){ return k.id; })
     });
     save();
     nextStep();
@@ -1535,7 +1582,7 @@ var YES_NO = [[true, "Yes"], [false, "No"]];
 var Q_PAGES = [
   {title:"About you", intro:"Five short pages. Most answers are a tap. Anything marked optional can be left blank.", fields:[
     {id:"preferredName", path:"student.preferredName", type:"text", label:"Preferred name", ph:"If different from your first name"},
-    {id:"age", path:"student.age", type:"num", label:"Age", req:true, min:16, max:99},
+    {id:"age", path:"student.age", type:"num", label:"Age", req:true, min:18, max:99, hint:"You need to be 18 or over to join a homeshare."},
     {id:"gender", path:"student.gender", type:"select", label:"Gender", req:true, opts:["Female","Male","Non-binary","Another identity","Prefer not to say"]},
     {id:"pronouns", path:"student.pronouns", type:"select", label:"Pronouns", opts:["she/her","he/him","they/them","Other","Prefer not to say"]},
     {id:"phone", path:"student.phone", type:"tel", label:"Mobile number", req:true},
@@ -1730,6 +1777,7 @@ function renderQuestionnaire(){
       return;
     }
     if (!last){ S.qPage++; save(); render(); el("#qscroll").scrollTop = 0; return; }
+    scanQuestionnaire();
     S.submittedAt = nowISO();
     S.view = "results";
     save(); render();
@@ -1750,10 +1798,56 @@ var PROFILE_TYPES = {
 var MOTIVATION_CODES = {motivation_study:"quiet_space", motivation_saving:"saving_money", motivation_company:"company", motivation_learning:"learning"};
 var REDEMPTION_RESULT = {
   redemption_reached_out:"Reached out in the Day 13 conversation (apologised, thanked or asked to talk).",
-  redemption_withdrew:"Held back in the Day 13 conversation."
+  redemption_withdrew:"Held back in the Day 13 conversation.",
+  redemption_hostile:"Answered the Day 13 conversation with threatening or hostile language."
 };
 
+/* Free-text answers in the final questions get the same checks as the game's. */
+function scanQuestionnaire(){
+  S.concerns = S.concerns.filter(function(c){ return !c.q; });
+  Q_FIELDS.forEach(function(f){
+    var where = "Final questions, " + f.label.toLowerCase();
+    if (f.type === "text") scanText(where, S.q[f.id], true);
+    if (f.type === "list") splitList(S.q[f.id]).forEach(function(item){ scanText(where, item, true); });
+    if (f.other) splitList(S.q[f.id + "__other"]).forEach(function(item){ scanText(where, item, true); });
+  });
+}
+/* Answers that contradict each other or can't be right, for staff to ask about. */
+function answerChecks(){
+  var q = S.q, out = [];
+  if (q.smoker === true && q.needsSmokeFree === true) out.push("smokes or vapes, but needs a smoke-free home");
+  if (q.okWithPets === true && q.petAllergy === true) out.push("happy to live with pets, but has a pet allergy");
+  if (q.bedtime && q.wakeTime){
+    var mins = function(t){ var m = String(t).split(":"); return Number(m[0]) * 60 + Number(m[1]); };
+    var sleep = (mins(q.wakeTime) - mins(q.bedtime) + 1440) % 1440;
+    if (sleep < 240) out.push("bedtime " + q.bedtime + " and wake-up " + q.wakeTime + " leave under four hours’ sleep");
+  }
+  var work = Number(q.workHours);
+  if (q.studentType === "international" && work > 24) out.push("international student working " + work + " hours a week (check visa work limits)");
+  else if (work > 40) out.push("works " + work + " hours a week alongside study");
+  if (!isBlank(q.rentBudgetWeekly) && Number(q.rentBudgetWeekly) < 20) out.push("rent budget of $" + Number(q.rentBudgetWeekly) + " a week");
+  return out;
+}
+/* A plain-English summary for the staff watch-point. Staff can rewrite it. */
+function autoWatchPoint(){
+  var parts = [];
+  CONCERNS.forEach(function(k){
+    var found = S.concerns.filter(function(c){ return c.id === k.id; });
+    if (!found.length) return;
+    parts.push(k.label + ": " + found.slice(0, 3).map(function(c){ return c.source + " (“" + c.excerpt + "”)"; }).join("; ")
+      + (found.length > 3 ? ", and " + (found.length - 3) + " more" : "") + ".");
+  });
+  if (S.meters.awareness <= 3){
+    var lows = S.choices.filter(function(c){ return c.awareness < 0; }).map(function(c){ return "Day " + c.day + ": " + c.chosen.replace(/\.$/, ""); });
+    parts.push("Low safety awareness (" + S.meters.awareness + "/10)" + (lows.length ? ": " + lows.slice(0, 3).join("; ") : "") + ".");
+  }
+  var checks = answerChecks();
+  if (checks.length) parts.push("Answers to check: " + checks.join("; ") + ".");
+  return parts.length ? "Automatic checks. " + parts.join(" ") : null;
+}
+
 function profileType(){
+  if (hasSeriousConcern()) return "transactional_guest"; /* excluded from automatic matching; staff read why */
   var m = S.meters;
   if (m.connection <= 3 && m.respect <= 3) return "transactional_guest";
   if (m.connection >= 7 && m.respect >= 7) return "connector";
@@ -1778,7 +1872,11 @@ function screeningPart(){
     recovered: low && low.day ? after > 0 : null,
     lowestMoment: low ? {day: low.day, note: low.note} : null,
     redemption: low ? (REDEMPTION_RESULT[S.redemptionOutcome] || "No clear repair signal in the Day 13 conversation. Read the closing words.") : null,
-    flags: Object.keys(S.flags).filter(function(k){ return S.flags[k]; }),
+    flags: Object.keys(S.flags).filter(function(k){ return S.flags[k]; })
+      .concat(CONCERNS.filter(function(k){ return S.concerns.some(function(c){ return c.id === k.id; }); }).map(function(k){ return k.id; }))
+      .concat(S.meters.awareness <= 3 ? ["low_safety_awareness"] : [])
+      .concat(answerChecks().length ? ["answers_to_check"] : []),
+    watchPoint: autoWatchPoint(),
     landmarks: [6, 9, 11, 14].map(function(day){
       return {day: day, response: S.choices.filter(function(c){ return c.day === day; }).map(function(c){ return c.chosen; }).join(" · ")};
     }).filter(function(x){ return x.response; }),
@@ -1812,12 +1910,14 @@ function setStatus(id, cls, text){
   var n = document.getElementById(id);
   if (n) n.innerHTML = '<span class="dotled ' + cls + '"></span><span>' + esc(text) + '</span>';
 }
+var ATTENTION_FLAGS = ["threatening_language", "drug_references", "welfare_concern", "low_safety_awareness"];
 function indexFields(profile, extra){
   var sc = profile.screening || {}, st = profile.student || {};
   return Object.assign({
     name: [st.firstName, st.lastName].filter(Boolean).join(" "), email: st.email || "", discipline: st.discipline || "",
     pid: (profile.meta || {}).profileId || "", screeningProfile: sc.profile || null,
-    complete: !!((profile.meta || {}).stages || {}).postGame, profile: profile
+    complete: !!((profile.meta || {}).stages || {}).postGame, profile: profile,
+    attention: (sc.flags || []).filter(function(f){ return ATTENTION_FLAGS.indexOf(f) !== -1; }).length
   }, extra);
 }
 
@@ -1916,6 +2016,9 @@ function renderResults(){
     + '<p class="line">' + esc(type.text) + '</p>'
     + '<div class="notice">This is a reflection on the path you took, not a pass-or-fail result. A person at the placement service reads your answers and makes any placement decision.</div>'
     + (moments ? '<div><div class="who narr" style="margin-bottom:8px">Moments you shaped</div><div class="rows">' + moments + '</div></div>' : '')
+    + (S.concerns.some(function(c){ return c.id === "welfare_concern"; })
+        ? '<div class="notice"><b>If things feel hard right now,</b> you can talk to someone any time. Lifeline: <span class="mono">13 11 14</span>. Beyond Blue: <span class="mono">1300 22 4636</span>.</div>'
+        : '')
     + '<div class="status" id="savestat"><span class="dotled wait"></span><span>Sending your profile to the placement service…</span></div>'
     + '<div id="fallback" class="notice" hidden><b>Send it another way.</b> Save your profile file, or copy it, and email it to the placement service. Staff can add it to the review queue.'
     + '<div class="btnrow" style="margin-top:10px"><button class="cont primary small" id="retry">Try again</button>'
@@ -1979,7 +2082,7 @@ function renderStaff(){
     + '<div class="desk">'
     + '<div class="queue"><div class="qtools">'
     + '<input type="text" id="qsearch" placeholder="Search by name or email" aria-label="Search applicants">'
-    + '<select id="qfilter" aria-label="Filter by pairing status"><option value="all">All applicants</option>'
+    + '<select id="qfilter" aria-label="Filter by pairing status"><option value="all">All applicants</option><option value="attention">Needs attention</option>'
     + PAIRING.map(function(p){ return '<option value="' + p[0] + '">' + p[1] + '</option>'; }).join("") + '</select>'
     + '<div class="btnrow"><button class="cont small" id="refresh">Refresh</button>'
     + '<label class="cont ghost small" style="display:inline-flex;flex-direction:row;cursor:pointer">Add profile files<input type="file" id="importer" accept=".json,application/json" multiple hidden></label>'
@@ -2081,7 +2184,8 @@ function loadQueue(openId){
 function visibleItems(){
   return desk.items.filter(function(it){
     var status = (desk.reviews[it.id] || {}).pairingStatus || "new";
-    if (desk.filter !== "all" && status !== desk.filter) return false;
+    if (desk.filter === "attention") { if (!it.attention) return false; }
+    else if (desk.filter !== "all" && status !== desk.filter) return false;
     return !desk.search || ((it.name || "") + " " + (it.email || "")).toLowerCase().indexOf(desk.search) !== -1;
   });
 }
@@ -2096,6 +2200,7 @@ function drawQueue(){
       + '<span class="when">' + esc((it.updatedAt || "").slice(0, 10)) + '</span>'
       + '<span class="meta">'
       + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '<span class="pill">No game result</span>')
+      + (it.attention ? '<span class="pill dark" style="background:var(--bad)">Needs attention</span>' : '')
       + '<span class="pill">' + esc(label(PAIRING, r.pairingStatus || "new")) + '</span>'
       + (it.complete ? '' : '<span class="pill">Questions unfinished</span>')
       + ((it.runs || []).length > 1 ? '<span class="pill">' + it.runs.length + ' runs</span>' : '')
@@ -2147,7 +2252,7 @@ function drawReview(it){
     + '<label>Pairing status<select id="rv-status">' + opts(PAIRING, r.pairingStatus || "new") + '</select></label>'
     + '<label>Suggested homeowner<input type="text" id="rv-for" maxlength="120" value="' + esc(r.suggestedFor || "") + '" placeholder="e.g. Margaret Hollis"></label>'
     + CHECKS.map(function(c){ return '<label>' + c[1] + '<select id="rv-' + c[0] + '">' + opts(CHECK_STATES, checks[c[0]]) + '</select></label>'; }).join("")
-    + '<label>Watch-point<textarea id="rv-watch" maxlength="600" placeholder="e.g. Reliability is the lowest meter. Agree a weekly help schedule at the intro call.">' + esc(r.watchPoint || "") + '</textarea></label>'
+    + '<label>Watch-point<textarea id="rv-watch" maxlength="2000" placeholder="e.g. Reliability is the lowest meter. Agree a weekly help schedule at the intro call.">' + esc(r.watchPoint || (it.profile.screening || {}).watchPoint || "") + '</textarea></label>'
     + '<button class="cont primary small" id="rv-save">Save review</button>'
     + '<div class="status" id="rvstat"></div>';
   el("#rv-save").onclick = function(){ saveReview(it); };
