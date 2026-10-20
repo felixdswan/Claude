@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "profileId": "GS-2027-0142",
+    "updatedAt": "2027-05-06",
+    "suggestedFor": "Margaret Hollis",
+    "pairingStatus": "shortlisted",
+    "stages": { "preGame": true, "game": true, "postGame": true }
+  },
+  "student": {
+    "firstName": "Jenny",
+    "lastName": "Graffet",
+    "preferredName": null,
+    "pronouns": "she/her",
+    "age": 21,
+    "gender": "Female",
+    "email": "jenny.graffet@example.com",
+    "phone": "0491 570 156",
+    "photoUrl": null,
+    "countryOfOrigin": "Australia",
+    "hometown": "Newcastle",
+    "languages": ["English", "Italian"],
+    "studentType": "domestic",
+    "university": "UTS",
+    "course": "Bachelor of Nursing",
+    "yearOfStudy": 2,
+    "discipline": "health",
+    "work": { "role": "Casual barista", "hoursPerWeek": 12, "schedule": "weekend mornings" },
+    "emergencyContact": { "name": "Claire Graffet", "relationship": "mother", "phone": "0491 570 110" }
+  },
+  "placement": {
+    "campus": "UTS City campus, Ultimo",
+    "campusDays": ["Mon", "Tue", "Wed", "Thu"],
+    "preferredAreas": ["Inner West", "Eastern Suburbs"],
+    "maxCommuteMins": 40,
+    "maxCommuteFlexMins": 60,
+    "transport": "public transport",
+    "moveInDate": "2027-02-01",
+    "moveInFlexWeeks": 2,
+    "stayMonths": 12,
+    "openToExtend": true
+  },
+  "interests": {
+    "hobbies": ["Gardening", "Baking", "Crime novels", "Bushwalking", "Choir"],
+    "lifeGoals": ["Build a career in community nursing", "Live somewhere that feels like home"],
+    "careerGoal": "Community nursing",
+    "homeownerBackground": "Retired nurse, carer or GP",
+    "canOffer": ["Tech and phone help", "Cooking", "Conversation"],
+    "wantsToLearn": ["Gardening", "Family recipes", "Local history"]
+  },
+  "household": {
+    "homeownerGender": "female",
+    "otherLodgers": "none",
+    "smoker": false,
+    "needsSmokeFree": true,
+    "okWithPets": true,
+    "petAllergy": false,
+    "diet": "Vegetarian, happy to share a kitchen",
+    "accessibilityNeeds": "None",
+    "dealbreakers": []
+  },
+  "support": {
+    "hoursPerWeek": { "min": 8, "max": 10 },
+    "bestTimes": ["Weekday evenings", "Sunday afternoons"],
+    "nightsHomePerWeek": { "min": 5, "max": 6 },
+    "rentBudgetWeekly": 200,
+    "driversLicence": "Full NSW licence",
+    "hasCar": false,
+    "helpTypes": [
+      "Company and conversation",
+      "Cooking two nights a week",
+      "Tech and phone help",
+      "Gardening",
+      "Bins and light chores",
+      "Lifts in the homeowner's car"
+    ],
+    "notOffered": ["Personal care", "Managing medication", "Overnight care", "Heavy lifting"]
+  },
+  "lifestyle": {
+    "bedtime": "22:30",
+    "wakeTime": "06:30",
+    "weekdays": "Campus or placement, home most evenings by 6 pm",
+    "weekends": "Works mornings, away about one weekend a month",
+    "quietAfter": "21:30",
+    "socialLevel": 3,
+    "socialNote": "Enjoys shared dinners but needs quiet study time",
+    "guests": "Occasional, daytime, always with notice",
+    "tidiness": "Keeps shared spaces tidy",
+    "communication": "Talks things through face to face"
+  },
+  "checks": {
+    "identity": "cleared",
+    "policeCheck": "cleared",
+    "references": "cleared",
+    "firstAid": "booked"
+  },
+  "screening": {
+    "profile": "connector",
+    "meters": { "connection": 8, "respect": 8, "reliability": 6, "awareness": 8 },
+    "motivation": "company",
+    "finalPath": "warm",
+    "pathByDay": ["steady", "warm", "warm", "warm", "warm", "steady", "steady", "warm", "warm", "warm", "warm", "warm", "warm", "warm"],
+    "recovered": true,
+    "lowestMoment": { "day": 5, "note": "Vague excuse to Marg's garden invitation" },
+    "redemption": "Offered to come to the next garden morning and put it in Marg's calendar",
+    "flags": ["noticed_step", "learned_meds_folder", "asked_about_career", "met_Dorothy_photo", "brought_up_remark", "told_David"],
+    "landmarks": [
+      { "day": 6, "response": "Sat with her in silence and let her lead, then asked about Dorothy" },
+      { "day": 9, "response": "Said the comment didn't sit well with her, then asked what made Marg say it" },
+      { "day": 11, "response": "Checked for injury before moving her, offered to drive her to the GP and let her choose how to tell David" },
+      { "day": 14, "response": "Called 000 first, kept her warm, handed paramedics the meds folder and packed her glasses and phone" }
+    ],
+    "answers": [
+      { "day": 3, "question": "What would you ask Marg about her career, and what could you offer her in return?", "answer": "I'd ask what nursing was like before electronic records. I could help her scan and sort her old notes." },
+      { "day": 5, "question": "How do you respond to Marg, and how do you tell her?", "answer": "Sorry, something came up. Maybe another time." },
+      { "day": 10, "question": "What do you want Marg to know about how you feel living here?", "answer": "That I feel at home here, and I'd like to understand what shaped her views." }
+    ],
+    "finalWords": "I didn't expect to look forward to coming home.",
+    "watchPoint": "Reliability is her lowest meter. Agree a fixed weekly help schedule at the intro call."
+  }
+}
