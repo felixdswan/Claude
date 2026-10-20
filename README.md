@@ -1,125 +1,109 @@
 # Pepaws Porch
 
-A homeshare readiness assessment, in the shape of a game.
+A homeshare screening game for an intergenerational housing placement service.
 
-Applicants for intergenerational housing placements spend fourteen days living with
-Bruce Whitlam, 82, at 14 Ellerslie Street. Nine of those days are ordinary — tea, bins,
-washing, a phone call from his daughter. Five put something in front of them that a real
-placement will:
+Applicants spend fourteen days living with Margaret "Marg" Hollis, 78, in her weatherboard
+cottage. There are no right or wrong answers. Four hidden meters (Connection, Respect,
+Reliability, Awareness) record what the applicant values, and five short pages of questions at
+the end fill in the rest of a **GenStay matching profile**. Staff review the profiles one after
+another on a built-in review desk.
 
-| Day | Challenge | Input | Clock |
-|----|-----------|-------|-------|
-| 3  | A minor technology problem | Free text | none |
-| 6  | Low mood | Choice ladder → free text | none |
-| 8  | A discriminatory remark (**mandatory**, slur censored) | Timed choice → free text | 45s |
-| 11 | A mobility incident | Two timed choices → free text | 20s each |
-| 14 | A medical emergency | Three timed choices → free text | 15s each |
+| Day | Landmark | Content note |
+|----|-----------|-------|
+| 6  | Loss: Marg's closest friend dies | Bereavement |
+| 9  | Boundaries: a biased remark over dinner | A biased remark |
+| 11 | Safety: a fall on the broken brick step | A fall and an injury |
+| 14 | The emergency: Marg collapses (first choice timed, 15s) | A medical emergency |
 
-Difficulty ramps by shrinking the room to think, not by adding taps.
+The other days branch on earlier choices. Day 13 brings back the applicant's lowest moment in a
+new form.
 
 ## What's here
 
-    game/pepaws-porch.html       the game — one self-contained file, no build step
-    design/pepaws-porch.html     the design bible / spec of record
-    data/pepaws-porch-responses.xlsx   the backend workbook responses land in
-    data/rubric.json             rubric + day map, generated from the game
-    scripts/xlsx-mini.js         dependency-free .xlsx writer (also inlined in the game)
-    scripts/sync_responses.py    merges exported submissions into the workbook
-    scripts/export-rubric.js     regenerates data/rubric.json from the game
-    scripts/test-playthrough.js  automated playthroughs in a real browser
+    game/pepaws-porch.html               the game and the staff review desk, one file, no build step
+    game/genstay-profile-template.html   the GenStay profile template the desk shows each profile in
+    genstay/genstay-profile-fields.md    the profile data contract, and how the game fills and stores it
+    genstay/genstay-profile.sample.json  a complete example profile
+    scripts/test-playthrough.js          automated runs in a real browser
+    design/pepaws-porch.html             the original design bible (from the earlier Bruce version, kept for reference)
 
-## Getting the responses out
+The two files in `game/` are published together as one artifact. The game finds the template by
+the relative address `genstay-profile-template.html`, so keep them side by side.
 
-**The assessor page is a URL, not a button.** Take the game's URL and put `#assessor`
-on the end:
+## For applicants
 
-    https://claude.ai/code/artifact/4d7de4dd-fd7c-412b-aee0-ea20877da4b0#assessor
+Open the artifact link. Enter a name, a university email and an area of study, play the
+fortnight, answer the final questions, and submit. The profile goes straight to the placement
+record. Nothing personal stays in the browser once it arrives.
 
-Open it in a **new tab**. (Typing the hash into a tab that already has the game open now
-works too, but a fresh tab is the reliable habit.) You get a table of every completed run,
-newest first, and two buttons.
+If the profile can't be saved (for example, the applicant is outside the organisation), the
+results screen offers **Download profile file** and **Copy profile**, to email to the service.
 
-### Just want the spreadsheet?
+## For staff
 
-Click **Export workbook (.xlsx)**, confirm the download prompt, done. That file has all
-participants across four sheets. No Python, no JSON, no sync script.
+Put `#staff` on the end of the artifact link and open it in a new tab:
 
-### Want to accumulate runs into the tracked workbook?
+    https://claude.ai/code/artifact/<id>#staff
 
-Use this when you're marking work up over time and want your own assessor columns kept.
+The desk lists every applicant, newest first. Select one, or use **Prev** and **Next** to work
+through the queue. Each profile opens in the GenStay template, with a **Staff / Family** switch
+that hides staff-only rows. Beside it, set the pairing status, suggested homeowner, checks and a
+watch-point, and click **Save review**. Those fields are kept separately from the applicant's
+answers and shown in the profile.
 
-1. On the same page, click **Export raw JSON** and confirm the download.
-2. Point the sync script at the file you just downloaded:
+- **Search** and the status filter narrow the queue.
+- **Add profile files** imports `.json` profiles that applicants emailed in.
+- **Download JSON** saves the open profile. **Export all** saves the whole queue as one file.
+- If an applicant played more than once, a run picker appears. The latest run opens first.
 
-       python3 scripts/sync_responses.py ~/Downloads/pepaws-porch-submissions.json
+## Access and storage
 
-That merges into `data/pepaws-porch-responses.xlsx`. Re-running with the same file is
-safe — rows are keyed on participant id, so a participant is replaced rather than
-duplicated, and `assessor`, `assessor_outcome`, `assessor_notes` and `reviewed_at` are
-never overwritten by a sync.
+Profiles are stored in the artifact's record store under access rules, not in the page:
 
-Needs `pip install openpyxl` once.
+- Applicants need **Contributor** access. Each can write only their own profile.
+- Staff need **Editor** access. Only Editors and the owner can read profiles or reviews.
+- Anyone else who opens `#staff` sees an empty desk with a staff-only message.
 
-### If something doesn't work
+Publish with these capabilities (the rules are what keep profiles private):
 
-| What you see | What it means |
-|---|---|
-| The game, not a table | The hash didn't take. Open the `#assessor` URL in a new tab. |
-| "The shared record is not available in this view" | You're opening the local file, or the record store isn't reachable. It only works on the published artifact. |
-| "No submissions yet" | Nobody has finished a run. Only *completed* fourteen-day runs are written; abandoning halfway stores nothing. |
-| "Download cancelled" | The confirmation prompt was dismissed. Click the button again. |
-| `0 submission(s) merged` | Wrong file. It wants the **Export raw JSON** download, not the .xlsx. |
+```json
+{
+  "db": { "rules": [
+    { "path": "",                "read": "admin",    "write": "admin" },
+    { "path": "profiles",        "read": "admin",    "write": "admin" },
+    { "path": "profiles/{self}", "read": "interact", "write": "interact" },
+    { "path": "reviews",         "read": "admin",    "write": "admin" }
+  ] },
+  "user": {},
+  "downloads": true
+}
+```
 
-### The sheets
+The full path layout is in `genstay/genstay-profile-fields.md`.
 
-- **Submissions** — one row per applicant, plus four empty columns for the assessor.
-- **Free text** — one row per written answer: full text, rubric signals hit and missed,
-  characters, seconds.
-- **Choices** — every decision and the meter movement it caused.
-- **Rubric** — the signal set, generated from the game so it can't drift.
+An artifact record store is organisation-internal: applicants must be signed in to the workspace.
+That suits a pilot with a known cohort. Public applicants need a hosted deployment with its own
+sign-in. Only `writeProfile()` and the desk's `loadQueue()` would change.
 
-A person then fills in `assessor`, `assessor_outcome`, `assessor_notes`, `reviewed_at`.
+## Running it locally
 
-### What the game stores, and when
+Serve `game/` over HTTP (the desk embeds the template in a frame, which `file://` won't allow):
 
-Progress is kept in `localStorage` as you play, so a refresh on Day 11 doesn't cost eleven
-days. On finishing, one JSON document per participant is written to the artifact's record
-store at `submissions/<participant id>`. If that write fails, the results screen says so
-and offers the applicant their own workbook to send on instead.
+    npx http-server game -p 8080      # then open http://localhost:8080/pepaws-porch.html
 
-## Scoring
+Without the artifact runtime there is no record store. The game still plays end to end and
+offers the download fallback, and the desk shows profile files you add without saving them.
 
-Three meters, starting at 60: **Rapport** (does he want you there), **Autonomy** (is it
-still his house), **Safety** (did anyone get hurt). They're in deliberate tension — the
-fastest way to raise rapport on Day 8 is to laugh along, and that costs you elsewhere.
+    node scripts/test-playthrough.js /tmp/pepaws-out
 
-Choices score deterministically. Written answers are matched against the rubric by a
-keyword pass with a negation guard, so *"I would **not** lift him"* reads as the good
-answer it is rather than the flag a naive match would raise. That pass produces a
-**provisional band only** — `Certified`, `Certified with notes`, `Not yet`, or
-`Assessor review`. Nothing auto-rejects anyone; a person writes the outcome.
-
-Two things always route to a human rather than to a fail: not calling an ambulance in the
-first window on Day 14, and answering that you would not continue the placement.
-
-## Running it
-
-Open `game/pepaws-porch.html` in a browser. It works offline; the record store and the
-download prompt only light up when it's published as an artifact.
-
-    node scripts/test-playthrough.js /tmp/out    # best, worst, timeout and no-store runs
-    node scripts/export-rubric.js                # refresh data/rubric.json after content edits
-
-Regenerate the rubric whenever the scenarios or signals change, so the workbook stays in
-step with the game.
+plays a best run, a worst run and a timed-out run against a stand-in record store, checks each
+stored profile against the template's contract, exercises the staff desk, and saves screenshots
+of every scene.
 
 ## Before this goes to real applicants
 
-- **Access.** An artifact with a record store is organisation-internal: every participant
-  must be signed in to the workspace. Fine for a pilot with a known cohort; public
-  applicants need a hosted deployment with its own sign-in. Only the storage call changes.
-- **Assessment.** The rubric produces a provisional band and nothing more. The instrument
-  only means something if a named person reads all five written answers — budget about ten
-  minutes per applicant.
-- **Validation.** Run the scenarios past placement coordinators and current homeshare
-  residents before launch. If they don't ring true to the people living it, they don't ship.
+- **Review.** The profile type is a reflection, not a decision. A person reads the written
+  answers and the closing words. Budget about ten minutes per applicant.
+- **First aid accuracy.** Have Days 11 and 14 checked by a first-aid trainer or nurse against
+  current Australian guidance.
+- **Validation.** Run the scenarios past placement coordinators and current homeshare residents.

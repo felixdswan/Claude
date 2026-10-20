@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GenStay Matchmaking Profile</title>
+<!--
+  GenStay Matchmaking Profile — receiving template v1.0.0
+  ---------------------------------------------------------------
+  Blank by default. Send it a profile object (shape: GenStayProfile.blank())
+  through any of these routes and it fills itself in:
+
+    1. JS API (same page)    GenStayProfile.load(data) / .update(partial) / .clear()
+    2. Inline global         <script>window.GENSTAY_PROFILE = {...}</script> placed before this file's script
+    3. postMessage           win.postMessage({ type: 'genstay:profile', mode: 'update', data }, origin)
+                             (template posts {type:'genstay:ready'} to its opener/parent when it can receive)
+    4. Link                  template.html#data=<base64url JSON>      (GenStayProfile.encode(data))
+    5. JSON file / endpoint  template.html?src=/path/to/profile.json
+    6. Browser storage       localStorage['genstay:profile'] = JSON.stringify(data)   (same origin, live across tabs)
+
+  URL options: ?view=family (hides staff-only rows)  ?keys (shows data paths)  ?demo (loads sample data)  ?embed (hides Print and Export)
+  Settings: set window.GENSTAY_CONFIG = {...} before this script (see CONFIG below).
+  Full field list: genstay-profile-fields.md
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Fraunces:opsz,wght,SOFT@9..144,300..700,0..100&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#0a5d45; --green-mid:#6fa98c; --green-pale:#dce9e2;
+  --lime:#cbf796; --peri:#a1b5e8; --peri-pale:#e9eefb;
+  --ink:#333; --ink-2:#555; --muted:#8a8a8a; --empty:#c2c2c2; --line:#e4e4e4;
+  --bg:#eceef1; --page:#fff;
+  --serif:'Fraunces','Cooper BT',Georgia,'Times New Roman',serif;
+  --sans:'Figtree','Eastman Grotesque',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+.serif{font-family:var(--serif);font-variation-settings:"SOFT" 100}
+
+/* toolbar (screen only) */
+.toolbar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:rgba(236,238,241,.92);backdrop-filter:blur(6px);border-bottom:1px solid #dcdfe4;font-size:13px}
+.status{display:flex;align-items:center;gap:8px;color:var(--ink-2);min-width:0}
+.status .dot{width:8px;height:8px;border-radius:50%;background:#b9bec6;flex:none}
+.status[data-state="filled"] .dot{background:var(--green)}
+.status b{color:var(--ink)}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+.tools button{font:600 13px var(--sans);color:var(--ink);background:#fff;border:1px solid #d3d7dd;border-radius:6px;padding:5px 10px;cursor:pointer}
+.tools button:hover{border-color:#9aa3ae}
+.tools button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.seg{display:inline-flex}.seg button{border-radius:0}.seg button:first-child{border-radius:6px 0 0 6px}.seg button:last-child{border-radius:0 6px 6px 0;margin-left:-1px}
+
+/* page */
+.page{max-width:820px;margin:24px auto 64px;background:var(--page);padding:40px 44px 56px;box-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.04)}
+.masthead{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center}
+.title-block{background:var(--green);color:#fff;border-radius:8px;padding:26px 34px 28px}
+.title-block .brand{display:block;font:700 40px/1 var(--serif);font-variation-settings:"SOFT" 100,"opsz" 144;letter-spacing:-.01em}
+.title-block .doc{display:block;font:300 36px/1.15 var(--serif);font-variation-settings:"SOFT" 100,"opsz" 144;margin-top:2px}
+.logo{display:flex;flex-direction:column;align-items:center;gap:8px;padding-right:6px}
+.logo .mark{width:68px;height:auto}.logo .word{width:116px;height:auto}
+.band{margin-top:30px;background:var(--peri);border-radius:4px;padding:5px 14px;display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:space-between;align-items:center;font-size:13px;color:var(--ink)}
+.band b{font-weight:700}
+.band .pill{display:inline-block;background:rgba(255,255,255,.4);border-radius:999px;padding:1px 10px;font-weight:700}
+
+.identity{display:grid;grid-template-columns:132px 1fr;gap:30px;align-items:center;padding:24px 22px 4px}
+.photo{width:120px;height:150px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--green-pale);color:var(--green);
+  font:400 40px/1 var(--serif);font-variation-settings:"SOFT" 100}
+.photo img{width:100%;height:100%;object-fit:cover}
+.photo.is-blank{background:#f1f2f3;color:#c9cdd2}
+.identity h1{margin:0;font:300 27px/1.2 var(--serif);font-variation-settings:"SOFT" 100;color:var(--green)}
+.identity .sub{margin:4px 0 0;color:var(--ink-2)}
+.stages{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.stage{display:inline-flex;align-items:center;gap:5px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 10px 2px 7px;color:var(--muted)}
+.stage .ic{width:14px;height:14px;border-radius:50%;border:1.5px solid currentColor;display:inline-grid;place-items:center;font-size:9px;line-height:1}
+.stage.done{color:var(--green);border-color:#bcd8c9;background:#f2f8f4}
+.stage.done .ic{background:var(--green);border-color:var(--green);color:#fff}
+
+/* sections */
+section{margin-top:38px}
+section h2{margin:0;font:300 24px/1.15 var(--serif);font-variation-settings:"SOFT" 100;color:var(--green);break-after:avoid}
+.caption{margin:6px 0 0;font-size:13px;color:#6b6b6b}
+.rule{border:0;border-top:1px solid var(--peri);margin:10px 0 12px}
+table{width:100%;border-collapse:separate;border-spacing:0 2px;table-layout:fixed}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;font-size:14px}
+th.label{background:var(--lime);color:var(--green);font-weight:700;width:34%}
+th.rowhead{background:var(--green);color:#fff;font-weight:700;width:26%}
+td.corner{background:transparent}
+td.value{color:var(--ink)}
+tr{break-inside:avoid}
+.matrix td.corner{width:26%}
+.matrix th.label{width:auto}
+.split th.label{width:50%}
+.keys{display:none;margin-top:3px;font:400 10.5px/1.35 var(--mono);color:#5d7d6c;word-break:break-word}
+th.rowhead .keys{color:#cfe6da}
+body.show-keys .keys{display:block}
+.empty{color:var(--empty)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:inline-block;background:#f4f6f2;border:1px solid #e1e7da;border-radius:999px;padding:1px 10px;font-size:13px;line-height:1.6}
+.chip.no{background:#f6f6f6;border-color:#e6e6e6;color:#666}
+.check{display:inline-flex;align-items:center;gap:5px;margin:0 10px 2px 0;white-space:nowrap}
+.check .ic{font-weight:700;width:1em;text-align:center}
+.check.cleared .ic{color:var(--green)}
+.check.pending .ic,.check.booked .ic{color:#4b65a8}
+.check.not_started .ic{color:#999}
+.status-pill{display:inline-block;border-radius:999px;padding:1px 10px;background:var(--peri-pale);color:#2f467f;font-weight:600;font-size:13px}
+.dots{display:inline-flex;gap:4px;vertical-align:-2px;margin-right:8px}
+.dots i{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--green);display:inline-block}
+.dots i.on{background:var(--green)}
+
+/* screening */
+.staff-tag{display:inline-block;margin-left:10px;vertical-align:4px;font:700 10px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:#7a4b00;background:#fdf1d8;border:1px solid #f0d9a6;border-radius:4px;padding:4px 6px}
+.outcome{border-left:4px solid var(--green);background:#f6faf7;padding:12px 16px;margin:2px 0 14px}
+.outcome .name{font:400 20px/1.2 var(--serif);font-variation-settings:"SOFT" 100;color:var(--green)}
+.outcome p{margin:4px 0 0;color:var(--ink-2);font-size:14px}
+.outcome.is-blank{border-left-color:#d6d9dd;background:#fafafa}
+.outcome.is-blank .name{color:var(--empty)}
+.sub-h{margin:16px 0 6px;font:700 12px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.meters{display:grid;gap:7px}
+.meter{display:grid;grid-template-columns:110px 1fr 104px;gap:12px;align-items:center;font-size:14px}
+.meter .bar{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:14px}
+.meter .bar i{background:#e9ecea;border-radius:2px}
+.meter .bar i:first-child{border-radius:4px 2px 2px 4px}
+.meter .bar i.on{background:var(--green)}
+.meter .val{color:var(--ink-2);font-size:13px}
+.path{display:grid;grid-template-columns:repeat(14,1fr);gap:2px}
+.path .cell{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:44px;border-radius:3px;background:#f3f4f5;color:#b0b4b9;font-size:11px;line-height:1.15}
+.path .cell b{font-size:12px}
+.path .cell.t-warm{background:var(--green);color:#fff}
+.path .cell.t-steady{background:var(--green-mid);color:#fff}
+.path .cell.t-distant{background:var(--green-pale);color:#2c4a3c}
+.path .cell.lm::before{content:"";position:absolute;top:-7px;width:7px;height:7px;background:#4b65a8;transform:rotate(45deg);border-radius:1px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:2px;display:inline-block}
+.legend i.lm{width:8px;height:8px;background:#4b65a8;transform:rotate(45deg);border-radius:1px;margin:0 2px}
+blockquote.final{margin:14px 0 0;padding:14px 18px;border-left:4px solid var(--peri);background:var(--peri-pale);font:400 18px/1.4 var(--serif);font-variation-settings:"SOFT" 100;color:#26365e}
+blockquote.final small{display:block;margin-top:6px;font:400 12px var(--sans);color:#5b6b92}
+blockquote.final.is-blank{color:var(--empty)}
+.answer q{quotes:"\201C" "\201D"}
+.answer .q{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+
+body[data-view="family"] [data-staff]{display:none!important}
+
+@media (max-width:640px){
+  .page{margin:0;padding:24px 16px 40px;box-shadow:none}
+  .masthead{grid-template-columns:1fr;gap:16px}
+  .logo{flex-direction:row;justify-content:flex-start;padding:0}
+  .logo .mark{width:42px}.logo .word{width:96px}
+  .title-block{padding:20px 22px}.title-block .brand{font-size:32px}.title-block .doc{font-size:28px}
+  .identity{grid-template-columns:88px 1fr;gap:18px;padding:20px 0 0}
+  .photo{width:84px;height:104px;font-size:28px}
+  th,td{padding:9px 9px;font-size:13.5px}
+  th.label{width:38%} th.rowhead{width:30%}
+  .meter{grid-template-columns:86px 1fr;gap:4px 10px}.meter .val{grid-column:2}
+  .path .cell{height:38px;font-size:10px}.path .cell b{font-size:11px}
+}
+@media print{
+  @page{size:A4;margin:12mm}
+  html,body{background:#fff}
+  .toolbar{display:none}
+  .page{max-width:none;margin:0;padding:0;box-shadow:none}
+  section{margin-top:26px}
+}
+</style>
+</head>
+<body data-view="staff">
+
+<div class="toolbar" role="region" aria-label="Template controls">
+  <div class="status" id="status" data-state="blank" aria-live="polite"><span class="dot"></span><span id="status-text">Blank. Waiting for data.</span></div>
+  <div class="tools">
+    <span class="seg" role="group" aria-label="Audience">
+      <button type="button" data-view-btn="staff" aria-pressed="true">Staff</button>
+      <button type="button" data-view-btn="family" aria-pressed="false">Family</button>
+    </span>
+    <button type="button" id="btn-keys" aria-pressed="false">Field keys</button>
+    <button type="button" id="btn-json">Export JSON</button>
+    <button type="button" id="btn-print">Print / PDF</button>
+  </div>
+</div>
+
+<main class="page" id="profile">
+  <header class="masthead">
+    <div class="title-block"><span class="brand">GenStay</span><span class="doc">Matchmaking Profile</span></div>
+    <div class="logo" aria-label="GenStay">
+      <img class="mark" alt="" src="data:image/webp;base64,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">
+      <img class="word" alt="GenStay" src="data:image/webp;base64,UklGRlogAABXRUJQVlA4WAoAAAAQAAAA7wAAOQAAQUxQSMkPAAAB/yckSPD/eGtEpO4DktxGkiRJZm69e///weHpmd09c4/o/wQAdEs8Lwkwj/9cwPYzVT80t/uRj6qqxbe0sy9kDdKqe1X1LSUZEiBZVSEluSdpZRdJWLZ7gIRrzxM67aopU5K2cR/rSZLc1tyUDd1c+MT2YfsCM3djpuLrhp94H5KpCkgkwJ6aHN0DCVA3gjQlknRH6qqFLrYLLhi74WAr7h/ztJf0Q/9leMP2/3Ak//+u5/NVle6emdZod/x5zw4Ww7VtG2/btm3btm2sbXNsc3e6O1X1etzodFVNf/o45m5ETAClzQvo6pg5Z/aYIuxcsnLJ07sgKDKCm0UavTPnLRgIfQ8vWb5rgBBF+e5OrY+M0AmMWXDcmQsBAkB+99+vHwepjVwOE87/0fYeWm/+z6/vhlDGmXGb9IHERyRL6Tjv1xGIIDAwg38/fzLuI5XBJddLiiAMHB54TsBLBC5UXuycio1ADmf+WsqjYdEakEc3hHTTFRBGJrOOLzU1kBcxNkCZG0VDP5yADQUqpLWz8JHH6Pz0VmVZRG7OtmY6DiBa3q/mD6dhI5F542eKmXLBnt30NiBaLJjdiZUwgyBG4jn/kppRMv7x4O1bgofOCQsWn9uOlEkPHs3I/AtlUdLSn9+wpUl758kXLQYXeTc21EhtHLxCsYjSjq/+aowz5OjeS14sqSi09SxsxDFeqRgLrXzexE20Hrvw40dHjE+SjHDOISsVY9TOT+8H4CYwRSB94XqpKLT9NHyEMcatUsx192zAB1kBYz6PclZPwUe0wOQlAlj5u41gKIqWhqDnx1nMcn2NdIRJ7C2Fcj04BzeGNIMvS3qo02wk80bX3xRRfHgpAURFg7c0JX1wxEm5UUXx9OU0KG3w6dtvvQBnJA+8q5kXkY1bqNcCr3xo/V9mmdVgHpI0TYL/fzDrfFJNXdsVrBw4XV0YgKdAHJQYpEklD0mapkmwGkIa6vI0MRIO3RRz+bRRaU1YYO5xYzEqW3CGTIINO+f/lmtAv6KNygkEAAMy+oG4nQhYKfOEIS3xKgZYPQaYefu3R0fnwK5MdUEAnFqPnH/YuGTZyhWPM/ydHCBaDbgDGAe/Z5Q3jzbo+vE20yefUw6YduYLDs53rVp7Zz/lDS74wllgNTgLPvqaRuC4vggTF7FXQ3AqGnDyz144Y8YUJ9vTt+MvPwSsmrnZUFbNDWO0EqvW0lm4TLQeDaA938JKjH/N9Wt29LWjvv6dj3w/BRsKXror33E5Xi1w3Eo1f53bRxUhor1S3Qln3dUvgIgD9P1pPngVo6Uz5d2v78ErENY8jbHgCNKaEr6lOAQCona3Muj51O5CgzGA7KnnteOtjM471NQd47EqZvYNZRKTH4tw4KNiOAcm/0BSzAkMzpWiPW8fjVdgv4PmtLlz/Dbpf9MIVs7ibTEUM945htRr+qA01GBpXQuD81dIKpqZAOUkJv3rEEIL6PhTng/oDKvkzFtR5HGAA9I88HNnOAemHY4o0sR2b9nc3tXTiSLqOHw0Kjfxfukd+HlbFDNNn4SrnM3bEwEmkqWJVzMmXbse8i4gbs2NDUufO8gYfcwMUCEp2903pgtiJLJwLq2Ny5UV+m+gqoX3aCDqO36KPPovsWEUSMYjIsV//nntrU92TZ6+6ORjPJIzNjGVCLxDA/nDE14WVcSYUbQhK4PxuQ4zmHPaJKCReAWg/SSSZ64Bdrx2revkeQAW0snkyNl17SdfumHbftPnLj4aAb1taJCz35NFIS10K2dMX14Usbm44zAU1uzAh09gUY6UctN3r3+a1vuf/GYMh81WIuG7MWrVL3YWeSwk6JgOKoO3LSQi5r3gw2d0A0mwcsbgVwiah68FCICzE6HA78/ppfWU019EIlOxg5Zur1IzFj+l8tXK8/iXdNQ84bd1YsPGfdqNDL73lj00QJh5kxn3EiQeyEp9TdKAFCXtlIzxbcRS0NtPwHK08Y4fve4QwEphgTR7LWAnLvWYBCDh1U1kLP3nf6CRSmZk7H9TYZKtXeaDAgctLQrtnoGVS+8tilynkHRE7HFj2FrgEyow+jeTxpzW7vm6nSDv/x82BDjQkGDZUVflYPh0opUxuj8RpZjlkrK1t71hAoAN1dIAClo7By1JBdvuzkmd1p6yYXUTxO0EA0LyaQ1In8LLnaOY65ZeukG2meEbWLxSgtHyQpR1y8cg+d3/SOIQzmATxWy4aBMR2rspb3DSXbmkvJlJKrb/89QEvFx5C3wzFjARQk5ZD0QH330hCZBwwsaYa+0Ys1L/jjHTcy0cMmgZoRYPVSLg/hENwJGKoqKp+2jk/d8VauFxkCJbCzywpR8BHaMJJTDg9H+syyTlzVySbj2njVBb4LiNkiYtxER5iWPaVNjv02Bgzs+VKX8zoYTPzpTpoZmEAJBRq4nKhjP7qVhw1EnUaJwyj2j/+FmSD0qacw+XVLBxKw4BtoFFJjdQidYTX/eXx7ZJGsijpB/MJNTl/l41abyQSGXTuJNRsvkUEiDlsj3KdHuaDOX8XGrGd5LYNjD2RzWYJp2Wlov3Q+BCDUTdSq0eH8aZd3AewKB3koGSpxMzAPHkVrACH09FC8DUCz5/wzYpK2LOsZNRPca4kzGaHzarRuAThZp6WwsLY25UHrdfTtrKfMoOZVpyCIEnBs0gVjOb9JXLqLj0KCz5RMxyvbqR1BH0V0J81qE4iK6cwrBP9YnWhkcSjGkdFcCSFOg5+wuPSJkZ43LqDUw/VM7N1GsHSc348zYcSHnlMzHXHxvBWqR8MYu5vkaAZp8ZU9qxSkk89bI+s1LFqO+3M+YPynNNpuY/NsmTqUBk0hgM9LV3GUOLYj0R0TaKWA7wpAHMfelKObB6o9fU05vBXz3WAg8p07X7t7Aw+gnl2nIaySD3/R9Tps2nkEK2xuCILqqLZnTK5/aFhP0fVRH1/S9+uRa9zTFmeC6sHQHZzfISwBkvyh2nezZWBfAkwMwf4IK7lptqMA4Q8CQ1209UaMPhBIDA+wo19VkSAxq8oRlz/TpJgWfulBULerBKRuO7zylCKYWV4KPA2IvK6BiILOiTDaLdYilvB/Bcj/eaVQOC0+gD6ZwjCq8BJpiJh7F6tAYY1aCl2YSdyuKS+QRwG32dMj19BQkwcJ2JcCmxEhDmd+fWQvYiorgPFNnLGcK4SANisETpiAMWs76zCbWAW3MWsZh6NqEWA+in7gyIaoXxJalfb/UEEq7cE3PdRmDwrU2MV471Osr/GzV2ZID2Vtz8IAlz1olN/dTcNzBB140yq4mgs48jcoDHWrJB3XVZB6WNhX3Kdf9kgoW2n2lAevkQ6/6eFJrxoliLDeVzHkbx+h5oboDoX9hgtbEEcjjq5z95+dJ6ZGs/u/BbMzEwq4UYvj/KGN+WWzVnFdE40VSPDisH/C4WuS4zTzhpU1HEpQktnSujoTePT+oY2oo3g8K/CaQPEaVT2JsGGHBUez3Q+cefMjiBUIvHAihEjYE1A0EsFvWm8yuYnaqIjV2ONz6ppvRWsxYw/oakYPIPCfUZhyykaHtyHQk8SnT9ppHW5wwOo/KG6oqdebuD09WJ1YEEuNXhbFqdwKXdtZhdMK4CNK4XTFkKszcUhbZOMFrGwItxSS8lqcu8+DRS+LsFAvfHBO0ZT60mSoYiUnuROwRe+cADL8GrWZzcjtg94DWYrbieyP4XYjUE3mSq4H6ZClKH1ysr9AWG9tD2Zy/QzosJVoulvF/EtiduImA88HcvpK/isYbygb3qBDtzq7TtKEKloLN7cFbFRNVIB27ApI+OlldKuOoIrAozHjM4ZGrXI7GI/c8yG4LAQfNxkRmEGoLx3D4szj2fAAReqoEY+07FKxh0j/Mye92LV8Q84+F7zCtYCM+naNvxCJEa3SZeL8xu2RMqcduqtkhVtzdOKDz54AXKc/2oQQlS5k3DoO01HXiwciEleckuiJyaZga4Tb1RedSyLeBlgnHZyvwLNnwKW7hMRcIDTmplQsLHAJZstlpo8OIsd7TEimAlPKW5geiVAgfPddh5nYosPxanbMF+JjP040XgafAW5mkCc78smXHAFIzBCSfvKfKoOIo8CS3MQ5MX9anQmcMnJnymyE2ECVgj2CBP2uCNUfL8d6T1mI/6U4JhHT0kiRtgoQE9II+VzOnojS6pqb/0mpUCoiPLtPYTRwGkbW1tDQMOfOXjygRtM8WQgfeoGQs6juyk6Q1hRcEBL3k65jH7JDZcKMKUh2TAfy8BrK3RlgIzvypEuP3eMEC9weYtxhHzFgPe1mgz6H3ZfkDhlUhozjVioax5OYGKgaywCExe+cs3HrdyDUA6+7nffljKlGEZJS1p68QQky/407WPMnjeJZcuQjBwLMNXzrGbMcvV/P1b//toE+g84bi5RJzZcwujbmdsA7OcI356zWyAdNFbrhXCwlPVSNp/rFzKdNNEvIqJJcsxvClpzY4NmSl0jeuTslxRDz+Dl8AoIolZAUtXrFvemDlp8gHkAcuvwYYPOCclQCZpxcbtpqT3WZA1hI1C1B8oHDD0zBM37zb1LpcKk/OO39eQcsUuxVjoTSRUjzz0HwKeNaMYUs1MUv+7lyJKG9oBWEwZslAw1r8KY1gnbLwfU9GMRuucDngmwygvWRmgfymGNSUBKDajsWPpp3MBVo60/VbluR6dY6EGYN1P/jeApExqYVFS398Wg6hc/POGAiOTO4U8gYH/vOVJp3QgRoUqIUJArXBW/me3JGVokLfDwB2rKG+GtRXlxJP/3gEqmgODmpIGbnwQogkrqvANxSJ+gga1GnDS15bslBhSu5d/92hA1Jlec+PG8U7rbMf9H7uBqoeuk7LTCOWultjaYGiDSZ9+fKcYMt98x9fAygQ7cZniP/BSGEz40vKnJQ1S3PivE8CYs1X6Yad5GQuj7lWmdUcS6mnt57znF1PGGNgz6z9+yWjqFsCi847tHiP5tnV33nQfVaPzwZWrvoxR1uj96+pdfwAN0TI95+OHjQtgOzbdeQeVAyd+6u09WLmWnZd/8V93JfJdf3j3Qlqf8Ll3TcUpm/LGgZjrT6TUb8EBxoHSjQDBagI8AIxXbGwEQlQFYRx+JEZVO2E7RiwVDOhsk8JmIMQqGDUHgDHtRboJCDbIqGyh579qaveJFvYCWEgbRQHgSRqMverBswgkHmOkxgCBquYQcipaSK0JkHiMGdVDmlgdWEgbAKGROq1Dmlq5lAt2FYVuwdnrZoMkhqEZEKk7BKpbcGo1AySGuxmI+s07vqtM+RU+DPYRE47ZVRRaEdhHNuPjakqvYl/Z+b/HYh63d+wzmb9KzVzvtn0lY9yjRZHvnIntI8FZKpr6bBv7zh/Jsqz/GHzf6TwV+mU7tu9k53/79RMwKgMAVlA4IGoQAABwPwCdASrwADoAPjEYiUOiIaETed1cIAMEtgM4M0AjACq1Z/Kj7b+Qn5LfKfWn7f+KuR2q7zEuff+v62P7r/xfYT+hv+p7gH6v+dV6gP6p/y/UB/Qv8Z+u3u3f6f9cPc5/cf9f7AH89/xn/39p31Ef3T9gT+Kf4L/3ezX/y/3E+CD9tv3M+AL+g/3D/x/n/8gHoAeo//AOxT/pP4ie37w0/JZGEOv3Xv08AJ2H3vzAvXT7N36Gpx4Y80n0f/xHhXfWv9v7AH8e/tP/f/xPuqf1//o8mv5x/nv2m+AP+Uf1n0p/Yh+33sQ/sd/8RAwNxmsO73Q7Uufq5gzD5OIHfb5wEwiBWqr7I8oVzoghn8o8RN/0DPnPM5rx3tYFHtrVUhqLWZdMoKmyEjVZVsPsWh8XNJ3XipSGPhZi+qnrC4eFIiBRK4w8nKBZ+2uEjYcQ0NhOMMqt7ObzJhDCH1YnhwgHSfUtaVYleyDQyOnPJO6HMmXKVRFxUeqmSpWmuJxSLcn1PveShSPjlShftUOBC6aA7YHUKkXrVfuWO7SEv/gtwpCYJXUE5MAflWh24BZ35yhGyusmLB1C9gcADmivArc4P0FjUxSP9G4Mt6NB/7CPzn3clmD1BUk6eV1TKVtnwhpH4LOFSQXh/v/s+ytMyaqUVkOyyRyKUB5HAisQP8DFzZo//AAA/op1HgV9tBU2pDahxdK8uF/PWfi2d+IpfPni+Lqxj/SIB7Y+CoV7c3gihTYr1HI4jPi/DW2kM3W76Yy3u+Oc8wmSmcuZStg+UsIKzJhEaZxsUiqL333AJqsBdAfe7v7M021E8PR94f8hlbRKclUqthpZgNKMzOYA+lnTbsp8oMIJy5qtAD+Hpv349WfwmJZ6vtlQNT12mFa4o1JDoRryU6jpQgOxJrvFBLDd9ZQrBR71fCiru525D9ene7+SILO9kGfHSTJs/Rb7dBm5/A9SWr7iBb7k4HG5eMjfp79BxKpkTISw27rflZUKLQ76/JJUILJQLhk4T6FBHhRnlUG3fwuozdzBhBfKf/mpVoYeuS7KqUatfE3OBYxkprrF82XmB+PYUth9f1lejwND0p9vX6McuAifRrytE0MpedifRDI632lgdJoY0r3idkXnw3OAr4GyrPMXpQjbDfn5Y9UWx8OF8/lq9TshJDAzE5fVizHsIuLU2Y5wEv0ri54O/QjpAC5y74zwn3gyz1L9BfCDrPC8o72RfAagH3rV97xP6egOfPfxa0nO54jCOWGyqDaQk/IjL4NrBjtAvkPrWuN4fxyx5vMjAzuwJOhIEj8Px/h6PcxdMTN0TFxydcgwuEUB3kxlEzQq/pkbq4J3DybjvWy5+d8qMMyMigB52g7Fmme91WU1us2UQ5i0ngleRJcc3cat/K/NGfC1bVq96ovmUigGQaOJLYPGoympZNdlHkLDtC0mDCzUJJ6RmR2hZM+QqcvgnH5tBZvCBLOJhZRNkusZu0hqMJYxpBWnkmdrkvF4U+AoTC47g306H34cuegNCWEni0wnxeDnkoufUpGyb/10mGDrThvTUk+eFBBkc235ARf/A7eZYiN+1YMtojZQPfz2SvCWX5vkTxTi7DZwOUjwrpT5Qx+yFPOaYgQwyYPHpy0nF5/gGxxh5jmSpTCFr9yyVv0cCEK+PFPC9eszy3VJocxFRBrK0/L/Y+JXoohDkIVFiESjQBRBSqTTsFWqVmUimK0Dz/CHhDkBDrVw4vNALvxpJ/VqfWl0+g2mDMJhMlhzm6FhbbjKV1Wljj9ZMzOnyKrknHK0ahRpBSQqVWNATQ06kZUvkVO9qdlgQcTDbYxllXhXRUufwOAzMEd7fPNN+QvpIJM9TgNWHQVCtK/XIDy9oZ/uocMZt1AG1sCEVzv4x85Zey6TOzGCpRJos30cWgnfw2VREq/X+J8Sd3+tq1ztWWM4oCDh4/K1PxBOb+7GfTTe9DgA4Urg5gD2Mvs2WyuyPvfQSa0cZHYoerj6Td3rFe6G+0qAikobys98WOBjrv2P5yTCVG+36UtjMCMw0snu6/Wgm+22D8pAziKL8EwPmuFVqrI5qddNQ/5F4XCvUmZGiglO57DHTcjeTAszcimubkmeLMw2qccrcUgMcOgbVjrnigzoOAJI3KULEXPidBDGEjPEn4y7otr9wyJaRl0griGKMzw6RVNLqP+o3VQ2VE0r69gf6FP9hr33hmgF65EsfD0nNdh2hIYsuy9O3beF+DD1OhdXhxixrRwAQAknBoAqe/EQEgBEYxojB6bCjrBIcEPkwxWTfEFOfZGQof3jZGBx56RA72rBjnFrVTOOHTkCTP0HZAGRfRZjUHoTVWxE7tAOS+pv232cmFJN4KxUBKfmwjEeMjYrq6NgAlEstYPVoA45BQ8A5mobTEvaEy7DYxM2I/SV7GJY+3HLGuDVMmyFchJwCyQaVitVB4yEvYWA2odYW5UevRk8N9hOm25llTWOpG0EshMV8C/8GGnBZy5tFsWcVOxFpnn/cLKdrujqnEKxdg6MT28kvVUoPArIbgN+oct2X1R6yT8TZwvW4yQTL7yuRCmyJsdtysXIezX4SOwo7LRqCbmzvDaDAA3ucedQ8rNNGQ0/jnjq6c6ZA39GVaapSO0Ift5i+jU6i4dTZNajsSsTgR3pq9/N9guVJxdP6LGCqGq4078XL86p+tgU1TYS2ZlESmhFQv3UypFI9p7O8S/OMciVLMBz+rdQr/ohVbyqqlkLBxTp0V1VGPrhcsx/rtIdfxj90cvEYzW/hTBPYq3GZAP7tOiE53EAtq7VY7IxRdRNyf9HLbh+NYtPCMuSGZz1ykgPNs1XNUJiS0f/HctfhqaqPqofL3hw1umFsKb1RtWNTDAl2FGU88p2yvFyWQYRxutHcs5rVNNfsBeqCJAk+zHf8d8yIbZJT9QBMrIKC9GAfNWG1euhw1D44wLeNonru+irLtvsXsVpTKiuRNwgjJet/cqg1XPyUZdgiqXcZfgW9RTihvXVbvzkQ3UhDaM8ef0XocBR+5O+4sVs+57UOKQzQreIo10tuR6SJoQ6/DNH3vJ40/tu8lTpiPv9i41rtCmRL/3/26OPLetak7bR3lOQaGdn61uYNCdka+2agGa8LODtMUUAs2p5gib8JxbhohIfW5oxR6cqPLhlS9wrbU/EN6u9rqjv65Me0TT7uSE0WcM9phWZyZH9fksqmYwFlxVPbjS7AfB+ftmrwpi6duQMvHZ6QEZYLFadDNoW7BX8zdar7NeZ7+PrbVq5ZTx81bQwviZFJCZZfc5mBEsIK6KoCzbBWh2HZxVwW9otoaABl9GURQg9905SuTtPniFNGEkEXGEnzLwA/cBjDjO/vzd+PCEkYENFiSMlrL5AxtZZR3QGQaA05OEDp/kWP8Un4/EqqiQ7GcaejlJGI0jAfaBRfV31nzD/zV+ey8W6F0vTWpLqLlltGED7g+D0523jXniFtv4mbMZeP7pFc28jNyJJzGg7jJgNyIYF703qpUHJjhqaEYKBRVRCgP9BbaFcWvs4WSenSkzlHSqLBy2ytyFdxcwVPHxaGNaEzz7oL8boZQwmyLCUCQM9f4vdcleQlJotIDCSI448bLiIBzDw4t9AZjo5XvEGzIffjM+n7XvBBoxaSuVn6YZbCGk0Ic3nKW7L8AiQ485gaABg8VhWkUcvC2N6BxI4YsoCCFOFwL59IQSookfHbljk57NeDAwOe/O+5ToVUOAzECGuLHGIGws6SLc8Ca7b8L64xkJCbTeDqUbkOvbYS81Mn8PdFhWnblrdtWVsnUPmE1SI1+xE7XrNoDGk8MQ+YO3eISH+hw30oVc7PiP9iZyRHvYVyl+nrcU7KMc7sHGRTIN7zWnCVLkGqzWpGvL4FibUOARb0NSK9uFMWH0X95jsSyM+OMW8Ffg/9PdC23rsMBSF4DEYdB9Ajf4AZiVIjUouEdj3Et3TOWYBRbQ15WHj9BHv92R0L6q4kBOHGyVkM4B/ICxMcGVzM/cqL+rHtvoqr+HcNxGy3yP7aQ+EDBM4XDPbQ/WJ/Qgb8UiYZDPnNJiyj8eQJiwhUWIlZE/OKHqKR+793v4MRGCX7/gsNNdeYlN3/tvLpkbd2Zo+Cx+kSMBNWVgBTMhBgXVGfa6sGzEuh8rBZuWrmW+Om/UloEfGs+h7k7FKjYa9/v5ljxXS7qDrsvkSxu5CKoAbeEYD7es9e/0ddLmS9OpsOb91/fBm+7NxP8L7pjsFaSHbbLzJcTZLfe+BU4/cOI/X8p+8K83J4afS4wLCCdOoK3YlZP4C0TsRetP1h9VmUxhybB/QAU+Atw4HDknKI/v8E84fCuLbxkp2msYAdMEigLqxsKtxye0ocqJHUv9U7axYybJKplC5AYVvv+ZwNjL3BRJ+kS6U9kO+yYvh3qi+Y+5MnCfHrcmFEK8PS1m0aa6Pu2DjdqkL5VqwyMw00y8rYOSAo8D70FTeU5L8AROlo5GhcD2CurSwK4MFyOVVdYaZUYWTKxkYIn9YulRvRI9c47NEin9+3rBfk+Jc3rSAhUCY6W/JEQcppt5wf+ky9aVb8qBFUCdpnIG68FX6jCyMW7h7foVTDkBLdlmNexBqB5ZuhYs1VCvSGcqSjf3uzkDZqklA0XFi5PWY52Udw0cC/xp848hKGyHRa/puJKzRMG5ei7UCidzBEhhnfQBBL8B6kSPyaDl7kG5P8E8ck/CODuw4nNBiX5h0yf8rG0MNBR8dhhK8zykcMjXADkys9Q50rCDO+1F17VW2Kn1H1YCi1VuPIrMyVaEQUBxbhEGNiDgS1G/+yD23U9+uiM1EcaipgPL2OOtXNiyjqO0D+o3IifQ2pWI6AZSBqTEbmfeT9tIXnO4qZpoKo1qOvLNH63jfCx3VFnOMvaHFGi8mvB87h9q28LqHfkmjtF+aaGQP06oBGT2KNWTI9k4oT4pHz+lX+6bSLJdsMX4PLf1EeTLOw3Zox30KZJWJ1amnaFfop6fhlTFiHbIgVur3Uk4XcfmNL0Uo+LmYtwaGG1ij800GdocAu1fmUvNmQrNbMBmCtrnXt3im+wcIr5MrnMb/pm3RyAc1YgbkCC6WPZB0s9TiDG/TZa3jOgCulnMZvn3wmJ12Taonp1NzpBooudK12Xb0Z4x9FOmT9yXA1JCt4PVOgrMQJhCUqJlaRTztWZh+HsRqTNYalM/lyp0IaT3QIPs3PD/ZM7yS9l5F2/8y4JfO/r4BjGAz8qDDPT9Whdh2bgbOAytjv1X0WdFbW3hx2n1seHBv6sGnc4LoCDGp+dWFg2DHRNW0IkZAGegSvOySkTxTMM+kgTAO4jFr5uXQhxhcULH4EeW87hT0sPVOV3x/8a/Lh/AAKaCGZPJoF6kFIQucApX92P/m//4Cs1p2nNaDPE8TE0SJd9Bcg29QFh++TSTivi/+eu2NFw3xWgADKQow68Qst1zAbK99cqvAUkQOcQwhaimmAv44/p/GQyS9bf9G7w+zVykOkzDJqpUv8AZY33ZEpbPOlzVKWNx4ReqWbI5ki5mDhXg7FiMQbeSOSQB0Dw/i6dfhkTuqfwIFks6myRYG7MbrvezheTGPCj3/YBUwXRnQ2/jbVuunoAAAAA==">
+    </div>
+  </header>
+
+  <div class="band">
+    <span>Suggested for: <b id="f-suggested"></b></span>
+    <span>Last updated: <span class="pill" id="f-updated"></span></span>
+  </div>
+
+  <div class="identity">
+    <div class="photo is-blank" id="f-photo" aria-hidden="true"></div>
+    <div>
+      <h1 id="f-name"></h1>
+      <p class="sub" id="f-sub"></p>
+      <div class="stages" id="f-stages"></div>
+    </div>
+  </div>
+
+  <div id="sections"></div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var VERSION = '1.0.0';
+
+  /* ---------- settings (override with window.GENSTAY_CONFIG before this script) ---------- */
+  var CONFIG = Object.assign({
+    allowedOrigins: ['self'],      // postMessage senders to accept. 'self' = this page's origin. Add your game's origin, or '*' for any.
+    storageKey: 'genstay:profile', // localStorage key to read (and to watch for live updates from another tab)
+    readStorage: true,             // load whatever the game left in localStorage on open
+    persist: false,                // write received data back to localStorage (off by default: the profile holds personal details)
+    embedded: false,               // true (or ?embed) when shown inside the game's staff desk: hides Print and Export, which a sandboxed frame can't run
+    defaultView: 'staff'           // 'staff' or 'family'. Family hides rows marked staff-only.
+  }, window.GENSTAY_CONFIG || {});
+
+  var SAMPLE = {"meta":{"profileId":"GS-2027-0142","updatedAt":"2027-05-06","suggestedFor":"Margaret Hollis","pairingStatus":"shortlisted","stages":{"preGame":true,"game":true,"postGame":true}},"student":{"firstName":"Jenny","lastName":"Graffet","preferredName":null,"pronouns":"she/her","age":21,"gender":"Female","email":"jenny.graffet@example.com","phone":"0491 570 156","photoUrl":null,"countryOfOrigin":"Australia","hometown":"Newcastle","languages":["English","Italian"],"studentType":"domestic","university":"UTS","course":"Bachelor of Nursing","yearOfStudy":2,"discipline":"health","work":{"role":"Casual barista","hoursPerWeek":12,"schedule":"weekend mornings"},"emergencyContact":{"name":"Claire Graffet","relationship":"mother","phone":"0491 570 110"}},"placement":{"campus":"UTS City campus, Ultimo","campusDays":["Mon","Tue","Wed","Thu"],"preferredAreas":["Inner West","Eastern Suburbs"],"maxCommuteMins":40,"maxCommuteFlexMins":60,"transport":"public transport","moveInDate":"2027-02-01","moveInFlexWeeks":2,"stayMonths":12,"openToExtend":true},"interests":{"hobbies":["Gardening","Baking","Crime novels","Bushwalking","Choir"],"lifeGoals":["Build a career in community nursing","Live somewhere that feels like home"],"careerGoal":"Community nursing","homeownerBackground":"Retired nurse, carer or GP","canOffer":["Tech and phone help","Cooking","Conversation"],"wantsToLearn":["Gardening","Family recipes","Local history"]},"household":{"homeownerGender":"female","otherLodgers":"none","smoker":false,"needsSmokeFree":true,"okWithPets":true,"petAllergy":false,"diet":"Vegetarian, happy to share a kitchen","accessibilityNeeds":"None","dealbreakers":[]},"support":{"hoursPerWeek":{"min":8,"max":10},"bestTimes":["Weekday evenings","Sunday afternoons"],"nightsHomePerWeek":{"min":5,"max":6},"rentBudgetWeekly":200,"driversLicence":"Full NSW licence","hasCar":false,"helpTypes":["Company and conversation","Cooking two nights a week","Tech and phone help","Gardening","Bins and light chores","Lifts in the homeowner's car"],"notOffered":["Personal care","Managing medication","Overnight care","Heavy lifting"]},"lifestyle":{"bedtime":"22:30","wakeTime":"06:30","weekdays":"Campus or placement, home most evenings by 6 pm","weekends":"Works mornings, away about one weekend a month","quietAfter":"21:30","socialLevel":3,"socialNote":"Enjoys shared dinners but needs quiet study time","guests":"Occasional, daytime, always with notice","tidiness":"Keeps shared spaces tidy","communication":"Talks things through face to face"},"checks":{"identity":"cleared","policeCheck":"cleared","references":"cleared","firstAid":"booked"},"screening":{"profile":"connector","meters":{"connection":8,"respect":8,"reliability":6,"awareness":8},"motivation":"company","finalPath":"warm","pathByDay":["steady","warm","warm","warm","warm","steady","steady","warm","warm","warm","warm","warm","warm","warm"],"recovered":true,"lowestMoment":{"day":5,"note":"Vague excuse to Marg's garden invitation"},"redemption":"Offered to come to the next garden morning and put it in Marg's calendar","flags":["noticed_step","learned_meds_folder","asked_about_career","met_Dorothy_photo","brought_up_remark","told_David"],"landmarks":[{"day":6,"response":"Sat with her in silence and let her lead, then asked about Dorothy"},{"day":9,"response":"Said the comment didn't sit well with her, then asked what made Marg say it"},{"day":11,"response":"Checked for injury before moving her, offered to drive her to the GP and let her choose how to tell David"},{"day":14,"response":"Called 000 first, kept her warm, handed paramedics the meds folder and packed her glasses and phone"}],"answers":[{"day":3,"question":"What would you ask Marg about her career, and what could you offer her in return?","answer":"I'd ask what nursing was like before electronic records. I could help her scan and sort her old notes."},{"day":5,"question":"How do you respond to Marg, and how do you tell her?","answer":"Sorry, something came up. Maybe another time."},{"day":10,"question":"What do you want Marg to know about how you feel living here?","answer":"That I feel at home here, and I'd like to understand what shaped her views."}],"finalWords":"I didn't expect to look forward to coming home.","watchPoint":"Reliability is her lowest meter. Agree a fixed weekly help schedule at the intro call."}};
+
+  /* ---------- the data contract: every field the template reads ---------- */
+  var CONTRACT = {
+    meta: { profileId: null, updatedAt: null, suggestedFor: null, pairingStatus: null,
+            stages: { preGame: null, game: null, postGame: null } },
+    student: { firstName: null, lastName: null, preferredName: null, pronouns: null, age: null, gender: null,
+               email: null, phone: null, photoUrl: null, countryOfOrigin: null, hometown: null, languages: [],
+               studentType: null, university: null, course: null, yearOfStudy: null, discipline: null,
+               work: { role: null, hoursPerWeek: null, schedule: null },
+               emergencyContact: { name: null, relationship: null, phone: null } },
+    placement: { campus: null, campusDays: [], preferredAreas: [], maxCommuteMins: null, maxCommuteFlexMins: null,
+                 transport: null, moveInDate: null, moveInFlexWeeks: null, stayMonths: null, openToExtend: null },
+    interests: { hobbies: [], lifeGoals: [], careerGoal: null, homeownerBackground: null, canOffer: [], wantsToLearn: [] },
+    household: { homeownerGender: null, otherLodgers: null, smoker: null, needsSmokeFree: null, okWithPets: null,
+                 petAllergy: null, diet: null, accessibilityNeeds: null, dealbreakers: [] },
+    support: { hoursPerWeek: { min: null, max: null }, bestTimes: [], nightsHomePerWeek: { min: null, max: null },
+               rentBudgetWeekly: null, driversLicence: null, hasCar: null, helpTypes: [], notOffered: [] },
+    lifestyle: { bedtime: null, wakeTime: null, weekdays: null, weekends: null, quietAfter: null, socialLevel: null,
+                 socialNote: null, guests: null, tidiness: null, communication: null },
+    checks: { identity: null, policeCheck: null, references: null, firstAid: null },
+    screening: { profile: null, meters: { connection: null, respect: null, reliability: null, awareness: null },
+                 motivation: null, finalPath: null, pathByDay: [], recovered: null, lowestMoment: null, redemption: null,
+                 flags: [], landmarks: [], answers: [], finalWords: null, watchPoint: null }
+  };
+
+  /* ---------- display labels for coded values (unknown codes are shown humanised) ---------- */
+  var L = {
+    pairingStatus: { new: 'New applicant', screening: 'In screening', shortlisted: 'Shortlisted', intro_booked: 'Intro call booked',
+                     matched: 'Matched', on_hold: 'On hold', not_suitable: 'Not suitable' },
+    homeownerGender: { female: 'Female homeowner', male: 'Male homeowner', any: 'No preference' },
+    otherLodgers: { none: 'Only student in the home', open: 'Open to another student', prefer: 'Would like another student' },
+    studentType: { domestic: 'Domestic student', international: 'International student' },
+    discipline: { health: 'Health', carework: 'Carework', allied_health: 'Allied health', social_work: 'Social work and community services',
+                  psychology: 'Psychology and counselling', education: 'Education', other: 'Other' },
+    check: { cleared: 'Cleared', pending: 'Pending', booked: 'Booked', not_started: 'Not started', not_required: 'Not required' },
+    checkName: { identity: 'ID', policeCheck: 'Police check', references: 'References', firstAid: 'First aid' },
+    motivation: { quiet_space: 'Quiet space to study', saving_money: 'Saving money on rent', company: 'Company and conversation',
+                  learning: 'Learning from someone with life experience' },
+    path: { warm: 'Warm', steady: 'Steady', distant: 'Distant' },
+    landmark: { 6: 'Loss', 9: 'Boundaries', 11: 'Safety', 13: 'Redemption', 14: 'Emergency' },
+    meter: { connection: 'Connection', respect: 'Respect', reliability: 'Reliability', awareness: 'Awareness' }
+  };
+  var PROFILES = {
+    connector: ['The Connector', 'High Connection and Respect. Curious, present, reciprocal, holds boundaries kindly. Strong match for pairing.'],
+    considerate_companion: ['The Considerate Companion', 'High Respect and Reliability, moderate Connection. Dependable and respectful, likely to grow into connection.'],
+    independent_tenant: ['The Independent Tenant', 'High Reliability, low Connection. Reliable but sees the arrangement as practical. May suit a lighter-touch placement or a conversation about expectations.'],
+    transactional_guest: ['The Transactional Guest', 'Low Connection and Respect across the board, including at the landmark days. Likely not a fit for this model.']
+  };
+  var SOURCE_NAMES = { api: 'JS API', inline: 'page script', link: 'link', file: 'JSON file', message: 'postMessage',
+                       storage: 'browser storage', demo: 'sample data' };
+
+  /* ---------- helpers ---------- */
+  function blocked(k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; }
+  function isObj(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }
+  function isEmpty(v) {
+    if (v === null || v === undefined) return true;
+    if (typeof v === 'string') return v.trim() === '';
+    if (Array.isArray(v)) return v.length === 0;
+    if (isObj(v)) return Object.keys(v).every(function (k) { return isEmpty(v[k]); });
+    return false;
+  }
+  function clone(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
+  function merge(target, src) {
+    Object.keys(src).forEach(function (k) {
+      if (blocked(k)) return;
+      var v = src[k];
+      if (v === undefined) return;
+      if (isObj(v) && isObj(target[k])) merge(target[k], v);
+      else target[k] = clone(v);
+    });
+    return target;
+  }
+  function get(o, path) { return path.split('.').reduce(function (a, k) { return a == null ? undefined : a[k]; }, o); }
+  function arr(v) { return Array.isArray(v) ? v.filter(function (x) { return !isEmpty(x); }) : isEmpty(v) ? [] : [v]; }
+  function humanize(v) { return String(v).replace(/[_-]+/g, ' ').replace(/^\s*\w/, function (c) { return c.toUpperCase(); }); }
+  function lab(map, v) { return isEmpty(v) ? null : (Object.prototype.hasOwnProperty.call(map, v) ? map[v] : humanize(v)); }
+  function join(parts, sep) {
+    var p = [].concat.apply([], parts).filter(function (x) { return !isEmpty(x) && x !== false; }).map(String);
+    return p.length ? p.join(sep || ' · ') : null;
+  }
+  function plural(n, one, many) { return n + ' ' + (Number(n) === 1 ? one : many); }
+  function date(v) {
+    if (isEmpty(v)) return null;
+    var m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    var d = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(v);
+    return isNaN(d) ? String(v) : d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function time(v) {
+    if (isEmpty(v)) return null;
+    var m = String(v).match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return String(v);
+    var h = +m[1], ap = h >= 12 ? 'pm' : 'am';
+    h = h % 12 || 12;
+    return h + (m[2] === '00' ? '' : ':' + m[2]) + ' ' + ap;
+  }
+  function range(v, unit) {
+    if (isEmpty(v)) return null;
+    if (typeof v === 'number') return v + (unit ? ' ' + unit : '');
+    if (isObj(v)) {
+      var a = v.min, b = v.max, u = unit ? ' ' + unit : '';
+      if (!isEmpty(a) && !isEmpty(b)) return (a === b ? a : a + '–' + b) + u;
+      if (!isEmpty(b)) return 'up to ' + b + u;
+      return 'at least ' + a + u;
+    }
+    return String(v);
+  }
+  function money(v) {
+    if (isEmpty(v)) return null;
+    return typeof v === 'number' ? '$' + v.toLocaleString('en-AU') : String(v);
+  }
+  function yn(v, yes, no) { return v === true ? yes : v === false ? no : isEmpty(v) ? null : String(v); }
+  var WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  function days(v) {
+    var list = arr(v).map(String);
+    if (!list.length) return null;
+    var idx = list.map(function (d) { return WEEK.indexOf(d.slice(0, 3).replace(/^\w/, function (c) { return c.toUpperCase(); })); });
+    var run = idx.every(function (x, i) { return x >= 0 && (i === 0 || x === idx[i - 1] + 1); });
+    return run && list.length > 2 ? WEEK[idx[0]] + '–' + WEEK[idx[idx.length - 1]] : list.join(', ');
+  }
+  function safeUrl(u) {
+    if (typeof u !== 'string') return null;
+    return /^(https?:\/\/|data:image\/(png|jpe?g|webp|gif);base64,|\/|\.\/)/i.test(u.trim()) ? u.trim() : null;
+  }
+
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else el.setAttribute(k, v === true ? '' : v);
+    });
+    for (var i = 2; i < arguments.length; i++) append(el, arguments[i]);
+    return el;
+  }
+  function append(el, c) {
+    if (c === null || c === undefined || c === false) return;
+    if (Array.isArray(c)) { c.forEach(function (x) { append(el, x); }); return; }
+    el.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  function chips(list, cls) {
+    var a = arr(list);
+    return a.length ? h('span', { class: 'chips' }, a.map(function (x) { return h('span', { class: 'chip' + (cls ? ' ' + cls : '') }, String(x)); })) : null;
+  }
+  function valueNode(v) {
+    if (v instanceof Node) return v;
+    if (isEmpty(v)) return h('span', { class: 'empty', 'aria-label': 'Not provided' }, '—');
+    if (Array.isArray(v)) return chips(v);
+    return document.createTextNode(String(v));
+  }
+  function keysNode(k) { return k && k.length ? h('span', { class: 'keys' }, k.join(' · ')) : null; }
+  function attempt(fn, d, where) {
+    try { return fn(d); } catch (e) { console.warn('[GenStay] Could not render "' + where + '":', e.message); return null; }
+  }
+
+  /* ---------- sections: label, data paths read (k), value builder (v) ---------- */
+  function checksNode(d) {
+    var c = d.checks || {};
+    var items = Object.keys(L.checkName).filter(function (k) { return !isEmpty(c[k]); });
+    if (!items.length) return null;
+    var icon = { cleared: '✓', pending: '…', booked: '◷', not_started: '○', not_required: '–' };
+    return h('span', null, items.map(function (k) {
+      var s = String(c[k]);
+      return h('span', { class: 'check ' + s }, h('span', { class: 'ic', 'aria-hidden': 'true' }, icon[s] || '•'),
+               L.checkName[k] + ' ' + lab(L.check, s).toLowerCase());
+    }));
+  }
+  function socialNode(d) {
+    var n = d.lifestyle.socialLevel, note = d.lifestyle.socialNote;
+    if (isEmpty(n) && isEmpty(note)) return null;
+    var wrap = h('span');
+    if (typeof n === 'number') {
+      var k = Math.max(0, Math.min(5, Math.round(n)));
+      wrap.appendChild(h('span', { class: 'dots', role: 'img', 'aria-label': k + ' of 5' },
+        [0, 1, 2, 3, 4].map(function (i) { return h('i', { class: i < k ? 'on' : null }); })));
+      append(wrap, join([k + ' of 5', note], ' · '));
+    } else append(wrap, join([n, note], ' · '));
+    return wrap;
+  }
+
+  var SECTIONS = [
+    { id: 'glance', title: 'At a Glance', type: 'kv', rows: [
+      { l: 'Screening profile', staff: true, k: ['screening.profile', 'screening.recovered'], v: function (d) {
+          var p = d.screening.profile; if (isEmpty(p)) return null;
+          return join([PROFILES[p] ? PROFILES[p][0] : humanize(p),
+                       yn(d.screening.recovered, 'recovered well after a misstep', 'did not recover after a misstep')]); } },
+      { l: 'Placement', k: ['placement.campus', 'placement.moveInDate', 'placement.stayMonths'], v: function (d) {
+          var p = d.placement;
+          return join([p.campus && 'Near ' + p.campus, p.moveInDate && 'from ' + date(p.moveInDate), !isEmpty(p.stayMonths) && plural(p.stayMonths, 'month', 'months')]); } },
+      { l: 'Homeowner fit', k: ['household.homeownerGender', 'household.otherLodgers'], v: function (d) {
+          return join([lab(L.homeownerGender, d.household.homeownerGender), lab(L.otherLodgers, d.household.otherLodgers)]); } },
+      { l: 'Support offered', k: ['support.hoursPerWeek', 'support.helpTypes'], v: function (d) {
+          var t = arr(d.support.helpTypes);
+          return join([range(d.support.hoursPerWeek, 'hrs a week'), t.length ? t.slice(0, 3).join(', ') + (t.length > 3 ? ' +' + (t.length - 3) + ' more' : '') : null]); } },
+      { l: 'Checks', k: ['checks.identity', 'checks.policeCheck', 'checks.references', 'checks.firstAid'], v: checksNode },
+      { l: 'Pairing status', k: ['meta.pairingStatus'], v: function (d) {
+          var s = lab(L.pairingStatus, d.meta.pairingStatus); return s ? h('span', { class: 'status-pill' }, s) : null; } }
+    ] },
+
+    { id: 'location', title: 'Location & Placement', type: 'matrix', cols: ['Preference', 'Flexibility'], rows: [
+      { l: 'Campus', k: ['placement.campus', 'placement.campusDays'], v: [
+          function (d) { var p = d.placement; return join([p.campus, days(p.campusDays) && 'on campus ' + days(p.campusDays)]); },
+          function (d) { return isEmpty(d.placement.campus) ? null : 'Fixed'; } ] },
+      { l: 'Area & commute', k: ['placement.preferredAreas', 'placement.maxCommuteMins', 'placement.transport', 'placement.maxCommuteFlexMins'], v: [
+          function (d) { var p = d.placement; return join([arr(p.preferredAreas).join(' or '),
+              !isEmpty(p.maxCommuteMins) && 'up to ' + p.maxCommuteMins + ' min' + (p.transport ? ' by ' + p.transport : '')]); },
+          function (d) { var f = d.placement.maxCommuteFlexMins; return isEmpty(f) ? null : 'Up to ' + f + ' min for a strong match'; } ] },
+      { l: 'Move-in & stay', k: ['placement.moveInDate', 'placement.stayMonths', 'placement.openToExtend', 'placement.moveInFlexWeeks'], v: [
+          function (d) { var p = d.placement; return join([date(p.moveInDate),
+              !isEmpty(p.stayMonths) && plural(p.stayMonths, 'month', 'months') + (p.openToExtend === true ? ', open to extending' : '')]); },
+          function (d) { var w = d.placement.moveInFlexWeeks; return isEmpty(w) ? null : 'Start date ± ' + plural(w, 'week', 'weeks'); } ] }
+    ] },
+
+    { id: 'about', title: 'About the Student', type: 'kv', rows: [
+      { l: 'Age & gender', k: ['student.age', 'student.gender', 'student.pronouns'], v: function (d) {
+          var s = d.student; return join([s.age, s.gender ? s.gender + (s.pronouns ? ' (' + s.pronouns + ')' : '') : s.pronouns]); } },
+      { l: 'Contact', staff: true, k: ['student.email', 'student.phone'], v: function (d) { return join([d.student.email, d.student.phone]); } },
+      { l: 'Origin & languages', k: ['student.countryOfOrigin', 'student.hometown', 'student.languages', 'student.studentType'], v: function (d) {
+          var s = d.student; return join([join([s.countryOfOrigin, s.hometown && 'grew up in ' + s.hometown], ', '),
+              arr(s.languages).join(' and ') || null, lab(L.studentType, s.studentType)]); } },
+      { l: 'Study', k: ['student.course', 'student.yearOfStudy', 'student.university'], v: function (d) {
+          var s = d.student; return join([join([s.course, !isEmpty(s.yearOfStudy) && 'Year ' + s.yearOfStudy], ', '), s.university]); } },
+      { l: 'Discipline', k: ['student.discipline'], v: function (d) { return lab(L.discipline, d.student.discipline); } },
+      { l: 'Work', k: ['student.work'], v: function (d) {
+          var w = d.student.work || {}; return join([w.role, !isEmpty(w.hoursPerWeek) && 'about ' + w.hoursPerWeek + ' hrs a week', w.schedule]); } },
+      { l: 'Emergency contact', staff: true, k: ['student.emergencyContact'], v: function (d) {
+          var e = d.student.emergencyContact || {}; return join([e.name ? e.name + (e.relationship ? ' (' + e.relationship + ')' : '') : null, e.phone]); } }
+    ] },
+
+    { id: 'interests', title: 'Interests & Shared Ground', type: 'kv', rows: [
+      { l: 'Hobbies & interests', k: ['interests.hobbies'], v: function (d) { return arr(d.interests.hobbies); } },
+      { l: 'Life goals', k: ['interests.lifeGoals'], v: function (d) { return arr(d.interests.lifeGoals); } },
+      { l: 'Career goal', k: ['interests.careerGoal'], v: function (d) { return d.interests.careerGoal; } },
+      { l: 'Best homeowner background', k: ['interests.homeownerBackground'], v: function (d) { return d.interests.homeownerBackground; } },
+      { l: 'Can offer', k: ['interests.canOffer'], v: function (d) { return arr(d.interests.canOffer); } },
+      { l: 'Hopes to learn', k: ['interests.wantsToLearn'], v: function (d) { return arr(d.interests.wantsToLearn); } }
+    ] },
+
+    { id: 'household', title: 'Homeowner & Household', caption: 'Hard filters. A clash on any line below removes the match before scoring.', type: 'kv', rows: [
+      { l: 'Homeowner gender', k: ['household.homeownerGender'], v: function (d) { return lab(L.homeownerGender, d.household.homeownerGender); } },
+      { l: 'Other student lodgers', k: ['household.otherLodgers'], v: function (d) { return lab(L.otherLodgers, d.household.otherLodgers); } },
+      { l: 'Smoking', k: ['household.smoker', 'household.needsSmokeFree'], v: function (d) {
+          return join([yn(d.household.smoker, 'Smoker', 'Non-smoker'), yn(d.household.needsSmokeFree, 'smoke-free home only', 'fine with a smoking household')]); } },
+      { l: 'Pets', k: ['household.okWithPets', 'household.petAllergy'], v: function (d) {
+          return join([yn(d.household.okWithPets, 'Happy to live with pets', 'No pets please'), yn(d.household.petAllergy, 'pet allergy', 'no pet allergies')]); } },
+      { l: 'Diet', k: ['household.diet'], v: function (d) { return d.household.diet; } },
+      { l: 'Accessibility needs', k: ['household.accessibilityNeeds'], v: function (d) { return d.household.accessibilityNeeds; } },
+      { l: 'Other dealbreakers', k: ['household.dealbreakers'], v: function (d) { return arr(d.household.dealbreakers); } }
+    ] },
+
+    { id: 'support', title: 'Support Exchange', type: 'kv', rows: [
+      { l: 'Hours a week', k: ['support.hoursPerWeek'], v: function (d) { return range(d.support.hoursPerWeek, 'hours'); } },
+      { l: 'Best times', k: ['support.bestTimes'], v: function (d) { return arr(d.support.bestTimes); } },
+      { l: 'Nights at home', k: ['support.nightsHomePerWeek'], v: function (d) { return range(d.support.nightsHomePerWeek, 'a week'); } },
+      { l: 'Cash rent budget', k: ['support.rentBudgetWeekly'], v: function (d) { var m = money(d.support.rentBudgetWeekly); return m && 'Up to ' + m + ' a week'; } },
+      { l: 'Driving', k: ['support.driversLicence', 'support.hasCar'], v: function (d) {
+          return join([yn(d.support.driversLicence, 'Licensed driver', 'No licence'), yn(d.support.hasCar, 'has a car', 'no car')]); } }
+    ] },
+
+    { id: 'help', title: 'Help Offered', type: 'split', cols: ['Happy to help with', 'Not offered'],
+      k: [['support.helpTypes'], ['support.notOffered']],
+      v: [function (d) { return arr(d.support.helpTypes); }, function (d) { return chips(d.support.notOffered, 'no'); }] },
+
+    { id: 'lifestyle', title: 'Lifestyle & Routine', type: 'kv', rows: [
+      { l: 'Bed & wake', k: ['lifestyle.bedtime', 'lifestyle.wakeTime'], v: function (d) {
+          var x = d.lifestyle; return join([x.bedtime && 'Bed around ' + time(x.bedtime), x.wakeTime && 'up at ' + time(x.wakeTime)]); } },
+      { l: 'Weekdays', k: ['lifestyle.weekdays'], v: function (d) { return d.lifestyle.weekdays; } },
+      { l: 'Weekends', k: ['lifestyle.weekends'], v: function (d) { return d.lifestyle.weekends; } },
+      { l: 'Quiet hours', k: ['lifestyle.quietAfter'], v: function (d) { var q = d.lifestyle.quietAfter; return q && 'Prefers quiet after ' + time(q); } },
+      { l: 'Social level', k: ['lifestyle.socialLevel', 'lifestyle.socialNote'], v: socialNode },
+      { l: 'Guests', k: ['lifestyle.guests'], v: function (d) { return d.lifestyle.guests; } },
+      { l: 'Tidiness', k: ['lifestyle.tidiness'], v: function (d) { return d.lifestyle.tidiness; } },
+      { l: 'Communication', k: ['lifestyle.communication'], v: function (d) { return d.lifestyle.communication; } }
+    ] },
+
+    { id: 'screening', title: 'Screening Results', staff: true, type: 'screening',
+      caption: 'Staff only. Drawn from the 14-day homeshare simulation and never shown to the student or homeowner.' }
+  ];
+
+  /* ---------- screening section ---------- */
+  function normLandmarks(v) {
+    if (isObj(v)) return Object.keys(v).map(function (k) { return { day: +k, response: v[k] }; });
+    return arr(v).map(function (x) { return isObj(x) ? x : { response: x }; });
+  }
+  function normPath(v) {
+    var out = new Array(14).fill(null);
+    arr(v).forEach(function (x, i) {
+      if (isObj(x)) { if (x.day >= 1 && x.day <= 14) out[x.day - 1] = x.path; }
+      else if (i < 14) out[i] = x;
+    });
+    return out;
+  }
+  function meterRow(key, v) {
+    var name = L.meter[key];
+    var n = typeof v === 'number' ? Math.max(0, Math.min(10, Math.round(v))) : null;
+    var band = n === null ? (isEmpty(v) ? null : String(v)) : n >= 7 ? 'High' : n >= 4 ? 'Moderate' : 'Low';
+    var tip = n === null ? name + ': ' + (band || 'no data') : name + ': ' + n + ' of 10, ' + band;
+    return h('div', { class: 'meter' },
+      h('span', null, name),
+      h('span', { class: 'bar', role: 'img', 'aria-label': tip, title: tip },
+        Array.apply(null, Array(10)).map(function (_, i) { return h('i', { class: n !== null && i < n ? 'on' : null }); })),
+      h('span', { class: 'val' }, n === null ? valueNode(band) : n + '/10 · ' + band));
+  }
+  function renderScreening(d) {
+    var s = d.screening, frag = document.createDocumentFragment();
+    var p = s.profile, prof = PROFILES[p];
+    frag.appendChild(isEmpty(p)
+      ? h('div', { class: 'outcome is-blank' }, h('div', { class: 'name' }, 'Awaiting game results'),
+          h('p', null, 'The outcome profile appears here when the game sends screening.profile.'))
+      : h('div', { class: 'outcome' }, h('div', { class: 'name' }, prof ? prof[0] : humanize(p)), prof ? h('p', null, prof[1]) : null));
+
+    frag.appendChild(h('div', { class: 'sub-h' }, 'Hidden meters (0–10)', keysNode(['screening.meters'])));
+    var m = s.meters || {};
+    frag.appendChild(h('div', { class: 'meters' }, Object.keys(L.meter).map(function (k) { return meterRow(k, m[k]); })));
+
+    frag.appendChild(h('div', { class: 'sub-h' }, 'Path by day', keysNode(['screening.pathByDay'])));
+    var path = normPath(s.pathByDay);
+    frag.appendChild(h('div', { class: 'path' }, path.map(function (t, i) {
+      var day = i + 1, lm = L.landmark[day], tier = isEmpty(t) ? null : String(t).toLowerCase();
+      var tip = 'Day ' + day + (lm ? ' (' + lm + ')' : '') + ': ' + (tier ? lab(L.path, tier) : 'no data');
+      return h('div', { class: 'cell ' + (tier ? 't-' + tier : 't-none') + (lm ? ' lm' : ''), title: tip, 'aria-label': tip, role: 'img' },
+        h('b', null, day), h('span', null, tier ? tier.charAt(0).toUpperCase() : '·'));
+    })));
+    frag.appendChild(h('div', { class: 'legend' },
+      h('span', null, h('i', { style: 'background:var(--green)' }), 'W  Warm'),
+      h('span', null, h('i', { style: 'background:var(--green-mid)' }), 'S  Steady'),
+      h('span', null, h('i', { style: 'background:var(--green-pale)' }), 'D  Distant'),
+      h('span', null, h('i', { class: 'lm' }), 'Landmark day')));
+
+    var lms = normLandmarks(s.landmarks);
+    function lmFor(day) { var f = lms.filter(function (x) { return +x.day === day; })[0]; return f ? f.response : null; }
+    var rows = [
+      { l: 'Stated motivation', k: ['screening.motivation'], v: function () { return lab(L.motivation, s.motivation); } },
+      { l: 'Final path', k: ['screening.finalPath'], v: function () { return lab(L.path, s.finalPath); } },
+      { l: 'Recovered after a misstep', k: ['screening.recovered'], v: function () { return yn(s.recovered, 'Yes', 'No'); } },
+      { l: 'Lowest moment', k: ['screening.lowestMoment'], v: function () {
+          var x = s.lowestMoment; return isObj(x) ? join([!isEmpty(x.day) && 'Day ' + x.day, x.note], ': ') : x; } },
+      { l: 'Day 13 redemption', k: ['screening.redemption'], v: function () { return s.redemption; } },
+      { l: 'Flags', k: ['screening.flags'], v: function () { return arr(s.flags).map(function (f) { return String(f).replace(/_/g, ' '); }); } }
+    ];
+    [6, 9, 11, 14].forEach(function (day) {
+      rows.push({ l: 'Day ' + day + ' · ' + L.landmark[day], k: ['screening.landmarks[day=' + day + ']'], v: function () { return lmFor(day); } });
+    });
+    var answers = arr(s.answers);
+    if (answers.length) answers.forEach(function (a) {
+      a = isObj(a) ? a : { answer: a };
+      rows.push({ l: 'Day ' + (a.day || '?') + ' · open answer', k: ['screening.answers'], v: function () {
+        return isEmpty(a.answer) ? null : h('span', { class: 'answer' }, a.question ? h('span', { class: 'q' }, a.question) : null, h('q', null, a.answer)); } });
+    });
+    else rows.push({ l: 'Open answers', k: ['screening.answers'], v: function () { return null; } });
+    rows.push({ l: 'Watch-point', k: ['screening.watchPoint'], v: function () { return s.watchPoint; } });
+    frag.appendChild(h('div', { class: 'sub-h' }, 'Responses'));
+    frag.appendChild(kvTable(rows, d, 'screening'));
+
+    frag.appendChild(isEmpty(s.finalWords)
+      ? h('blockquote', { class: 'final is-blank' }, 'The Day 13 closing answer appears here.', keysNode(['screening.finalWords']))
+      : h('blockquote', { class: 'final' }, '“' + s.finalWords + '”', h('small', null, 'Day 13 · “If you could say one honest thing to Marg tonight…”'), keysNode(['screening.finalWords'])));
+    return frag;
+  }
+
+  /* ---------- table builders ---------- */
+  function kvTable(rows, d, sid) {
+    return h('table', { class: 'kv' }, h('tbody', null, rows.map(function (r) {
+      return h('tr', { 'data-staff': r.staff || null },
+        h('th', { scope: 'row', class: 'label' }, r.l, keysNode(r.k)),
+        h('td', { class: 'value' }, valueNode(attempt(r.v, d, sid + ' / ' + r.l))));
+    })));
+  }
+  function matrixTable(sec, d) {
+    return h('table', { class: 'matrix' },
+      h('thead', null, h('tr', null, h('td', { class: 'corner' }), sec.cols.map(function (c) { return h('th', { scope: 'col', class: 'label' }, c); }))),
+      h('tbody', null, sec.rows.map(function (r) {
+        return h('tr', { 'data-staff': r.staff || null },
+          h('th', { scope: 'row', class: 'rowhead' }, r.l, keysNode(r.k)),
+          r.v.map(function (fn, i) { return h('td', { class: 'value' }, valueNode(attempt(fn, d, sec.id + ' / ' + r.l + ' / ' + sec.cols[i]))); }));
+      })));
+  }
+  function splitTable(sec, d) {
+    return h('table', { class: 'split' },
+      h('thead', null, h('tr', null, sec.cols.map(function (c, i) { return h('th', { scope: 'col', class: 'label' }, c, keysNode(sec.k[i])); }))),
+      h('tbody', null, h('tr', null, sec.v.map(function (fn, i) { return h('td', { class: 'value' }, valueNode(attempt(fn, d, sec.id + ' / ' + sec.cols[i]))); }))));
+  }
+
+  /* ---------- state ---------- */
+  var state = clone(CONTRACT);
+  var lastSource = null, lastAt = null, received = false;
+  var listeners = [];
+  var warned = {};
+
+  function checkKeys(src, contract, prefix) {
+    if (!isObj(src) || !isObj(contract)) return;
+    Object.keys(src).forEach(function (k) {
+      var p = prefix ? prefix + '.' + k : k;
+      if (!Object.prototype.hasOwnProperty.call(contract, k)) {
+        if (!warned[p]) { warned[p] = 1; console.warn('[GenStay] Unknown field "' + p + '" was received and ignored by the layout. Check the spelling against GenStayProfile.blank().'); }
+        return;
+      }
+      checkKeys(src[k], contract[k], p);
+    });
+  }
+  function trackedPaths() {
+    var out = {};
+    SECTIONS.forEach(function (s) {
+      (s.rows || []).forEach(function (r) { (r.k || []).forEach(function (k) { out[k] = 1; }); });
+      (s.k || []).forEach(function (ks) { ks.forEach(function (k) { out[k] = 1; }); });
+    });
+    ['screening.meters', 'screening.pathByDay', 'screening.motivation', 'screening.finalPath', 'screening.lowestMoment', 'screening.redemption',
+     'screening.flags', 'screening.landmarks', 'screening.answers', 'screening.finalWords', 'screening.watchPoint',
+     'interests.hobbies', 'student.firstName', 'student.lastName', 'student.photoUrl', 'meta.suggestedFor', 'meta.updatedAt'].forEach(function (k) { out[k] = 1; });
+    return Object.keys(out);
+  }
+  var TRACKED = null;
+  function status() {
+    TRACKED = TRACKED || trackedPaths();
+    var filled = TRACKED.filter(function (p) { return !isEmpty(get(state, p)); }).length;
+    return { version: VERSION, received: received, filled: filled, total: TRACKED.length,
+             source: lastSource, receivedAt: lastAt ? lastAt.toISOString() : null, view: document.body.getAttribute('data-view') };
+  }
+
+  /* ---------- render ---------- */
+  function setText(id, v, placeholder) {
+    var el = document.getElementById(id);
+    el.textContent = '';
+    if (isEmpty(v)) { el.appendChild(h('span', { class: 'empty' }, placeholder || '—')); }
+    else el.textContent = String(v);
+  }
+  function render() {
+    var d = state, s = d.student;
+    setText('f-suggested', d.meta.suggestedFor);
+    setText('f-updated', date(d.meta.updatedAt));
+    var name = join([s.preferredName || s.firstName, s.lastName], ' ');
+    setText('f-name', name, 'Student name');
+    setText('f-sub', join([join([s.course, !isEmpty(s.yearOfStudy) && 'Year ' + s.yearOfStudy], ', '), s.university, s.age]), 'Course, year and university appear here');
+
+    var photo = document.getElementById('f-photo'), url = safeUrl(s.photoUrl);
+    photo.textContent = '';
+    if (url) { photo.className = 'photo'; photo.appendChild(h('img', { src: url, alt: name ? 'Photo of ' + name : 'Student photo' })); }
+    else if (name) { photo.className = 'photo'; photo.textContent = name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+    else { photo.className = 'photo is-blank'; photo.innerHTML = '<svg width="54" height="54" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg>'; }
+
+    var st = d.meta.stages || {};
+    var gameIn = st.game === true || (st.game == null && !isEmpty(d.screening.profile));
+    var stages = [['Pre-game questionnaire', st.preGame === true], ['Screening game', gameIn], ['Post-game questionnaire', st.postGame === true]];
+    var sEl = document.getElementById('f-stages'); sEl.textContent = '';
+    stages.forEach(function (x) {
+      sEl.appendChild(h('span', { class: 'stage' + (x[1] ? ' done' : '') }, h('span', { class: 'ic', 'aria-hidden': 'true' }, x[1] ? '✓' : ''),
+        x[0] + (x[1] ? ' received' : ' waiting')));
+    });
+
+    var host = document.getElementById('sections'); host.textContent = '';
+    SECTIONS.forEach(function (sec) {
+      var el = h('section', { id: 'sec-' + sec.id, 'data-staff': sec.staff || null, 'aria-labelledby': 'h-' + sec.id },
+        h('h2', { id: 'h-' + sec.id }, sec.title, sec.staff ? h('span', { class: 'staff-tag' }, 'Staff only') : null),
+        sec.caption ? h('p', { class: 'caption' }, sec.caption) : null,
+        h('hr', { class: 'rule' }));
+      if (sec.type === 'kv') el.appendChild(kvTable(sec.rows, d, sec.id));
+      else if (sec.type === 'matrix') el.appendChild(matrixTable(sec, d));
+      else if (sec.type === 'split') el.appendChild(splitTable(sec, d));
+      else if (sec.type === 'screening') el.appendChild(renderScreening(d));
+      host.appendChild(el);
+    });
+
+    var stt = status(), box = document.getElementById('status');
+    box.setAttribute('data-state', stt.received ? 'filled' : 'blank');
+    var txt = document.getElementById('status-text'); txt.textContent = '';
+    if (!stt.received) txt.textContent = 'Blank. Waiting for data.';
+    else append(txt, [h('b', null, stt.filled + ' of ' + stt.total), ' fields filled · via ' + (SOURCE_NAMES[lastSource] || lastSource) +
+      ' · ' + lastAt.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })]);
+  }
+
+  function commit(source) {
+    received = !isEmpty(state);
+    lastSource = source; lastAt = new Date();
+    render();
+    if (CONFIG.persist) { try { localStorage.setItem(CONFIG.storageKey, JSON.stringify(state)); } catch (e) {} }
+    var st = status();
+    listeners.forEach(function (fn) { try { fn(clone(state), st); } catch (e) { console.error(e); } });
+    window.dispatchEvent(new CustomEvent('genstay:profile:rendered', { detail: st }));
+    return st;
+  }
+  function accept(data, source) {
+    if (!isObj(data)) { console.warn('[GenStay] Ignored data from ' + source + ': expected a JSON object.'); return false; }
+    checkKeys(data, CONTRACT, '');
+    return true;
+  }
+  function normalise() {
+    Object.keys(CONTRACT).forEach(function (k) {
+      if (isObj(CONTRACT[k]) && !isObj(state[k])) {
+        if (state[k] != null) console.warn('[GenStay] "' + k + '" should be an object. It was reset to blank.');
+        state[k] = clone(CONTRACT[k]);
+      }
+    });
+  }
+  function load(data, source) {
+    if (!accept(data, source || 'api')) return status();
+    state = merge(clone(CONTRACT), data);
+    normalise();
+    return commit(source || 'api');
+  }
+  function update(partial, source) {
+    if (!accept(partial, source || 'api')) return status();
+    merge(state, partial);
+    normalise();
+    return commit(source || 'api');
+  }
+  function clear() {
+    state = clone(CONTRACT); received = false; lastSource = null; lastAt = null;
+    render();
+    var st = status();
+    listeners.forEach(function (fn) { try { fn(clone(state), st); } catch (e) { console.error(e); } });
+    window.dispatchEvent(new CustomEvent('genstay:profile:rendered', { detail: st }));
+    return st;
+  }
+
+  /* ---------- base64url (UTF-8 safe) for #data= links ---------- */
+  function encode(data) {
+    var bytes = new TextEncoder().encode(JSON.stringify(data)), bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function decode(str) {
+    var b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    var bin = atob(b64), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+
+  /* ---------- receiving routes ---------- */
+  function readHash() {
+    var m = location.hash.match(/(?:^#|&)data=([^&]+)/);
+    if (!m) return false;
+    try { load(decode(m[1]), 'link'); return true; }
+    catch (e) { console.warn('[GenStay] Could not read #data= from the link:', e.message); return false; }
+  }
+  function readSrc(url) {
+    fetch(url, { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) { load(d, 'file'); })
+      .catch(function (e) { console.warn('[GenStay] Could not load ?src=' + url + ':', e.message); });
+  }
+  function readStorage() {
+    try { var raw = localStorage.getItem(CONFIG.storageKey); if (raw) { load(JSON.parse(raw), 'storage'); return true; } }
+    catch (e) { console.warn('[GenStay] Could not read browser storage:', e.message); }
+    return false;
+  }
+  function originAllowed(o) {
+    var list = [].concat(CONFIG.allowedOrigins || []);
+    return list.indexOf('*') >= 0 || list.indexOf(o) >= 0 || (list.indexOf('self') >= 0 && o === location.origin);
+  }
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (!isObj(m) || typeof m.type !== 'string' || m.type.indexOf('genstay:') !== 0) return;
+    if (!originAllowed(e.origin)) { console.warn('[GenStay] Ignored a message from ' + e.origin + '. Add it to GENSTAY_CONFIG.allowedOrigins.'); return; }
+    var st;
+    if (m.type === 'genstay:profile') st = (m.mode === 'load' ? load : update)(m.data, 'message');
+    else if (m.type === 'genstay:clear') st = clear();
+    else if (m.type === 'genstay:ping') st = status();
+    else return;
+    if (e.source && e.source.postMessage) e.source.postMessage({ type: 'genstay:ack', status: st }, e.origin === 'null' ? '*' : e.origin);
+  });
+  window.addEventListener('hashchange', readHash);
+  window.addEventListener('storage', function (e) {
+    if (e.key !== CONFIG.storageKey) return;
+    if (e.newValue === null) { clear(); return; }
+    try { load(JSON.parse(e.newValue), 'storage'); } catch (err) { console.warn('[GenStay] Bad JSON in browser storage:', err.message); }
+  });
+
+  /* ---------- toolbar ---------- */
+  function setView(v) {
+    v = v === 'family' ? 'family' : 'staff';
+    document.body.setAttribute('data-view', v);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-view-btn]'), function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-view-btn') === v));
+    });
+    return v;
+  }
+  function showKeys(on) {
+    document.body.classList.toggle('show-keys', !!on);
+    document.getElementById('btn-keys').setAttribute('aria-pressed', String(!!on));
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-view-btn]'), function (b) {
+    b.addEventListener('click', function () { setView(b.getAttribute('data-view-btn')); });
+  });
+  document.getElementById('btn-keys').addEventListener('click', function () { showKeys(!document.body.classList.contains('show-keys')); });
+  document.getElementById('btn-print').addEventListener('click', function () { window.print(); });
+  document.getElementById('btn-json').addEventListener('click', function () {
+    var s = state.student, name = join([s.firstName, s.lastName], '-') || 'blank';
+    var a = h('a', { href: URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })),
+                     download: 'genstay-profile-' + name.toLowerCase().replace(/[^a-z0-9-]+/g, '-') + '.json' });
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  /* ---------- public API ---------- */
+  window.GenStayProfile = {
+    version: VERSION,
+    load: function (d) { return load(d, 'api'); },        // replace everything
+    update: function (d) { return update(d, 'api'); },    // merge a partial object (e.g. one questionnaire or the game result)
+    clear: clear,
+    get: function () { return clone(state); },
+    blank: function () { return clone(CONTRACT); },        // the empty data shape, ready to fill
+    status: status,
+    encode: encode,                                         // base64url for #data= links
+    link: function (d, base) { return (base || location.href.split('#')[0]) + '#data=' + encode(d); },
+    setView: setView,
+    showKeys: showKeys,
+    onChange: function (fn) { listeners.push(fn); return function () { listeners = listeners.filter(function (x) { return x !== fn; }); }; },
+    config: CONFIG
+  };
+
+  /* ---------- boot ---------- */
+  var params = new URLSearchParams(location.search);
+  setView(params.get('view') || CONFIG.defaultView);
+  if (params.has('keys')) showKeys(true);
+  if (CONFIG.embedded || params.has('embed')) ['btn-print', 'btn-json'].forEach(function (id) { document.getElementById(id).hidden = true; });
+  render();
+  var got = false;
+  if (isObj(window.GENSTAY_PROFILE)) { load(window.GENSTAY_PROFILE, 'inline'); got = true; }
+  if (readHash()) got = true;
+  if (params.get('src')) { readSrc(params.get('src')); got = true; }
+  if (!got && CONFIG.readStorage) got = readStorage();
+  if (!got && params.has('demo') && SAMPLE) load(SAMPLE, 'demo');
+
+  var parent = window.opener || (window.parent !== window ? window.parent : null);
+  if (parent) { try { parent.postMessage({ type: 'genstay:ready', version: VERSION }, '*'); } catch (e) {} }
+})();
+</script>
+</body>
+</html>

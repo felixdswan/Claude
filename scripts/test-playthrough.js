@@ -1,220 +1,273 @@
-/* Automated playthrough of Pepaws Porch.
-   Drives the real page in Chromium: a best-choice run, a worst-choice run,
-   a timer-expiry run, and a workbook byte dump for validation. */
+/* Automated checks for Pepaws Porch, in a real browser.
+
+   Serves game/ over HTTP (the staff desk embeds the profile template in a
+   frame, which file:// won't allow), stands in for the artifact runtime with
+   an in-memory record store, and then:
+     - plays a best-choice run and a worst-choice run end to end, including
+       the final questions, and checks the stored profile against the
+       template's data contract
+     - lets the Day 14 timer run out
+     - opens the staff desk, checks the profile reaches the embedded template,
+       saves a review, and imports a profile file
+     - screenshots every day's scene, the questionnaire, results and the desk
+
+   Usage: node scripts/test-playthrough.js [outdir]   (default: /tmp/pepaws-out) */
 const { chromium } = require("/opt/node22/lib/node_modules/playwright");
+const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const URL = "file://" + path.resolve(__dirname, "../game/pepaws-porch.html");
-const OUT = process.argv[2] || "/tmp";
+const ROOT = path.resolve(__dirname, "../game");
+const OUT = process.argv[2] || "/tmp/pepaws-out";
+fs.mkdirSync(OUT, { recursive: true });
 
-function sum(f) { return (f.rapport || 0) + (f.autonomy || 0) + (f.safety || 0); }
+function serve() {
+  return new Promise((resolve) => {
+    const srv = http.createServer((req, res) => {
+      const file = path.join(ROOT, decodeURIComponent(req.url.split("?")[0].split("#")[0]));
+      if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); return res.end(); }
+      res.writeHead(200, { "content-type": file.endsWith(".html") ? "text/html; charset=utf-8" : "application/octet-stream" });
+      fs.createReadStream(file).pipe(res);
+    });
+    srv.listen(0, () => resolve(srv));
+  });
+}
 
-async function newPage(browser, errors) {
-  const ctx = await browser.newContext({ viewport: { width: 468, height: 900 } });
+/* A stand-in for window.claude: db (paths, get/set, collections, orderBy,
+   limit), user and downloads. Shared across reloads through sessionStorage. */
+const MOCK = `
+(() => {
+  const KEY = "__mockdb";
+  const load = () => { try { return JSON.parse(sessionStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } };
+  const store = load();
+  const persist = () => sessionStorage.setItem(KEY, JSON.stringify(store));
+  const snap = (p) => ({ id: p.split("/").pop(), exists: p in store, data: () => store[p] ? JSON.parse(JSON.stringify(store[p])) : undefined });
+  function doc(p) {
+    return { id: p.split("/").pop(), path: p,
+      get: async () => snap(p),
+      set: async (d) => { store[p] = JSON.parse(JSON.stringify(d)); persist(); },
+      update: async (d) => { if (!(p in store)) throw { code: "invalid_argument" }; Object.assign(store[p], d); persist(); },
+      delete: async () => { delete store[p]; persist(); },
+      collection: (c) => collection(p + "/" + c) };
+  }
+  function collection(c, order, lim) {
+    const depth = c.split("/").length + 1;
+    return { path: c,
+      doc: (id) => doc(c + "/" + (id || Math.random().toString(36).slice(2))),
+      orderBy: (f, dir) => collection(c, [f, dir || "asc"], lim),
+      limit: (n) => collection(c, order, n),
+      get: async () => {
+        let ids = Object.keys(store).filter((k) => k.startsWith(c + "/") && k.split("/").length === depth);
+        if (order) ids.sort((a, b) => String(store[a][order[0]] || "").localeCompare(String(store[b][order[0]] || "")) * (order[1] === "desc" ? -1 : 1));
+        if (lim) ids = ids.slice(0, lim);
+        const docs = ids.map(snap);
+        return { docs, size: docs.length, empty: !docs.length };
+      } };
+  }
+  window.__downloads = [];
+  const caps = {
+    db: { doc, collection },
+    user: { id: async () => "applicant-1", canEdit: async () => true, isOwner: async () => true },
+    downloads: { save: async (r) => { window.__downloads.push(r); return { status: "saved" }; } }
+  };
+  window.__store = store;
+  window.claude = { use: async (n) => (window.__noCaps ? null : caps[n] || null) };
+})();`;
+
+const errors = [];
+async function newPage(browser, base, { mock = true } = {}) {
+  const ctx = await browser.newContext({ viewport: { width: 520, height: 960 } });
+  if (mock) await ctx.addInitScript(MOCK);
   const page = await ctx.newPage();
   page.on("console", (m) => {
-    if (m.type() !== "error") return;
     const t = m.text();
-    if (/fonts\.googleapis\.com|ERR_CONNECTION_RESET|ERR_BLOCKED/.test(t)) return; // sandbox has no egress
-    errors.push("console: " + t);
-  });
-  page.on("requestfailed", (r) => {
-    if (!/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(r.url())) errors.push("requestfailed: " + r.url());
+    if (m.type() === "error" && !/fonts\.(googleapis|gstatic)\.com|ERR_/.test(t)) errors.push("console: " + t);
+    if (/\[GenStay\] Unknown field/.test(t)) errors.push("contract: " + t);
   });
   page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
-  await page.goto(URL);
-  await page.waitForTimeout(500);
+  await page.goto(base + "/pepaws-porch.html");
+  await page.waitForSelector("#begin");
   return { ctx, page };
 }
 
-async function startRun(page, name) {
-  await page.fill("#fname", name);
-  await page.fill("#femail", "applicant@example.edu.au");
-  await page.check("#c1");
-  await page.check("#c2");
-  await page.click("#begin");
-  await page.waitForSelector(".daycard");
+const TEXT = {
+  best: {
+    D3: "I'd ask what she remembers about her first year and the advice she wishes someone had given her. In return I could help update and share her old notes.",
+    D5: "I can't today because the assignment is due, but could we go to the garden together on Sunday? I'd love to meet the neighbours.",
+    D10: "I want to understand where her view comes from and listen properly, and I'd like her to know I feel at home living here and respect her.",
+    D13: "Thank you for letting me be part of your home. I'm sorry I wasn't always there, and I'd like us to keep talking honestly together."
+  },
+  worst: {
+    D3: "Just want a reference letter and some contacts from her network. That is about it really.",
+    D5: "I'd make an excuse and avoid the whole thing. I wouldn't tell her where I was going either.",
+    D10: "I'd rather avoid the topic and keep to myself. Not much to say about it to be honest.",
+    D13: "Nothing much. I'd rather not say anything and just leave it there for now honestly."
+  }
+};
+
+async function play(page, mode, { letTimerRun = false } = {}) {
+  for (let guard = 0; guard < 600; guard++) {
+    const st = await page.evaluate(() => {
+      const s = window.S;
+      if (s.view !== "play") return { view: s.view };
+      const day = window.dayForIndex(s.di), step = day.steps[s.si];
+      return { view: s.view, phase: s.phase, day: day.n, t: step.t, id: step.id, timer: step.timer || 0,
+        scores: step.options ? step.options.map((o) => o.fx ? o.fx.connection + o.fx.respect + o.fx.reliability + o.fx.awareness : 0) : [] };
+    });
+    if (st.view === "questionnaire") return;
+    if (st.view === "daycard") { await page.click("#go"); continue; }
+    if (st.view !== "play") throw new Error("unexpected view " + st.view);
+    if (st.phase === "reply" || st.t === "say") { await page.click("#next"); continue; }
+    if (st.t === "choice") {
+      if (letTimerRun && st.timer) { await page.waitForFunction(() => window.S.phase === "reply", null, { timeout: (st.timer + 3) * 1000 }); continue; }
+      const pick = st.scores.indexOf(mode === "best" ? Math.max(...st.scores) : Math.min(...st.scores));
+      await page.click(`.opt[data-i="${pick}"]`);
+      continue;
+    }
+    if (st.t === "text") { await page.fill("#ta", TEXT[mode][st.id]); await page.click("#send"); continue; }
+    if (st.t === "multi") {
+      const boxes = await page.$$("[data-multi]");
+      if (mode === "best") { await boxes[0].check(); await boxes[3].check(); } else await boxes[2].check();
+      await page.click("#multi-submit");
+      continue;
+    }
+  }
+  throw new Error("run did not finish");
 }
 
-/* Walk to the end. mode: "best" | "worst". Returns a trace. */
-async function playThrough(page, mode, opts = {}) {
-  const trace = [];
-  for (let guard = 0; guard < 400; guard++) {
-    const state = await page.evaluate(() => {
-      const s = window.S;
-      if (s.view === "results") return { view: "results" };
-      if (s.view === "daycard") return { view: "daycard" };
-      const day = window.DAYS[s.di];
-      const step = day.steps[s.si];
-      return {
-        view: s.view, phase: s.phase, di: s.di, si: s.si,
-        dayN: day.n, kind: step.t, timer: step.timer || null,
-        options: step.t === "choice" ? step.options.map((o, i) => ({
-          i, examine: !!o.examine, score: o.fx ? (o.fx.rapport || 0) + (o.fx.autonomy || 0) + (o.fx.safety || 0) : 0
-        })) : null,
-        min: step.min || null
-      };
-    });
-
-    if (state.view === "results") break;
-
-    if (state.view === "daycard") {
-      await page.click("#go");
-      await page.waitForTimeout(60);
-      continue;
+async function answerQuestions(page) {
+  const fill = { age: "21", phone: "0491 570 156", ecName: "Claire Graffet", ecPhone: "0491 570 110", university: "UTS",
+    course: "Bachelor of Nursing", campus: "UTS City campus, Ultimo", moveInDate: "2027-02-01", rentBudgetWeekly: "200", languages: "English, Italian" };
+  const pick = { gender: "Female", studentType: "domestic", yearOfStudy: "2", transport: "public transport", maxCommuteMins: "40",
+    stayMonths: "12", homeownerGender: "female", otherLodgers: "none", hoursPerWeek: "8-10" };
+  const yes = { smoker: "false", needsSmokeFree: "true", okWithPets: "true", petAllergy: "false" };
+  for (let p = 0; p < 5; p++) {
+    await page.waitForSelector("#qnext");
+    if (p === 0) {
+      await page.click("#qnext");   // nothing filled: validation must stop us
+      if (!(await page.$(".qfield.bad"))) errors.push("questionnaire: empty page 1 was accepted");
     }
-    if (state.phase === "reply") {
-      await page.click("#next");
-      await page.waitForTimeout(60);
-      continue;
+    for (const [k, v] of Object.entries(fill)) if (await page.$("#q-" + k)) await page.fill("#q-" + k, v);
+    for (const [k, v] of Object.entries(pick)) if (await page.$("#q-" + k)) await page.selectOption("#q-" + k, v);
+    for (const [k, v] of Object.entries(yes)) if (await page.$("#q-" + k)) await page.click(`[data-one="${k}"][data-v="${v}"]`);
+    if (await page.$("#q-campusDays")) { for (const d of ["Mon", "Tue", "Wed"]) await page.click(`[data-multi="campusDays"][data-v="${d}"]`); }
+    if (await page.$("#q-hobbies")) { await page.click('[data-multi="hobbies"][data-v="Gardening"]'); await page.fill('[data-q="hobbies__other"]', "Choir, Crime novels"); }
+    if (p === 4) {
+      const pressed = await page.$$eval('[data-multi="helpTypes"][aria-pressed="true"]', (x) => x.length);
+      if (!pressed) await page.click('[data-multi="helpTypes"][data-v="Gardening"]');
+      await page.screenshot({ path: path.join(OUT, "questionnaire-5.png"), fullPage: false });
     }
-    if (state.kind === "say") {
-      await page.click("#next");
-      await page.waitForTimeout(60);
-      continue;
-    }
-    if (state.kind === "choice") {
-      // Take every examine option still on screen (they reveal props, they don't advance).
-      let tookExamine = false;
-      for (const o of state.options.filter((x) => x.examine)) {
-        const btn = await page.$(`.opt[data-i="${o.i}"]`);
-        if (btn) { await btn.click(); await page.waitForTimeout(60); tookExamine = true; break; }
-      }
-      if (tookExamine) continue;
-      if (opts.letTimeoutOnDay === state.dayN && state.timer) {
-        trace.push(`day ${state.dayN}: letting the ${state.timer}s timer expire`);
-        await page.waitForTimeout(state.timer * 1000 + 900);
-        await page.waitForTimeout(120);
-        continue;
-      }
-      const real = state.options.filter((o) => !o.examine);
-      real.sort((a, b) => (mode === "best" ? b.score - a.score : a.score - b.score));
-      const pick = real[0];
-      trace.push(`day ${state.dayN}: option ${pick.i} (score ${pick.score})`);
-      await page.click(`.opt[data-i="${pick.i}"]`);
-      await page.waitForTimeout(60);
-      continue;
-    }
-    if (state.kind === "text") {
-      const answer = mode === "best"
-        ? "I would sit down with him first and ask if it is alright before I touch anything, then show him one step at a time in plain words, no jargon, and write it down on a card so he has it next time. I would tell the coordinator and log it. I am not comfortable letting that go and I would say so calmly, without a lecture, and I would not lift him or grab him. Ambulance, triple zero, 000 straight away, address is 14 Ellerslie Street, cross street given, he is 82, speech slurred on one side, right arm weak, skin cool, he is awake, I have not moved him, it started about ten minutes ago and he was dizzy three times this week."
-        : "dunno";
-      const text = mode === "best" ? answer : "I'd just do it myself, it's quicker, and I'd tell him he must have pressed something. Not my place really.";
-      await page.fill("#ta", text);
-      await page.waitForTimeout(40);
-      await page.click("#send");
-      await page.waitForTimeout(60);
-      continue;
-    }
-    throw new Error("unhandled state " + JSON.stringify(state));
+    await page.click("#qnext");
   }
-  return trace;
+  await page.waitForSelector("#savestat");
+  await page.waitForFunction(() => /reached|couldn/.test(document.getElementById("savestat").textContent), null, { timeout: 5000 });
+}
+
+async function checkContract(browser, base, profile, label) {
+  const { ctx, page } = await newPage(browser, base, { mock: false });
+  await page.goto(base + "/genstay-profile-template.html");
+  const st = await page.evaluate((p) => window.GenStayProfile.load(p), profile);
+  await page.screenshot({ path: path.join(OUT, "template-" + label + ".png"), fullPage: true });
+  await ctx.close();
+  return st;
 }
 
 (async () => {
+  const srv = await serve();
+  const base = "http://127.0.0.1:" + srv.address().port;
   const browser = await chromium.launch();
-  const report = [];
-  let failures = 0;
-  const check = (label, cond, detail) => {
-    report.push((cond ? "PASS  " : "FAIL  ") + label + (detail ? "  — " + detail : ""));
-    if (!cond) failures++;
-  };
+  const report = {};
 
-  /* ---------- run 1: best choices ---------- */
+  /* scenes */
   {
-    const errors = [];
-    const { ctx, page } = await newPage(browser, errors);
-    await startRun(page, "Amrita Best");
-    await playThrough(page, "best");
-    await page.waitForSelector(".band", { timeout: 5000 });
-    const rec = await page.evaluate(() => window.toRecord());
-    check("best run reaches results", true);
-    check("best run: 5 free-text responses", rec.responses.length === 5, "got " + rec.responses.length);
-    check("best run: no hard stop", rec.hardStop === false);
-    check("best run: band is Certified", rec.band === "Certified", rec.band + " | " + rec.reasons.join(" / "));
-    check("best run: meters high", rec.safety >= 65 && rec.autonomy >= 65 && rec.rapport >= 45,
-      `r${rec.rapport} a${rec.autonomy} s${rec.safety}`);
-    check("best run: every level answered", ["L1", "L2", "L3", "L4", "L5"].every((k) => rec.responses.some((r) => r.id === k)));
-    check("best run: choices recorded", rec.choices.length >= 14, "got " + rec.choices.length);
-    check("best run: both Day 6 props examined", rec.flags.calendarSeen === true && rec.flags.breakfastSeen === true,
-      JSON.stringify(rec.flags));
-    check("best run: no false watch flags on a good answer", (rec.watchFlags || []).length === 0,
-      JSON.stringify(rec.watchFlags));
-    check("best run: no page errors", errors.length === 0, errors.join(" | "));
-
-    /* workbook bytes straight out of the page */
-    const bytes = await page.evaluate(() => Array.from(xlsxMini(participantWorkbook(toRecord()))));
-    fs.writeFileSync(path.join(OUT, "participant.xlsx"), Buffer.from(bytes));
-    check("participant workbook built", bytes.length > 3000, bytes.length + " bytes");
-
-    const assessorBytes = await page.evaluate(() => {
-      const r = toRecord();
-      return Array.from(xlsxMini(assessorWorkbook([r, r])));
-    });
-    fs.writeFileSync(path.join(OUT, "assessor.xlsx"), Buffer.from(assessorBytes));
-    check("assessor workbook built", assessorBytes.length > 3000, assessorBytes.length + " bytes");
-
-    fs.writeFileSync(path.join(OUT, "record-best.json"), JSON.stringify(rec, null, 2));
-    await page.screenshot({ path: path.join(OUT, "shot-results.png") });
+    const { ctx, page } = await newPage(browser, base);
+    await page.screenshot({ path: path.join(OUT, "title.png") });
+    for (let i = 0; i < 14; i++) {
+      await page.evaluate((i) => {
+        window.S = window.freshState(); S.pid = "x"; S.di = i; S.view = "play"; S.si = 0; window.render();
+      }, i);
+      await page.locator(".stage").screenshot({ path: path.join(OUT, "day-" + String(i + 1).padStart(2, "0") + ".png") });
+    }
     await ctx.close();
   }
 
-  /* ---------- run 2: worst choices ---------- */
-  {
-    const errors = [];
-    const { ctx, page } = await newPage(browser, errors);
-    await startRun(page, "Worst Case");
-    await playThrough(page, "worst");
-    await page.waitForSelector(".band", { timeout: 5000 });
-    const rec = await page.evaluate(() => window.toRecord());
-    check("worst run reaches results", true);
-    check("worst run: hard stop set", rec.hardStop === true);
-    check("worst run: band is Assessor review", rec.band === "Assessor review", rec.band);
-    check("worst run: watch flags fired on writing", (rec.watchFlags || []).length > 0, JSON.stringify(rec.watchFlags));
-    check("worst run: no page errors", errors.length === 0, errors.join(" | "));
-    fs.writeFileSync(path.join(OUT, "record-worst.json"), JSON.stringify(rec, null, 2));
+  /* best and worst runs */
+  for (const mode of ["best", "worst"]) {
+    const { ctx, page } = await newPage(browser, base);
+    await page.fill("#fname", mode === "best" ? "Jenny Graffet" : "Sam Lee");
+    await page.fill("#femail", "applicant@student.uts.edu.au");
+    await page.selectOption("#study-area", mode === "best" ? "health" : "education");
+    await page.check("#c1"); await page.check("#c2");
+    await page.click("#begin");
+    await play(page, mode);
+    const midway = await page.evaluate(() => new Promise((r) => setTimeout(() => r(window.__store["profiles/applicant-1"]), 300)));
+    if (!midway || !midway.profile.screening || midway.complete) errors.push(mode + ": game result was not saved before the questions");
+    await answerQuestions(page);
+    await page.screenshot({ path: path.join(OUT, "results-" + mode + ".png") });
+    const rec = await page.evaluate(() => ({ store: window.__store, saved: localStorage.getItem("pepaws-porch-run-v3") }));
+    const doc = rec.store["profiles/applicant-1"];
+    if (!doc || !doc.complete) errors.push(mode + ": completed profile not stored");
+    if (rec.saved) errors.push(mode + ": local progress not cleared after a successful save");
+    const st = await checkContract(browser, base, doc.profile, mode);
+    report[mode] = { type: doc.profile.screening.profile, meters: doc.profile.screening.meters, filled: st.filled + "/" + st.total,
+      lowest: doc.profile.screening.lowestMoment, recovered: doc.profile.screening.recovered, path: doc.profile.screening.finalPath,
+      helpTypes: doc.profile.support.helpTypes, hobbies: doc.profile.interests.hobbies, runs: doc.runs.length };
+    fs.writeFileSync(path.join(OUT, "profile-" + mode + ".json"), JSON.stringify(doc.profile, null, 2));
+
+    if (mode === "worst") {
+      /* staff desk on the same store */
+      await page.evaluate(() => { location.hash = "staff"; });
+      await page.setViewportSize({ width: 1360, height: 980 });
+      await page.waitForSelector(".qitem");
+      await page.waitForFunction(() => /fields filled/.test((document.getElementById("fstat") || {}).textContent || ""), null, { timeout: 8000 });
+      report.staffFrame = await page.textContent("#fstat");
+      await page.selectOption("#rv-status", "shortlisted");
+      await page.fill("#rv-for", "Margaret Hollis");
+      await page.selectOption("#rv-policeCheck", "cleared");
+      await page.fill("#rv-watch", "Lowest meter is Respect. Talk through house guidelines at the intro call.");
+      await page.click("#rv-save");
+      await page.waitForFunction(() => /Saved/.test(document.getElementById("rvstat").textContent));
+      await page.waitForTimeout(400);
+      const review = await page.evaluate(() => window.__store["reviews/applicant-1"]);
+      if (!review || review.pairingStatus !== "shortlisted") errors.push("staff: review not stored");
+      const sample = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../genstay/genstay-profile.sample.json"), "utf8"));
+      await page.setInputFiles("#importer", { name: "sample.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(sample)) });
+      await page.waitForFunction(() => document.querySelectorAll(".qitem").length === 2, null, { timeout: 5000 });
+      await page.waitForTimeout(800);
+      report.staffQueue = await page.$$eval(".qitem .nm", (x) => x.map((n) => n.textContent));
+      if ((await page.textContent("#vname")) !== sample.student.firstName + " " + sample.student.lastName) errors.push("staff: imported profile did not open");
+      await page.screenshot({ path: path.join(OUT, "staff-desk.png") });
+      await page.click("#next");
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: path.join(OUT, "staff-desk-next.png") });
+      await page.click("#expall");
+      await page.waitForTimeout(300);
+      const dl = await page.evaluate(() => window.__downloads.map((d) => d.filename));
+      if (!dl.length) errors.push("staff: export all produced no download");
+    }
     await ctx.close();
   }
 
-  /* ---------- run 3: let the Day 14 timer expire ---------- */
+  /* the Day 14 timer runs out; no record store, so the fallback shows */
   {
-    const errors = [];
-    const { ctx, page } = await newPage(browser, errors);
-    await startRun(page, "Timeout Test");
-    await playThrough(page, "best", { letTimeoutOnDay: 14 });
-    await page.waitForSelector(".band", { timeout: 8000 });
-    const rec = await page.evaluate(() => window.toRecord());
-    const timedOut = rec.choices.filter((c) => c.timedOut);
-    check("timer expiry recorded", timedOut.length >= 1, timedOut.length + " timed-out choices");
-    check("day 14 timeout triggers hard stop", rec.hardStop === true, "band " + rec.band);
-    check("timeout run: no page errors", errors.length === 0, errors.join(" | "));
-    await ctx.close();
-  }
-
-  /* ---------- run 4: assessor view without a record store ---------- */
-  {
-    const errors = [];
-    const ctx = await browser.newContext({ viewport: { width: 1060, height: 900 } });
-    const page = await ctx.newPage();
-    page.on("console", (m) => {
-      if (m.type() !== "error") return;
-      const t = m.text();
-      if (/fonts\.googleapis\.com|ERR_CONNECTION_RESET|ERR_BLOCKED/.test(t)) return;
-      errors.push("console: " + t);
-    });
-    page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
-    await page.goto(URL + "#assessor");
-    await page.waitForTimeout(900);
-    const txt = await page.textContent("#astat");
-    check("assessor view degrades without db", /not available/i.test(txt), txt.trim());
-    check("assessor view: no page errors", errors.length === 0, errors.join(" | "));
-    await page.screenshot({ path: path.join(OUT, "shot-assessor.png") });
+    const { ctx, page } = await newPage(browser, base);
+    await page.evaluate(() => { window.__noCaps = true; });
+    await page.fill("#fname", "Tim Out"); await page.fill("#femail", "t@monash.edu");
+    await page.check("#c1"); await page.check("#c2"); await page.click("#begin");
+    await play(page, "best", { letTimerRun: true });
+    const t = await page.evaluate(() => S.choices.filter((c) => c.timedOut).length);
+    if (t < 1) errors.push("timeout: no timed-out choice recorded");
+    await answerQuestions(page);
+    const fb = await page.isVisible("#fallback");
+    if (!fb) errors.push("timeout run: fallback not offered without a record store");
+    await page.screenshot({ path: path.join(OUT, "results-fallback.png") });
+    report.timeout = { timedOut: t, fallbackShown: fb };
     await ctx.close();
   }
 
   await browser.close();
-  console.log(report.join("\n"));
-  console.log("\n" + (failures ? failures + " FAILURE(S)" : "all checks passed"));
-  process.exit(failures ? 1 : 0);
-})();
+  srv.close();
+  console.log(JSON.stringify(report, null, 2));
+  if (errors.length) { console.log("\nPROBLEMS:\n" + errors.join("\n")); process.exit(1); }
+  console.log("\nall checks passed — screenshots in " + OUT);
+})().catch((e) => { console.error(e); process.exit(1); });
