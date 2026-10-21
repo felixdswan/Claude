@@ -36,8 +36,11 @@ Open the artifact link. Enter a name, a university email and an area of study, p
 fortnight, answer the final questions, and submit. The profile goes straight to the placement
 record. Nothing personal stays in the browser once it arrives.
 
-If the profile can't be saved (for example, the applicant is outside the organisation), the
-results screen offers **Download profile file** and **Copy profile**, to email to the service.
+Starting the game asks once for permission to save to the placement record, so the save at the
+end doesn't meet a prompt the applicant might miss. If the save still fails, the results screen
+says why and what to do: switch saving back on (**Permissions**), open the link at claude.ai in a
+browser, or send the profile another way with **Copy profile**, **Show profile text** or (where
+the view allows downloads) **Download profile file**. A brief glitch is retried automatically.
 
 ## For staff
 
@@ -56,7 +59,8 @@ answers and shown in the profile.
   Threats and drug references also keep the applicant out of automatic matching. The checks are
   plain word lists, so they catch the obvious and miss the subtle: still read the answers.
 - **Search** and the status filter (including **Needs attention**) narrow the queue.
-- **Add profile files** imports `.json` profiles that applicants emailed in.
+- **Add profile files** imports `.json` profiles that applicants emailed in. **Paste a profile**
+  takes the profile text itself, when an applicant pasted it into an email.
 - **Download JSON** saves the open profile. **Export all** saves the whole queue as one file.
 - If an applicant played more than once, a run picker appears. The latest run opens first.
 

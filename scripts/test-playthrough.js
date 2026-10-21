@@ -45,7 +45,11 @@ const MOCK = `
   function doc(p) {
     return { id: p.split("/").pop(), path: p,
       get: async () => snap(p),
-      set: async (d) => { store[p] = JSON.parse(JSON.stringify(d)); persist(); },
+      set: async (d) => {
+        if (window.__deny) throw { code: "not_granted" };
+        if (window.__failOnce) { window.__failOnce = 0; throw { code: "unavailable" }; }
+        store[p] = JSON.parse(JSON.stringify(d)); persist();
+      },
       update: async (d) => { if (!(p in store)) throw { code: "invalid_argument" }; Object.assign(store[p], d); persist(); },
       delete: async () => { delete store[p]; persist(); },
       collection: (c) => collection(p + "/" + c) };
@@ -68,7 +72,9 @@ const MOCK = `
   const caps = {
     db: { doc, collection },
     user: { id: async () => "applicant-1", canEdit: async () => true, isOwner: async () => true },
-    downloads: { save: async (r) => { window.__downloads.push(r); return { status: "saved" }; } }
+    downloads: { save: async (r) => { window.__downloads.push(r); return { status: "saved" }; } },
+    permissions: { state: async () => (window.__deny ? "denied" : "granted"), request: async () => ({}),
+                   manage: async () => { window.__deny = false; } }
   };
   window.__store = store;
   window.claude = { use: async (n) => (window.__noCaps ? null : caps[n] || null) };
@@ -172,7 +178,7 @@ async function answerQuestions(page, extra = {}) {
     await page.click("#qnext");
   }
   await page.waitForSelector("#savestat");
-  await page.waitForFunction(() => /reached|couldn/.test(document.getElementById("savestat").textContent), null, { timeout: 5000 });
+  await page.waitForFunction(() => /reached|couldn|can’t|switched off|refused/.test(document.getElementById("savestat").textContent), null, { timeout: 8000 });
 }
 
 async function checkContract(browser, base, profile, label) {
@@ -212,7 +218,8 @@ async function checkContract(browser, base, profile, label) {
     await page.check("#c1"); await page.check("#c2");
     await page.click("#begin");
     await play(page, mode);
-    const midway = await page.evaluate(() => new Promise((r) => setTimeout(() => r(window.__store["profiles/applicant-1"]), 300)));
+    if (mode === "best") await page.evaluate(() => { window.__failOnce = 1; });
+    const midway = await page.evaluate(() => new Promise((r) => setTimeout(() => r(window.__store["profiles/applicant-1"]), 3000)));
     if (!midway || !midway.profile.screening || midway.complete) errors.push(mode + ": game result was not saved before the questions");
     await answerQuestions(page);
     await page.screenshot({ path: path.join(OUT, "results-" + mode + ".png") });
@@ -246,6 +253,16 @@ async function checkContract(browser, base, profile, label) {
       await page.setInputFiles("#importer", { name: "sample.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(sample)) });
       await page.waitForFunction(() => document.querySelectorAll(".qitem").length === 2, null, { timeout: 5000 });
       await page.waitForTimeout(800);
+      const pasted = JSON.parse(JSON.stringify(sample));
+      pasted.meta.profileId = "PP-pasted"; pasted.student.firstName = "Pat"; pasted.student.lastName = "Ward";
+      await page.click("#pastebtn");
+      await page.fill("#pastein", JSON.stringify(pasted, null, 2));
+      await page.click("#pasteadd");
+      await page.waitForFunction(() => document.querySelectorAll(".qitem").length === 3, null, { timeout: 5000 });
+      await page.waitForTimeout(600);
+      if ((await page.textContent("#vname")) !== "Pat Ward") errors.push("staff: pasted profile did not open");
+      await page.click('.qitem:has-text("Jenny Graffet")');
+      await page.waitForTimeout(400);
       report.staffQueue = await page.$$eval(".qitem .nm", (x) => x.map((n) => n.textContent));
       if ((await page.textContent("#vname")) !== sample.student.firstName + " " + sample.student.lastName) errors.push("staff: imported profile did not open");
       await page.screenshot({ path: path.join(OUT, "staff-desk.png") });
@@ -266,6 +283,8 @@ async function checkContract(browser, base, profile, label) {
     await page.fill("#fname", "Felix Swan"); await page.fill("#femail", "f@student.uts.edu.au");
     await page.check("#c1"); await page.check("#c2"); await page.click("#begin");
     await play(page, "hostile");
+    await page.waitForTimeout(800);
+    await page.evaluate(() => { window.__deny = true; });
     await answerQuestions(page, {
       fill: { age: "19", workHours: "52", rentBudgetWeekly: "2", bedtime: "04:00", wakeTime: "04:01" },
       pick: { studentType: "international" },
@@ -273,7 +292,12 @@ async function checkContract(browser, base, profile, label) {
       text: { hobbies__other: "crack", canOffer__other: "how to clean a crack pipe", wantsToLearn__other: "meth", lifeGoals: "die",
               socialNote: "I do crack", diet: "I am allergic to elderly energy" }
     });
+    if (!(await page.isVisible("#perms"))) errors.push("permissions: no Permissions button when saving was switched off");
+    if (!/switched off/.test(await page.textContent("#savestat"))) errors.push("permissions: message doesn't say saving is switched off");
+    await page.click("#perms");
+    await page.waitForFunction(() => /reached/.test(document.getElementById("savestat").textContent), null, { timeout: 8000 });
     const doc = await page.evaluate(() => window.__store["profiles/applicant-1"]);
+    if (!doc || !doc.complete) errors.push("permissions: profile not saved after switching saving back on");
     const sc = doc.profile.screening;
     for (const f of ["threatening_language", "drug_references", "welfare_concern", "demeaning_language", "answers_to_check"])
       if (sc.flags.indexOf(f) === -1) errors.push("hostile: missing flag " + f);
@@ -300,6 +324,11 @@ async function checkContract(browser, base, profile, label) {
     await answerQuestions(page);
     const fb = await page.isVisible("#fallback");
     if (!fb) errors.push("timeout run: fallback not offered without a record store");
+    if (!/claude\.ai/.test(await page.textContent("#savestat"))) errors.push("no store: message doesn't say how to fix it");
+    if (await page.isVisible("#dl")) errors.push("no store: download button shown where downloads can't work");
+    await page.click("#showtext");
+    const shown = await page.inputValue("#ptext");
+    if (!(await page.isVisible("#ptext")) || shown.indexOf('"profileId"') === -1) errors.push("no store: profile text not shown");
     await page.screenshot({ path: path.join(OUT, "results-fallback.png") });
     report.timeout = { timedOut: t, fallbackShown: fb };
     await ctx.close();

@@ -220,4 +220,4 @@ Profiles live in the published artifact's record store, under access rules decla
 
 Everything else in the store is locked to Editors and the owner. An applicant can technically read back their own profile, screening meters included, because writing implies reading; nothing in the game shows it to them. The applicant id is the platform's opaque viewer id, so no name or email is used as a key.
 
-Applicants need Contributor access to save. A viewer who can't save (signed out, outside the organisation, or Viewer access) gets a **Download profile file** and **Copy profile** fallback, and staff add that file with **Add profile files** on the desk.
+Applicants need Contributor access to save. A viewer who can't save (signed out, outside the organisation, or Viewer access) is told why, and gets **Copy profile**, **Show profile text** and, where the view allows downloads, **Download profile file**. Staff add what they email in with **Add profile files** or **Paste a profile** on the desk.

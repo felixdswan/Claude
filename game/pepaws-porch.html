@@ -21,6 +21,7 @@
   color-scheme:light;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;padding:0}
 body{
   background:var(--surround);
@@ -129,7 +130,8 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 .band{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 15px;font-weight:700;font-size:14px;color:var(--on-dark)}
 .rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
-.status{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:7px}
+.status{font-size:13px;color:var(--ink-2);display:flex;align-items:flex-start;gap:7px}
+.status .dotled{margin-top:6px}
 .dotled{width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-3)}
 .dotled.ok{background:var(--good)} .dotled.no{background:var(--bad)} .dotled.wait{background:var(--warn)}
 
@@ -1334,6 +1336,10 @@ function renderTitle(){
     S.consentAt = nowISO(); S.startedAt = nowISO();
     S.view = "daycard";
     save(); render();
+    /* Ask for record-store access now, on the applicant's own click, so the
+       save at the end of the fortnight doesn't meet a consent prompt they
+       might miss. Never blocks the game. */
+    getCap("permissions").then(function(p){ if (p) p.request(["db", "user"]).then(null, function(){}); });
   };
 }
 
@@ -1924,15 +1930,22 @@ function indexFields(profile, extra){
 var syncChain = Promise.resolve();
 function syncProfile(){
   var snap = {pid: S.pid, at: nowISO(), profile: buildProfile()};
-  syncChain = syncChain.then(function(){ return writeProfile(snap); }, function(){ return writeProfile(snap); });
+  var attempt = function(){
+    return writeProfile(snap).then(function(r){
+      if (r.ok || (r.code !== "unavailable" && r.code !== "resource_exhausted")) return r;
+      return new Promise(function(done){ setTimeout(done, 1200 + Math.random() * 1200); }).then(function(){ return writeProfile(snap); });
+    });
+  };
+  syncChain = syncChain.then(attempt, attempt);
   return syncChain;
 }
+/* Resolves {ok} or {ok:false, reason, code}; never rejects. */
 function writeProfile(snap){
   return Promise.all([getCap("db"), getCap("user")]).then(function(caps){
     var db = caps[0], user = caps[1];
-    if (!db || !user) return {ok: false, code: "unavailable"};
+    if (!db || !user) return {ok: false, reason: "no_store"};
     return user.id().then(function(uid){
-      if (!uid) return {ok: false, code: "unavailable"};
+      if (!uid) return {ok: false, reason: "no_store"};
       var parent = db.doc("profiles/" + uid);
       var complete = !!snap.profile.meta.stages.postGame;
       return parent.collection("runs").doc(snap.pid).set({pid: snap.pid, savedAt: snap.at, complete: complete, profile: snap.profile})
@@ -1942,28 +1955,42 @@ function writeProfile(snap){
           runs.push({pid: snap.pid, savedAt: snap.at, complete: complete, screeningProfile: snap.profile.screening ? snap.profile.screening.profile : null});
           return parent.set(indexFields(snap.profile, {updatedAt: snap.at, runs: runs}));
         })
-        .then(function(){ return {ok: true}; }, function(err){ return {ok: false, code: (err && err.code) || "unavailable"}; });
+        .then(function(){ return {ok: true}; });
     });
-  });
+  }).then(null, function(err){ return {ok: false, reason: "error", code: (err && err.code) || "unavailable"}; });
+}
+/* What went wrong, in words the applicant can act on. */
+function saveProblem(r, dbState){
+  if (dbState === "denied" || r.code === "not_granted" || r.code === "revoked")
+    return {text: "Saving to the placement service is switched off for this page. Press Permissions, turn it on, then press Try again.", perms: true};
+  if (r.reason === "no_store")
+    return {text: "This view can’t reach the placement service. Open the link at claude.ai in your web browser, signed in to your organisation, then press Try again. Or send your profile another way below."};
+  if (r.code === "quota_exceeded") return {text: "The placement record is full, so your profile couldn’t be saved. Send it another way below."};
+  if (r.code === "invalid_argument")
+    return {text: "The placement service refused the save. Your account may only have permission to view this page: ask the service for Contributor access, or send your profile another way below."};
+  return {text: "Your profile couldn’t be sent (" + (r.code || "unknown error") + "). Wait a moment and press Try again, or send it another way below."};
 }
 
-function offerDownload(filename, text, statusId){
+/* onFail runs when no file could be saved (not when the viewer cancels). */
+function offerDownload(filename, text, statusId, onFail){
   getCap("downloads").then(function(d){
-    if (!d){ setStatus(statusId, "no", "Downloads aren’t available here. Use Copy instead."); return; }
+    if (!d){ setStatus(statusId, "no", "Downloads aren’t available in this view."); if (onFail) onFail(); return; }
     setStatus(statusId, "wait", "Confirm the download to save the file…");
     d.save({filename: filename, data: text}).then(function(){
       setStatus(statusId, "ok", "Saved " + filename + ". Check your downloads folder.");
     }, function(err){
       var code = (err && err.code) || "unavailable";
-      setStatus(statusId, code === "declined" ? "wait" : "no", code === "declined" ? "Download cancelled. Nothing was saved." : "The download didn’t work (" + code + "). Use Copy instead.");
+      if (code === "declined") { setStatus(statusId, "wait", "Download cancelled. Nothing was saved."); return; }
+      setStatus(statusId, "no", "The download didn’t work (" + code + ").");
+      if (onFail) onFail();
     });
   });
 }
-function copyText(text, statusId){
+function copyText(text, statusId, onFail){
+  var fail = function(){ setStatus(statusId, "no", "Copying isn’t allowed in this view."); if (onFail) onFail(); };
   try {
-    navigator.clipboard.writeText(text).then(function(){ setStatus(statusId, "ok", "Copied. Paste it into an email to the placement service."); },
-      function(){ setStatus(statusId, "no", "Copying isn’t allowed here. Use the download instead."); });
-  } catch (e) { setStatus(statusId, "no", "Copying isn’t allowed here. Use the download instead."); }
+    navigator.clipboard.writeText(text).then(function(){ setStatus(statusId, "ok", "Copied. Paste it into an email to the placement service."); }, fail);
+  } catch (e) { fail(); }
 }
 
 /* ============================================================
@@ -1988,12 +2015,21 @@ function deliverProfile(){
       if (el("#fallback")) el("#fallback").hidden = true;
     } else {
       save();
-      setStatus("savestat", "no", r.code === "quota_exceeded"
-        ? "The placement record is full, so your profile couldn’t be saved there."
-        : "Your profile couldn’t be sent from this page.");
-      if (el("#fallback")) el("#fallback").hidden = false;
+      getCap("permissions").then(function(p){ return p ? p.state("db").then(null, function(){ return ""; }) : ""; }).then(function(dbState){
+        var problem = saveProblem(r, dbState);
+        setStatus("savestat", "no", problem.text);
+        if (el("#fallback")) el("#fallback").hidden = false;
+        if (el("#perms")) el("#perms").hidden = !problem.perms;
+      });
     }
   });
+}
+function showProfileText(note){
+  var ta = el("#ptext"); if (!ta) return;
+  ta.value = JSON.stringify(buildProfile(), null, 2);
+  ta.hidden = false;
+  try { ta.focus(); ta.select(); } catch (e) {}
+  if (note) setStatus("dlstat", "wait", note);
 }
 
 function renderResults(){
@@ -2020,17 +2056,29 @@ function renderResults(){
         ? '<div class="notice"><b>If things feel hard right now,</b> you can talk to someone any time. Lifeline: <span class="mono">13 11 14</span>. Beyond Blue: <span class="mono">1300 22 4636</span>.</div>'
         : '')
     + '<div class="status" id="savestat"><span class="dotled wait"></span><span>Sending your profile to the placement service…</span></div>'
-    + '<div id="fallback" class="notice" hidden><b>Send it another way.</b> Save your profile file, or copy it, and email it to the placement service. Staff can add it to the review queue.'
+    + '<div id="fallback" class="notice" hidden><b>Send it another way.</b> Copy your profile, or save it as a file, and email it to the placement service. Staff add it to the review queue.'
     + '<div class="btnrow" style="margin-top:10px"><button class="cont primary small" id="retry">Try again</button>'
-    + '<button class="cont small" id="dl">Download profile file</button><button class="cont ghost small" id="copy">Copy profile</button></div>'
-    + '<div class="status" id="dlstat" style="margin-top:8px"></div></div>'
+    + '<button class="cont small" id="perms" hidden>Permissions</button>'
+    + '<button class="cont small" id="dl" hidden>Download profile file</button><button class="cont ghost small" id="copy">Copy profile</button>'
+    + '<button class="cont ghost small" id="showtext">Show profile text</button></div>'
+    + '<div class="status" id="dlstat" style="margin-top:8px"></div>'
+    + '<textarea id="ptext" readonly hidden aria-label="Your profile, to copy into an email" style="margin-top:8px;min-height:160px;font:400 12px/1.4 var(--mono)"></textarea></div>'
     + '<button class="cont ghost" id="done">Finish</button>'
     + '<p class="sub" style="font-size:12.5px">Reference <span class="mono">' + esc(S.pid) + '</span></p>'
     + '</div></div>';
 
+  var manual = function(){ showProfileText("Your profile is shown below, selected. Copy it (Ctrl+C or ⌘C) and paste it into an email to the placement service."); };
   el("#retry").onclick = deliverProfile;
-  el("#dl").onclick = function(){ offerDownload(file, JSON.stringify(buildProfile(), null, 2), "dlstat"); };
-  el("#copy").onclick = function(){ copyText(JSON.stringify(buildProfile(), null, 2), "dlstat"); };
+  el("#perms").onclick = function(){
+    getCap("permissions").then(function(p){
+      if (!p) return setStatus("savestat", "no", "Open this artifact’s Permissions menu and switch saving on, then press Try again.");
+      p.manage().then(function(){ deliverProfile(); }, function(){ setStatus("savestat", "no", "Open this artifact’s Permissions menu and switch saving on, then press Try again."); });
+    });
+  };
+  getCap("downloads").then(function(d){ if (d && el("#dl")) el("#dl").hidden = false; });
+  el("#dl").onclick = function(){ offerDownload(file, JSON.stringify(buildProfile(), null, 2), "dlstat", manual); };
+  el("#copy").onclick = function(){ copyText(JSON.stringify(buildProfile(), null, 2), "dlstat", manual); };
+  el("#showtext").onclick = function(){ showProfileText(); };
   el("#done").onclick = function(){ if (S.synced) clearSaved(); S = freshState(); render(); };
   if (S.synced) setStatus("savestat", "ok", "Your profile has reached the placement service. You can close this page.");
 }
@@ -2086,7 +2134,10 @@ function renderStaff(){
     + PAIRING.map(function(p){ return '<option value="' + p[0] + '">' + p[1] + '</option>'; }).join("") + '</select>'
     + '<div class="btnrow"><button class="cont small" id="refresh">Refresh</button>'
     + '<label class="cont ghost small" style="display:inline-flex;flex-direction:row;cursor:pointer">Add profile files<input type="file" id="importer" accept=".json,application/json" multiple hidden></label>'
+    + '<button class="cont ghost small" id="pastebtn">Paste a profile</button>'
     + '<button class="cont ghost small" id="expall">Export all</button></div>'
+    + '<div id="pastebox" hidden style="display:flex;flex-direction:column;gap:6px"><textarea id="pastein" aria-label="Paste a profile" placeholder="Paste the profile text an applicant emailed you" style="min-height:110px;font:400 12px/1.4 var(--mono)"></textarea>'
+    + '<div class="btnrow"><button class="cont primary small" id="pasteadd">Add to queue</button><button class="cont ghost small" id="pastecancel">Cancel</button></div></div>'
     + '<div class="status" id="astat"><span class="dotled wait"></span><span>Reading the placement record…</span></div>'
     + '</div><ul class="qlist" id="qlist"></ul></div>'
     + '<div class="viewer"><div class="vbar">'
@@ -2107,6 +2158,12 @@ function renderStaff(){
   el("#prev").onclick = function(){ step(-1); };
   el("#next").onclick = function(){ step(1); };
   el("#importer").onchange = function(){ importFiles(this.files); this.value = ""; };
+  el("#pastebtn").onclick = function(){ el("#pastebox").hidden = false; el("#pastein").focus(); };
+  el("#pastecancel").onclick = function(){ el("#pastebox").hidden = true; el("#pastein").value = ""; };
+  el("#pasteadd").onclick = function(){
+    var text = el("#pastein").value.trim(); if (!text) return;
+    importTexts([text]); el("#pastein").value = ""; el("#pastebox").hidden = true;
+  };
   el("#expall").onclick = function(){
     if (!desk.items.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
     offerDownload("genstay-profiles-" + nowISO().slice(0, 10) + ".json",
@@ -2276,32 +2333,36 @@ function saveReview(it){
 function importFiles(files){
   var list = Array.prototype.slice.call(files || []);
   if (!list.length) return;
-  Promise.all(list.map(function(f){
-    return f.text().then(function(t){
+  Promise.all(list.map(function(f){ return f.text().then(null, function(){ return ""; }); })).then(importTexts);
+}
+function importTexts(texts){
+  var profiles = [];
+  texts.forEach(function(t){
+    try {
       var v = JSON.parse(t);
-      return (Array.isArray(v) ? v : [v]).map(function(x){ return x && x.profile ? x.profile : x; })
-        .filter(function(p){ return p && typeof p === "object" && (p.student || p.screening); });
-    }, function(){ return []; }).catch(function(){ return []; });
-  })).then(function(groups){
-    var profiles = [].concat.apply([], groups);
-    if (!profiles.length){ setStatus("astat", "no", "No profiles found in those files. They should be GenStay profile .json files."); return; }
-    var at = nowISO();
-    var items = profiles.map(function(p){
-      var pid = (p.meta && p.meta.profileId) || ("import-" + Date.now().toString(36));
-      return indexFields(p, {id: "import-" + cleanId(pid), updatedAt: at, imported: true,
-        runs: [{pid: pid, savedAt: at, complete: !!(p.meta && p.meta.stages && p.meta.stages.postGame), screeningProfile: p.screening ? p.screening.profile : null}]});
-    });
-    if (!desk.db){
-      items.forEach(function(it){ desk.items = desk.items.filter(function(x){ return x.id !== it.id; }); desk.items.unshift(it); });
-      loadQueue(items[0].id);
-      return;
-    }
-    setStatus("astat", "wait", "Adding " + items.length + " profile" + (items.length === 1 ? "" : "s") + "…");
-    items.reduce(function(chain, it){
-      return chain.then(function(){ var body = Object.assign({}, it); delete body.id; return desk.db.doc("profiles/" + it.id).set(body); });
-    }, Promise.resolve()).then(function(){ loadQueue(items[0].id); },
-      function(err){ setStatus("astat", "no", "Couldn’t add the profiles (" + ((err && err.code) || "unavailable") + ")."); });
+      (Array.isArray(v) ? v : [v]).forEach(function(x){
+        var p = x && x.profile ? x.profile : x;
+        if (p && typeof p === "object" && (p.student || p.screening)) profiles.push(p);
+      });
+    } catch (e) { /* not JSON; reported below if nothing usable was found */ }
   });
+  if (!profiles.length){ setStatus("astat", "no", "No profile found. Paste or add the whole profile text, starting with { and ending with }."); return; }
+  var at = nowISO();
+  var items = profiles.map(function(p){
+    var pid = (p.meta && p.meta.profileId) || ("import-" + Date.now().toString(36));
+    return indexFields(p, {id: "import-" + cleanId(pid), updatedAt: at, imported: true,
+      runs: [{pid: pid, savedAt: at, complete: !!(p.meta && p.meta.stages && p.meta.stages.postGame), screeningProfile: p.screening ? p.screening.profile : null}]});
+  });
+  if (!desk.db){
+    items.forEach(function(it){ desk.items = desk.items.filter(function(x){ return x.id !== it.id; }); desk.items.unshift(it); });
+    loadQueue(items[0].id);
+    return;
+  }
+  setStatus("astat", "wait", "Adding " + items.length + " profile" + (items.length === 1 ? "" : "s") + "…");
+  items.reduce(function(chain, it){
+    return chain.then(function(){ var body = Object.assign({}, it); delete body.id; return desk.db.doc("profiles/" + it.id).set(body); });
+  }, Promise.resolve()).then(function(){ loadQueue(items[0].id); },
+    function(err){ setStatus("astat", "no", "Couldn’t add the profiles (" + ((err && err.code) || "unavailable") + ")."); });
 }
 
 /* ============================================================
