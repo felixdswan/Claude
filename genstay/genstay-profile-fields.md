@@ -56,7 +56,9 @@ const url = 'genstay-profile-template.html#data=' + btoa(s).replace(/\+/g, '-').
 | `GenStayProfile.get()` | Returns the current data |
 | `onChange(fn)` | Calls `fn` after every render |
 | `genstay:profile:rendered` | Window event fired after each render |
-| Export JSON / Print / PDF | Toolbar buttons |
+| Download PDF / Print / Export JSON | Toolbar buttons. Download PDF makes an A4 file that looks like the page, breaking between rows; it loads html2canvas and jsPDF from cdnjs, so offline use Print and choose Save as PDF |
+| `GenStayProfile.pdf({profiles?, view?})` | Resolves with the PDF bytes. Pass several profiles to get one PDF with each starting on a new page |
+| `{type:'genstay:pdf', id, profiles?, view?}` | The same over postMessage; replies `genstay:pdf:progress` and `genstay:pdf:done` with `{ok, data}` |
 
 **Safety.**
 
@@ -189,6 +191,21 @@ The screening game (`game/pepaws-porch.html`) builds the profile itself. There i
 | Post | Five short pages after Day 14 | every other Pre and Post field above; `meta.stages.postGame` |
 | Staff | Staff desk (`#staff`) | `meta.pairingStatus`, `meta.suggestedFor`, `checks.*`, `screening.watchPoint` |
 
+### Automatic checks
+
+Everything the applicant writes, in the game and in the final questions, is checked against plain word lists. Each hit is quoted for staff, and the profile is marked **Needs attention** on the staff desk.
+
+| Flag in `screening.flags` | Effect |
+|---|---|
+| `threatening_language` | Lowers Connection, Respect and Reliability, and sets `screening.profile` to `transactional_guest`, which keeps the applicant out of automatic matching |
+| `drug_references` | As above |
+| `welfare_concern` | Staff follow-up only. The applicant is shown Lifeline and Beyond Blue numbers |
+| `demeaning_language` | Lowers Connection and Respect |
+| `low_safety_awareness` | Awareness of 3 or less; quotes the unsafe choices |
+| `answers_to_check` | Contradictory or impossible answers, such as smoking but needing a smoke-free home |
+
+A negation just before a match ("I would never hurt her") doesn't count, and "granny flat" isn't flagged. The game writes a summary of every hit into `screening.watchPoint`; staff can rewrite it on the desk. Applicants under 18 can't submit the final questions.
+
 A few Post answers start pre-filled from the game and stay editable: `support.helpTypes` (from offering company, cooking or phone help) and `interests.homeownerBackground` (from the homeowner career the applicant's discipline selected).
 
 The game saves the profile twice: once when Day 14 ends, so staff see the result even if the questions are left unfinished, and again when the questions are submitted.
@@ -205,4 +222,4 @@ Profiles live in the published artifact's record store, under access rules decla
 
 Everything else in the store is locked to Editors and the owner. An applicant can technically read back their own profile, screening meters included, because writing implies reading; nothing in the game shows it to them. The applicant id is the platform's opaque viewer id, so no name or email is used as a key.
 
-Applicants need Contributor access to save. A viewer who can't save (signed out, outside the organisation, or Viewer access) gets a **Download profile file** and **Copy profile** fallback, and staff add that file with **Add profile files** on the desk.
+Applicants need Contributor access to save. A viewer who can't save (signed out, outside the organisation, or Viewer access) is told why, and gets **Copy profile**, **Show profile text** and, where the view allows downloads, **Download profile file**. Staff add what they email in with **Add profile files** or **Paste a profile** on the desk.

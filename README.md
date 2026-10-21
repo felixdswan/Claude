@@ -36,8 +36,11 @@ Open the artifact link. Enter a name, a university email and an area of study, p
 fortnight, answer the final questions, and submit. The profile goes straight to the placement
 record. Nothing personal stays in the browser once it arrives.
 
-If the profile can't be saved (for example, the applicant is outside the organisation), the
-results screen offers **Download profile file** and **Copy profile**, to email to the service.
+Starting the game asks once for permission to save to the placement record, so the save at the
+end doesn't meet a prompt the applicant might miss. If the save still fails, the results screen
+says why and what to do: switch saving back on (**Permissions**), open the link at claude.ai in a
+browser, or send the profile another way with **Copy profile**, **Show profile text** or (where
+the view allows downloads) **Download profile file**. A brief glitch is retried automatically.
 
 ## For staff
 
@@ -51,9 +54,20 @@ that hides staff-only rows. Beside it, set the pairing status, suggested homeown
 watch-point, and click **Save review**. Those fields are kept separately from the applicant's
 answers and shown in the profile.
 
-- **Search** and the status filter narrow the queue.
-- **Add profile files** imports `.json` profiles that applicants emailed in.
-- **Download JSON** saves the open profile. **Export all** saves the whole queue as one file.
+- Profiles with threatening language, drug references, a possible welfare concern or very low
+  safety awareness are marked **Needs attention**, with the words quoted in the watch-point.
+  Threats and drug references also keep the applicant out of automatic matching. The checks are
+  plain word lists, so they catch the obvious and miss the subtle: still read the answers.
+- **Search** and the status filter (including **Needs attention**) narrow the queue.
+- **Add profile files** imports `.json` profiles that applicants emailed in. **Paste a profile**
+  takes the profile text itself, when an applicant pasted it into an email.
+- **Download PDF** saves the open profile as a PDF that looks exactly like the template, in
+  whichever view (Staff or Family) is showing. **Download all (PDF)** puts every profile in the
+  queue, as filtered, into one PDF, each starting on a new page. Pages break between rows.
+- **Download JSON** and **Download all (JSON)** save the same data for the matching algorithm.
+- Offline, the PDF tools (html2canvas and jsPDF, loaded from cdnjs on first use) can't load, so
+  **Download PDF** opens the print dialog instead: choose **Save as PDF**. The template opened on
+  its own has the same **Download PDF** and **Print** buttons.
 - If an applicant played more than once, a run picker appears. The latest run opens first.
 
 ## Access and storage
@@ -96,9 +110,13 @@ offers the download fallback, and the desk shows profile files you add without s
 
     node scripts/test-playthrough.js /tmp/pepaws-out
 
-plays a best run, a worst run and a timed-out run against a stand-in record store, checks each
-stored profile against the template's contract, exercises the staff desk, and saves screenshots
-of every scene.
+The PDF checks load html2canvas 1.4.1 and jsPDF 2.5.1 from cdnjs. Where cdnjs is blocked, put
+`html2canvas.min.js` and `jspdf.umd.min.js` (from the npm packages' `dist/` folders) in a folder
+and set `PDF_LIBS=/that/folder`.
+
+plays a best run, a worst run, a hostile run and a timed-out run against a stand-in record store, checks each
+stored profile against the template's contract, exercises the staff desk and the PDF downloads,
+and saves screenshots of every scene.
 
 ## Before this goes to real applicants
 

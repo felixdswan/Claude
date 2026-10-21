@@ -18,6 +18,10 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "../game");
+/* The PDF tools load from cdnjs. Point PDF_LIBS at a folder holding
+   html2canvas.min.js (1.4.1) and jspdf.umd.min.js (2.5.1) to serve them
+   locally; without it the tests use the network. */
+const LIBS = process.env.PDF_LIBS || "";
 const OUT = process.argv[2] || "/tmp/pepaws-out";
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -45,7 +49,11 @@ const MOCK = `
   function doc(p) {
     return { id: p.split("/").pop(), path: p,
       get: async () => snap(p),
-      set: async (d) => { store[p] = JSON.parse(JSON.stringify(d)); persist(); },
+      set: async (d) => {
+        if (window.__deny) throw { code: "not_granted" };
+        if (window.__failOnce) { window.__failOnce = 0; throw { code: "unavailable" }; }
+        store[p] = JSON.parse(JSON.stringify(d)); persist();
+      },
       update: async (d) => { if (!(p in store)) throw { code: "invalid_argument" }; Object.assign(store[p], d); persist(); },
       delete: async () => { delete store[p]; persist(); },
       collection: (c) => collection(p + "/" + c) };
@@ -68,21 +76,27 @@ const MOCK = `
   const caps = {
     db: { doc, collection },
     user: { id: async () => "applicant-1", canEdit: async () => true, isOwner: async () => true },
-    downloads: { save: async (r) => { window.__downloads.push(r); return { status: "saved" }; } }
+    downloads: { save: async (r) => { window.__downloads.push(r); return { status: "saved" }; } },
+    permissions: { state: async () => (window.__deny ? "denied" : "granted"), request: async () => ({}),
+                   manage: async () => { window.__deny = false; } }
   };
   window.__store = store;
   window.claude = { use: async (n) => (window.__noCaps ? null : caps[n] || null) };
 })();`;
 
 const errors = [];
-async function newPage(browser, base, { mock = true } = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 520, height: 960 } });
+async function newPage(browser, base, { mock = true, offline = false } = {}) {
+  const ctx = await browser.newContext({ viewport: { width: 520, height: 960 }, acceptDownloads: true });
   if (mock) await ctx.addInitScript(MOCK);
+  if (offline) await ctx.route("https://cdnjs.cloudflare.com/**", (r) => r.abort());
+  else if (LIBS) await ctx.route("https://cdnjs.cloudflare.com/**", (r) =>
+    r.fulfill({ path: path.join(LIBS, path.basename(new URL(r.request().url()).pathname)), contentType: "application/javascript" }));
   const page = await ctx.newPage();
   page.on("console", (m) => {
     const t = m.text();
     if (m.type() === "error" && !/fonts\.(googleapis|gstatic)\.com|ERR_/.test(t)) errors.push("console: " + t);
     if (/\[GenStay\] Unknown field/.test(t)) errors.push("contract: " + t);
+    if (/\[GenStay\] PDF/.test(t)) errors.push("pdf: " + t);
   });
   page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
   await page.goto(base + "/pepaws-porch.html");
@@ -96,6 +110,12 @@ const TEXT = {
     D5: "I can't today because the assignment is due, but could we go to the garden together on Sunday? I'd love to meet the neighbours.",
     D10: "I want to understand where her view comes from and listen properly, and I'd like her to know I feel at home living here and respect her.",
     D13: "Thank you for letting me be part of your home. I'm sorry I wasn't always there, and I'd like us to keep talking honestly together."
+  },
+  hostile: { /* a deliberately unsuitable applicant: sensible clicks, hostile writing */
+    D3: "ok jit you old as this my house now jitty",
+    D5: "i gotta study granny give me some gummy gummy wagwan",
+    D10: "nah get on with cacking it im ready for the house",
+    D13: "give me that gummy gummy granny or else tm will be a bad day for you"
   },
   worst: {
     D3: "Just want a reference letter and some contacts from her network. That is about it really.",
@@ -120,14 +140,14 @@ async function play(page, mode, { letTimerRun = false } = {}) {
     if (st.phase === "reply" || st.t === "say") { await page.click("#next"); continue; }
     if (st.t === "choice") {
       if (letTimerRun && st.timer) { await page.waitForFunction(() => window.S.phase === "reply", null, { timeout: (st.timer + 3) * 1000 }); continue; }
-      const pick = st.scores.indexOf(mode === "best" ? Math.max(...st.scores) : Math.min(...st.scores));
+      const pick = st.scores.indexOf(mode === "worst" ? Math.min(...st.scores) : Math.max(...st.scores));
       await page.click(`.opt[data-i="${pick}"]`);
       continue;
     }
     if (st.t === "text") { await page.fill("#ta", TEXT[mode][st.id]); await page.click("#send"); continue; }
     if (st.t === "multi") {
       const boxes = await page.$$("[data-multi]");
-      if (mode === "best") { await boxes[0].check(); await boxes[3].check(); } else await boxes[2].check();
+      if (mode !== "worst") { await boxes[0].check(); await boxes[3].check(); } else await boxes[2].check();
       await page.click("#multi-submit");
       continue;
     }
@@ -135,23 +155,29 @@ async function play(page, mode, { letTimerRun = false } = {}) {
   throw new Error("run did not finish");
 }
 
-async function answerQuestions(page) {
+async function answerQuestions(page, extra = {}) {
   const fill = { age: "21", phone: "0491 570 156", ecName: "Claire Graffet", ecPhone: "0491 570 110", university: "UTS",
     course: "Bachelor of Nursing", campus: "UTS City campus, Ultimo", moveInDate: "2027-02-01", rentBudgetWeekly: "200", languages: "English, Italian" };
   const pick = { gender: "Female", studentType: "domestic", yearOfStudy: "2", transport: "public transport", maxCommuteMins: "40",
     stayMonths: "12", homeownerGender: "female", otherLodgers: "none", hoursPerWeek: "8-10" };
   const yes = { smoker: "false", needsSmokeFree: "true", okWithPets: "true", petAllergy: "false" };
+  Object.assign(fill, extra.fill); Object.assign(pick, extra.pick); Object.assign(yes, extra.yes);
   for (let p = 0; p < 5; p++) {
     await page.waitForSelector("#qnext");
     if (p === 0) {
       await page.click("#qnext");   // nothing filled: validation must stop us
       if (!(await page.$(".qfield.bad"))) errors.push("questionnaire: empty page 1 was accepted");
+      if (extra.fill && extra.fill.age === "19") {  // under 18 must be refused
+        await page.fill("#q-age", "16"); await page.click("#qnext");
+        if (!(await page.$("#qf-age.bad"))) errors.push("questionnaire: age 16 was accepted");
+      }
     }
     for (const [k, v] of Object.entries(fill)) if (await page.$("#q-" + k)) await page.fill("#q-" + k, v);
     for (const [k, v] of Object.entries(pick)) if (await page.$("#q-" + k)) await page.selectOption("#q-" + k, v);
     for (const [k, v] of Object.entries(yes)) if (await page.$("#q-" + k)) await page.click(`[data-one="${k}"][data-v="${v}"]`);
     if (await page.$("#q-campusDays")) { for (const d of ["Mon", "Tue", "Wed"]) await page.click(`[data-multi="campusDays"][data-v="${d}"]`); }
     if (await page.$("#q-hobbies")) { await page.click('[data-multi="hobbies"][data-v="Gardening"]'); await page.fill('[data-q="hobbies__other"]', "Choir, Crime novels"); }
+    for (const [k, v] of Object.entries(extra.text || {})) if (await page.$(`[data-q="${k}"]`)) await page.fill(`[data-q="${k}"]`, v);
     if (p === 4) {
       const pressed = await page.$$eval('[data-multi="helpTypes"][aria-pressed="true"]', (x) => x.length);
       if (!pressed) await page.click('[data-multi="helpTypes"][data-v="Gardening"]');
@@ -160,7 +186,7 @@ async function answerQuestions(page) {
     await page.click("#qnext");
   }
   await page.waitForSelector("#savestat");
-  await page.waitForFunction(() => /reached|couldn/.test(document.getElementById("savestat").textContent), null, { timeout: 5000 });
+  await page.waitForFunction(() => /reached|couldn|can’t|switched off|refused/.test(document.getElementById("savestat").textContent), null, { timeout: 8000 });
 }
 
 async function checkContract(browser, base, profile, label) {
@@ -200,7 +226,8 @@ async function checkContract(browser, base, profile, label) {
     await page.check("#c1"); await page.check("#c2");
     await page.click("#begin");
     await play(page, mode);
-    const midway = await page.evaluate(() => new Promise((r) => setTimeout(() => r(window.__store["profiles/applicant-1"]), 300)));
+    if (mode === "best") await page.evaluate(() => { window.__failOnce = 1; });
+    const midway = await page.evaluate(() => new Promise((r) => setTimeout(() => r(window.__store["profiles/applicant-1"]), 3000)));
     if (!midway || !midway.profile.screening || midway.complete) errors.push(mode + ": game result was not saved before the questions");
     await answerQuestions(page);
     await page.screenshot({ path: path.join(OUT, "results-" + mode + ".png") });
@@ -234,18 +261,117 @@ async function checkContract(browser, base, profile, label) {
       await page.setInputFiles("#importer", { name: "sample.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(sample)) });
       await page.waitForFunction(() => document.querySelectorAll(".qitem").length === 2, null, { timeout: 5000 });
       await page.waitForTimeout(800);
+      const pasted = JSON.parse(JSON.stringify(sample));
+      pasted.meta.profileId = "PP-pasted"; pasted.student.firstName = "Pat"; pasted.student.lastName = "Ward";
+      await page.click("#pastebtn");
+      await page.fill("#pastein", JSON.stringify(pasted, null, 2));
+      await page.click("#pasteadd");
+      await page.waitForFunction(() => document.querySelectorAll(".qitem").length === 3, null, { timeout: 5000 });
+      await page.waitForTimeout(600);
+      if ((await page.textContent("#vname")) !== "Pat Ward") errors.push("staff: pasted profile did not open");
+      await page.click('.qitem:has-text("Jenny Graffet")');
+      await page.waitForTimeout(400);
       report.staffQueue = await page.$$eval(".qitem .nm", (x) => x.map((n) => n.textContent));
       if ((await page.textContent("#vname")) !== sample.student.firstName + " " + sample.student.lastName) errors.push("staff: imported profile did not open");
+      if ((await page.inputValue("#rv-status")) !== sample.meta.pairingStatus) errors.push("staff: imported pairing status not kept");
       await page.screenshot({ path: path.join(OUT, "staff-desk.png") });
       await page.click("#next");
       await page.waitForTimeout(600);
       await page.screenshot({ path: path.join(OUT, "staff-desk-next.png") });
+      /* one profile, then the whole queue, as PDFs */
+      const pdfInfo = async (label) => {
+        await page.waitForFunction((n) => window.__downloads.some((d) => /\.pdf$/.test(d.filename) && d.filename.indexOf(n) !== -1), label, { timeout: 60000 });
+        return page.evaluate((n) => {
+          const d = window.__downloads.filter((x) => /\.pdf$/.test(x.filename) && x.filename.indexOf(n) !== -1).pop();
+          const bytes = new Uint8Array(d.data);
+          let txt = ""; for (let i = 0; i < bytes.length; i++) txt += String.fromCharCode(bytes[i]);
+          return { filename: d.filename, size: bytes.length, head: txt.slice(0, 5), pages: (txt.match(/\/Type \/Page[^s]/g) || []).length, b64: btoa(txt) };
+        }, label);
+      };
+      await page.click('.qitem:has-text("Sam Lee")');
+      await page.waitForTimeout(500);
+      await page.click("#pdfone");
+      const one = await pdfInfo("sam-lee");
+      await page.click("#pdfall");
+      const all = await pdfInfo("genstay-profiles-");
+      for (const [name, info] of [["profile-one.pdf", one], ["profiles-all.pdf", all]]) {
+        fs.writeFileSync(path.join(OUT, name), Buffer.from(info.b64, "base64"));
+        if (info.head !== "%PDF-") errors.push("pdf: " + name + " is not a PDF");
+      }
+      if (one.pages < 2) errors.push("pdf: single profile has " + one.pages + " page(s)");
+      if (all.pages < one.pages + 2) errors.push("pdf: queue PDF has only " + all.pages + " pages for 3 profiles");
+      report.pdf = { one: one.filename + " · " + one.pages + " pages · " + Math.round(one.size / 1024) + " KB",
+                     all: all.filename + " · " + all.pages + " pages · " + Math.round(all.size / 1024) + " KB" };
       await page.click("#expall");
       await page.waitForTimeout(300);
       const dl = await page.evaluate(() => window.__downloads.map((d) => d.filename));
       if (!dl.length) errors.push("staff: export all produced no download");
     }
     await ctx.close();
+  }
+
+  /* a hostile applicant: good clicks must not hide what they wrote */
+  {
+    const { ctx, page } = await newPage(browser, base);
+    await page.fill("#fname", "Felix Swan"); await page.fill("#femail", "f@student.uts.edu.au");
+    await page.check("#c1"); await page.check("#c2"); await page.click("#begin");
+    await play(page, "hostile");
+    await page.waitForTimeout(800);
+    await page.evaluate(() => { window.__deny = true; });
+    await answerQuestions(page, {
+      fill: { age: "19", workHours: "52", rentBudgetWeekly: "2", bedtime: "04:00", wakeTime: "04:01" },
+      pick: { studentType: "international" },
+      yes: { smoker: "true", needsSmokeFree: "true", okWithPets: "true", petAllergy: "true" },
+      text: { hobbies__other: "crack", canOffer__other: "how to clean a crack pipe", wantsToLearn__other: "meth", lifeGoals: "die",
+              socialNote: "I do crack", diet: "I am allergic to elderly energy" }
+    });
+    if (!(await page.isVisible("#perms"))) errors.push("permissions: no Permissions button when saving was switched off");
+    if (!/switched off/.test(await page.textContent("#savestat"))) errors.push("permissions: message doesn't say saving is switched off");
+    await page.click("#perms");
+    await page.waitForFunction(() => /reached/.test(document.getElementById("savestat").textContent), null, { timeout: 8000 });
+    const doc = await page.evaluate(() => window.__store["profiles/applicant-1"]);
+    if (!doc || !doc.complete) errors.push("permissions: profile not saved after switching saving back on");
+    const sc = doc.profile.screening;
+    for (const f of ["threatening_language", "drug_references", "welfare_concern", "demeaning_language", "answers_to_check"])
+      if (sc.flags.indexOf(f) === -1) errors.push("hostile: missing flag " + f);
+    if (sc.profile !== "transactional_guest") errors.push("hostile: profile was " + sc.profile);
+    if (!sc.watchPoint) errors.push("hostile: no automatic watch-point");
+    if (!doc.attention) errors.push("hostile: not marked as needing attention");
+    if (!(await page.isVisible("text=Lifeline"))) errors.push("hostile: no support line shown for a welfare concern");
+    const neg = await page.evaluate(() => { const before = S.concerns.length; const h = scanText("t", "I would never hurt her, and I don't do drugs. The granny flat step needs fixing."); S.concerns.length = before; return h.length; });
+    if (neg) errors.push("hostile: negated or innocent text was flagged");
+    report.hostile = { type: sc.profile, meters: sc.meters, flags: sc.flags, watchPoint: sc.watchPoint };
+    await page.screenshot({ path: path.join(OUT, "results-hostile.png"), fullPage: true });
+    await ctx.close();
+  }
+
+  /* outside claude.ai: plain browser downloads, and print when the PDF tools can't load */
+  {
+    const sample = fs.readFileSync(path.resolve(__dirname, "../genstay/genstay-profile.sample.json"), "utf8");
+    const local = await newPage(browser, base, { mock: false });
+    await local.page.goto(base + "/pepaws-porch.html#staff");
+    await local.page.setViewportSize({ width: 1360, height: 980 });
+    await local.page.click("#pastebtn"); await local.page.fill("#pastein", sample); await local.page.click("#pasteadd");
+    await local.page.waitForSelector(".qitem");
+    await local.page.waitForFunction(() => window.desk && desk.ready, null, { timeout: 8000 });
+    const [dl] = await Promise.all([local.page.waitForEvent("download", { timeout: 60000 }), local.page.click("#pdfone")]);
+    if (!/\.pdf$/.test(dl.suggestedFilename())) errors.push("local: desk PDF download was " + dl.suggestedFilename());
+    await local.page.goto(base + "/genstay-profile-template.html?demo");
+    const [dl2] = await Promise.all([local.page.waitForEvent("download", { timeout: 60000 }), local.page.click("#btn-pdf")]);
+    if (!/\.pdf$/.test(dl2.suggestedFilename())) errors.push("template: PDF button downloaded " + dl2.suggestedFilename());
+    await dl2.saveAs(path.join(OUT, "template-button.pdf"));
+    await local.ctx.close();
+
+    const off = await newPage(browser, base, { mock: false, offline: true });
+    await off.page.goto(base + "/pepaws-porch.html#staff");
+    await off.page.click("#pastebtn"); await off.page.fill("#pastein", sample); await off.page.click("#pasteadd");
+    await off.page.waitForFunction(() => window.desk && desk.ready, null, { timeout: 8000 });
+    await off.page.evaluate(() => { desk.frame.contentWindow.print = () => { window.__printed = true; }; });
+    await off.page.click("#pdfone");
+    await off.page.waitForFunction(() => window.__printed || /couldn/.test(document.getElementById("fstat").textContent), null, { timeout: 20000 });
+    if (!(await off.page.evaluate(() => window.__printed))) errors.push("offline: print fallback not used");
+    report.pdfLocal = { desk: dl.suggestedFilename(), template: dl2.suggestedFilename(), offlinePrint: true };
+    await off.ctx.close();
   }
 
   /* the Day 14 timer runs out; no record store, so the fallback shows */
@@ -260,6 +386,11 @@ async function checkContract(browser, base, profile, label) {
     await answerQuestions(page);
     const fb = await page.isVisible("#fallback");
     if (!fb) errors.push("timeout run: fallback not offered without a record store");
+    if (!/claude\.ai/.test(await page.textContent("#savestat"))) errors.push("no store: message doesn't say how to fix it");
+    if (await page.isVisible("#dl")) errors.push("no store: download button shown where downloads can't work");
+    await page.click("#showtext");
+    const shown = await page.inputValue("#ptext");
+    if (!(await page.isVisible("#ptext")) || shown.indexOf('"profileId"') === -1) errors.push("no store: profile text not shown");
     await page.screenshot({ path: path.join(OUT, "results-fallback.png") });
     report.timeout = { timedOut: t, fallbackShown: fb };
     await ctx.close();

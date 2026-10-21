@@ -21,6 +21,7 @@
   color-scheme:light;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;padding:0}
 body{
   background:var(--surround);
@@ -28,7 +29,7 @@ body{
   color:var(--ink);
   font:400 16px/1.55 var(--body);
   -webkit-font-smoothing:antialiased;
-  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;
+  min-height:100vh;display:flex;padding:16px;
 }
 h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;line-height:1.12;text-wrap:balance}
 p{margin:0}
@@ -42,6 +43,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   background:var(--card);border-radius:18px;overflow:hidden;
   box-shadow:0 24px 60px rgba(0,0,0,.42);
   display:flex;flex-direction:column;position:relative;
+  margin:auto; /* centres when there's room, never pushes the top off-screen when there isn't */
 }
 #app.wide{max-width:1240px;height:min(96vh,1000px)}
 
@@ -129,7 +131,8 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 .band{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 15px;font-weight:700;font-size:14px;color:var(--on-dark)}
 .rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
-.status{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:7px}
+.status{font-size:13px;color:var(--ink-2);display:flex;align-items:flex-start;gap:7px}
+.status .dotled{margin-top:6px}
 .dotled{width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-3)}
 .dotled.ok{background:var(--good)} .dotled.no{background:var(--bad)} .dotled.wait{background:var(--warn)}
 
@@ -1070,7 +1073,7 @@ function freshState(){
     di: 0, si: 0, phase: "step",
     meters: {connection: START_METER, respect: START_METER, reliability: START_METER, awareness: START_METER},
     flags: {}, tags: {}, scenarioSelections: {}, pathByDay: {}, redemption: null, redemptionOutcome: "",
-    motivation: "", responses: [], choices: [], pending: null, stepEnteredAt: null,
+    motivation: "", responses: [], choices: [], concerns: [], pending: null, stepEnteredAt: null,
     q: {}, qPage: 0, qPrefilled: false, synced: false
   };
 }
@@ -1334,6 +1337,10 @@ function renderTitle(){
     S.consentAt = nowISO(); S.startedAt = nowISO();
     S.view = "daycard";
     save(); render();
+    /* Ask for record-store access now, on the applicant's own click, so the
+       save at the end of the fortnight doesn't meet a consent prompt they
+       might miss. Never blocks the game. */
+    getCap("permissions").then(function(p){ if (p) p.request(["db", "user"]).then(null, function(){}); });
   };
 }
 
@@ -1487,6 +1494,46 @@ function renderReply(){
   el("#next").onclick = function(){ S.pending = null; nextStep(); };
 }
 
+/* ---------- automatic checks on everything the applicant writes ----------
+   Plain word lists, so staff can see exactly why something was flagged. A hit
+   quotes the words for staff; threats and drug references also lower the
+   meters and keep the profile out of automatic matching. A negation just
+   before a match ("I would never hurt her") doesn't count. */
+var CONCERNS = [
+  {id:"threatening_language", serious:true, label:"Threatening or hostile language",
+   re:/\b(or else|bad day for you|you'?ll regret|watch (your|ur) back|(hurt|hit|kill|smack|bash|punch) (you|her|marg)|hurry up and die|(cark|cack)(ing)? it|kick the bucket|(this|it'?s|this is) my (house|home)( now)?|kick (you|her) out|you'?re (useless|a burden))\b/i},
+  {id:"drug_references", serious:true, label:"References to illegal drugs",
+   re:/\b(meth|methamphetamine|heroin|cocaine|crack ?(pipe|cocaine|head)|(smoke|smoking|do|doing|sell|selling|deal|dealing) (crack|ice|meth|drugs|weed|coke)|on (crack|meth)|^crack$)\b/i},
+  {id:"welfare_concern", label:"Possible welfare concern",
+   re:/\b(want(ed)? to die|wanna die|kill myself|suicid\w*|end (it all|my life)|self[- ]harm|^(to )?die$)/i},
+  {id:"demeaning_language", label:"Demeaning, ageist or crude language",
+   re:/\b((?<!my )granny(?! flat)|old (hag|bag|bat|biddy|cow|chook)|boomer|senile|geezer|wrinkl(y|ies)|crone|you old|elderly energy|f+u+c+k\w*|shit|bitch|cunt|stfu|shut up)\b/i}
+];
+var NEG_BEFORE = /(?:\b(?:not|never|no|nor|without|wouldn'?t|won'?t|don'?t|didn'?t|can'?t|couldn'?t|shouldn'?t)\b|\w+n['’]t\b)[^.!?;]{0,26}$/i;
+function firstUnnegated(re, text){
+  var g = new RegExp(re.source, re.flags + "g"), m;
+  while ((m = g.exec(text)) !== null){
+    if (!NEG_BEFORE.test(text.slice(Math.max(0, m.index - 30), m.index))){
+      var from = Math.max(0, m.index - 28), to = Math.min(text.length, m.index + m[0].length + 28);
+      var cut = text.slice(from, to);
+      if (from > 0) cut = cut.replace(/^\S*\s/, "…");
+      if (to < text.length) cut = cut.replace(/\s\S*$/, "…");
+      return cut.replace(/\s+/g, " ").trim();
+    }
+    if (g.lastIndex === m.index) g.lastIndex++;
+  }
+  return null;
+}
+function scanText(source, text, fromQuestions){
+  var hits = [];
+  CONCERNS.forEach(function(k){
+    var excerpt = firstUnnegated(k.re, String(text || "").replace(/[‘’]/g, "'"));
+    if (excerpt){ hits.push(k); S.concerns.push({id: k.id, source: source, excerpt: excerpt, q: !!fromQuestions}); }
+  });
+  return hits;
+}
+function hasSeriousConcern(){ return S.concerns.some(function(c){ return CONCERNS.filter(function(k){ return k.id === c.id; })[0].serious; }); }
+
 function renderText(day, step){
   var p = el("#panel");
   p.innerHTML =
@@ -1508,7 +1555,13 @@ function renderText(day, step){
   send.onclick = function(){
     var answer = ta.value.trim();
     if (answer.length < step.min) return;
-    var outcome = (step.outcomes || []).filter(function(c){ return c.match.test(answer); })[0] || null;
+    var hits = scanText("Day " + day.n, answer);
+    var serious = hits.some(function(k){ return k.serious; });
+    var outcome = serious ? null : (step.outcomes || []).filter(function(c){ return c.match.test(answer); })[0] || null;
+    if (serious){
+      applyFx(impact(-2, -2, -1, 0));
+      if (day.n === 13) S.redemptionOutcome = "redemption_hostile";
+    } else if (hits.length) applyFx(impact(-1, -1, 0, 0));
     if (outcome){
       if (outcome.tag) S.tags[outcome.tag] = true;
       if (outcome.flag) S.flags[outcome.flag] = true;
@@ -1517,7 +1570,8 @@ function renderText(day, step){
     }
     S.responses.push({
       id: step.id, day: day.n, prompt: step.prompt, answer: answer,
-      chars: answer.length, seconds: secsSince(S.stepEnteredAt), outcome: outcome ? outcome.id : ""
+      chars: answer.length, seconds: secsSince(S.stepEnteredAt), outcome: outcome ? outcome.id : "",
+      concerns: hits.map(function(k){ return k.id; })
     });
     save();
     nextStep();
@@ -1535,7 +1589,7 @@ var YES_NO = [[true, "Yes"], [false, "No"]];
 var Q_PAGES = [
   {title:"About you", intro:"Five short pages. Most answers are a tap. Anything marked optional can be left blank.", fields:[
     {id:"preferredName", path:"student.preferredName", type:"text", label:"Preferred name", ph:"If different from your first name"},
-    {id:"age", path:"student.age", type:"num", label:"Age", req:true, min:16, max:99},
+    {id:"age", path:"student.age", type:"num", label:"Age", req:true, min:18, max:99, hint:"You need to be 18 or over to join a homeshare."},
     {id:"gender", path:"student.gender", type:"select", label:"Gender", req:true, opts:["Female","Male","Non-binary","Another identity","Prefer not to say"]},
     {id:"pronouns", path:"student.pronouns", type:"select", label:"Pronouns", opts:["she/her","he/him","they/them","Other","Prefer not to say"]},
     {id:"phone", path:"student.phone", type:"tel", label:"Mobile number", req:true},
@@ -1730,6 +1784,7 @@ function renderQuestionnaire(){
       return;
     }
     if (!last){ S.qPage++; save(); render(); el("#qscroll").scrollTop = 0; return; }
+    scanQuestionnaire();
     S.submittedAt = nowISO();
     S.view = "results";
     save(); render();
@@ -1750,10 +1805,56 @@ var PROFILE_TYPES = {
 var MOTIVATION_CODES = {motivation_study:"quiet_space", motivation_saving:"saving_money", motivation_company:"company", motivation_learning:"learning"};
 var REDEMPTION_RESULT = {
   redemption_reached_out:"Reached out in the Day 13 conversation (apologised, thanked or asked to talk).",
-  redemption_withdrew:"Held back in the Day 13 conversation."
+  redemption_withdrew:"Held back in the Day 13 conversation.",
+  redemption_hostile:"Answered the Day 13 conversation with threatening or hostile language."
 };
 
+/* Free-text answers in the final questions get the same checks as the game's. */
+function scanQuestionnaire(){
+  S.concerns = S.concerns.filter(function(c){ return !c.q; });
+  Q_FIELDS.forEach(function(f){
+    var where = "Final questions, " + f.label.toLowerCase();
+    if (f.type === "text") scanText(where, S.q[f.id], true);
+    if (f.type === "list") splitList(S.q[f.id]).forEach(function(item){ scanText(where, item, true); });
+    if (f.other) splitList(S.q[f.id + "__other"]).forEach(function(item){ scanText(where, item, true); });
+  });
+}
+/* Answers that contradict each other or can't be right, for staff to ask about. */
+function answerChecks(){
+  var q = S.q, out = [];
+  if (q.smoker === true && q.needsSmokeFree === true) out.push("smokes or vapes, but needs a smoke-free home");
+  if (q.okWithPets === true && q.petAllergy === true) out.push("happy to live with pets, but has a pet allergy");
+  if (q.bedtime && q.wakeTime){
+    var mins = function(t){ var m = String(t).split(":"); return Number(m[0]) * 60 + Number(m[1]); };
+    var sleep = (mins(q.wakeTime) - mins(q.bedtime) + 1440) % 1440;
+    if (sleep < 240) out.push("bedtime " + q.bedtime + " and wake-up " + q.wakeTime + " leave under four hours’ sleep");
+  }
+  var work = Number(q.workHours);
+  if (q.studentType === "international" && work > 24) out.push("international student working " + work + " hours a week (check visa work limits)");
+  else if (work > 40) out.push("works " + work + " hours a week alongside study");
+  if (!isBlank(q.rentBudgetWeekly) && Number(q.rentBudgetWeekly) < 20) out.push("rent budget of $" + Number(q.rentBudgetWeekly) + " a week");
+  return out;
+}
+/* A plain-English summary for the staff watch-point. Staff can rewrite it. */
+function autoWatchPoint(){
+  var parts = [];
+  CONCERNS.forEach(function(k){
+    var found = S.concerns.filter(function(c){ return c.id === k.id; });
+    if (!found.length) return;
+    parts.push(k.label + ": " + found.slice(0, 3).map(function(c){ return c.source + " (“" + c.excerpt + "”)"; }).join("; ")
+      + (found.length > 3 ? ", and " + (found.length - 3) + " more" : "") + ".");
+  });
+  if (S.meters.awareness <= 3){
+    var lows = S.choices.filter(function(c){ return c.awareness < 0; }).map(function(c){ return "Day " + c.day + ": " + c.chosen.replace(/\.$/, ""); });
+    parts.push("Low safety awareness (" + S.meters.awareness + "/10)" + (lows.length ? ": " + lows.slice(0, 3).join("; ") : "") + ".");
+  }
+  var checks = answerChecks();
+  if (checks.length) parts.push("Answers to check: " + checks.join("; ") + ".");
+  return parts.length ? "Automatic checks. " + parts.join(" ") : null;
+}
+
 function profileType(){
+  if (hasSeriousConcern()) return "transactional_guest"; /* excluded from automatic matching; staff read why */
   var m = S.meters;
   if (m.connection <= 3 && m.respect <= 3) return "transactional_guest";
   if (m.connection >= 7 && m.respect >= 7) return "connector";
@@ -1778,7 +1879,11 @@ function screeningPart(){
     recovered: low && low.day ? after > 0 : null,
     lowestMoment: low ? {day: low.day, note: low.note} : null,
     redemption: low ? (REDEMPTION_RESULT[S.redemptionOutcome] || "No clear repair signal in the Day 13 conversation. Read the closing words.") : null,
-    flags: Object.keys(S.flags).filter(function(k){ return S.flags[k]; }),
+    flags: Object.keys(S.flags).filter(function(k){ return S.flags[k]; })
+      .concat(CONCERNS.filter(function(k){ return S.concerns.some(function(c){ return c.id === k.id; }); }).map(function(k){ return k.id; }))
+      .concat(S.meters.awareness <= 3 ? ["low_safety_awareness"] : [])
+      .concat(answerChecks().length ? ["answers_to_check"] : []),
+    watchPoint: autoWatchPoint(),
     landmarks: [6, 9, 11, 14].map(function(day){
       return {day: day, response: S.choices.filter(function(c){ return c.day === day; }).map(function(c){ return c.chosen; }).join(" · ")};
     }).filter(function(x){ return x.response; }),
@@ -1812,27 +1917,36 @@ function setStatus(id, cls, text){
   var n = document.getElementById(id);
   if (n) n.innerHTML = '<span class="dotled ' + cls + '"></span><span>' + esc(text) + '</span>';
 }
+var ATTENTION_FLAGS = ["threatening_language", "drug_references", "welfare_concern", "low_safety_awareness"];
 function indexFields(profile, extra){
   var sc = profile.screening || {}, st = profile.student || {};
   return Object.assign({
     name: [st.firstName, st.lastName].filter(Boolean).join(" "), email: st.email || "", discipline: st.discipline || "",
     pid: (profile.meta || {}).profileId || "", screeningProfile: sc.profile || null,
-    complete: !!((profile.meta || {}).stages || {}).postGame, profile: profile
+    complete: !!((profile.meta || {}).stages || {}).postGame, profile: profile,
+    attention: (sc.flags || []).filter(function(f){ return ATTENTION_FLAGS.indexOf(f) !== -1; }).length
   }, extra);
 }
 
 var syncChain = Promise.resolve();
 function syncProfile(){
   var snap = {pid: S.pid, at: nowISO(), profile: buildProfile()};
-  syncChain = syncChain.then(function(){ return writeProfile(snap); }, function(){ return writeProfile(snap); });
+  var attempt = function(){
+    return writeProfile(snap).then(function(r){
+      if (r.ok || (r.code !== "unavailable" && r.code !== "resource_exhausted")) return r;
+      return new Promise(function(done){ setTimeout(done, 1200 + Math.random() * 1200); }).then(function(){ return writeProfile(snap); });
+    });
+  };
+  syncChain = syncChain.then(attempt, attempt);
   return syncChain;
 }
+/* Resolves {ok} or {ok:false, reason, code}; never rejects. */
 function writeProfile(snap){
   return Promise.all([getCap("db"), getCap("user")]).then(function(caps){
     var db = caps[0], user = caps[1];
-    if (!db || !user) return {ok: false, code: "unavailable"};
+    if (!db || !user) return {ok: false, reason: "no_store"};
     return user.id().then(function(uid){
-      if (!uid) return {ok: false, code: "unavailable"};
+      if (!uid) return {ok: false, reason: "no_store"};
       var parent = db.doc("profiles/" + uid);
       var complete = !!snap.profile.meta.stages.postGame;
       return parent.collection("runs").doc(snap.pid).set({pid: snap.pid, savedAt: snap.at, complete: complete, profile: snap.profile})
@@ -1842,28 +1956,52 @@ function writeProfile(snap){
           runs.push({pid: snap.pid, savedAt: snap.at, complete: complete, screeningProfile: snap.profile.screening ? snap.profile.screening.profile : null});
           return parent.set(indexFields(snap.profile, {updatedAt: snap.at, runs: runs}));
         })
-        .then(function(){ return {ok: true}; }, function(err){ return {ok: false, code: (err && err.code) || "unavailable"}; });
+        .then(function(){ return {ok: true}; });
     });
-  });
+  }).then(null, function(err){ return {ok: false, reason: "error", code: (err && err.code) || "unavailable"}; });
+}
+/* What went wrong, in words the applicant can act on. */
+function saveProblem(r, dbState){
+  if (dbState === "denied" || r.code === "not_granted" || r.code === "revoked")
+    return {text: "Saving to the placement service is switched off for this page. Press Permissions, turn it on, then press Try again.", perms: true};
+  if (r.reason === "no_store")
+    return {text: "This view can’t reach the placement service. Open the link at claude.ai in your web browser, signed in to your organisation, then press Try again. Or send your profile another way below."};
+  if (r.code === "quota_exceeded") return {text: "The placement record is full, so your profile couldn’t be saved. Send it another way below."};
+  if (r.code === "invalid_argument")
+    return {text: "The placement service refused the save. Your account may only have permission to view this page: ask the service for Contributor access, or send your profile another way below."};
+  return {text: "Your profile couldn’t be sent (" + (r.code || "unknown error") + "). Wait a moment and press Try again, or send it another way below."};
 }
 
-function offerDownload(filename, text, statusId){
+/* onFail runs when no file could be saved (not when the viewer cancels). */
+function offerDownload(filename, text, statusId, onFail){
   getCap("downloads").then(function(d){
-    if (!d){ setStatus(statusId, "no", "Downloads aren’t available here. Use Copy instead."); return; }
+    if (!d && !window.claude){ browserDownload(filename, text); setStatus(statusId, "ok", "Saved " + filename + ". Check your downloads folder."); return; }
+    if (!d){ setStatus(statusId, "no", "Downloads aren’t available in this view."); if (onFail) onFail(); return; }
     setStatus(statusId, "wait", "Confirm the download to save the file…");
     d.save({filename: filename, data: text}).then(function(){
       setStatus(statusId, "ok", "Saved " + filename + ". Check your downloads folder.");
     }, function(err){
       var code = (err && err.code) || "unavailable";
-      setStatus(statusId, code === "declined" ? "wait" : "no", code === "declined" ? "Download cancelled. Nothing was saved." : "The download didn’t work (" + code + "). Use Copy instead.");
+      if (code === "declined") { setStatus(statusId, "wait", "Download cancelled. Nothing was saved."); return; }
+      setStatus(statusId, "no", "The download didn’t work (" + code + ").");
+      if (onFail) onFail();
     });
   });
 }
-function copyText(text, statusId){
+/* Outside claude.ai (a local copy of the page) the browser can download directly. */
+function browserDownload(filename, data){
+  var type = /\.pdf$/.test(filename) ? "application/pdf" : "application/json";
+  var url = URL.createObjectURL(new Blob([data], {type: type}));
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+}
+function copyText(text, statusId, onFail){
+  var fail = function(){ setStatus(statusId, "no", "Copying isn’t allowed in this view."); if (onFail) onFail(); };
   try {
-    navigator.clipboard.writeText(text).then(function(){ setStatus(statusId, "ok", "Copied. Paste it into an email to the placement service."); },
-      function(){ setStatus(statusId, "no", "Copying isn’t allowed here. Use the download instead."); });
-  } catch (e) { setStatus(statusId, "no", "Copying isn’t allowed here. Use the download instead."); }
+    navigator.clipboard.writeText(text).then(function(){ setStatus(statusId, "ok", "Copied. Paste it into an email to the placement service."); }, fail);
+  } catch (e) { fail(); }
 }
 
 /* ============================================================
@@ -1888,12 +2026,21 @@ function deliverProfile(){
       if (el("#fallback")) el("#fallback").hidden = true;
     } else {
       save();
-      setStatus("savestat", "no", r.code === "quota_exceeded"
-        ? "The placement record is full, so your profile couldn’t be saved there."
-        : "Your profile couldn’t be sent from this page.");
-      if (el("#fallback")) el("#fallback").hidden = false;
+      getCap("permissions").then(function(p){ return p ? p.state("db").then(null, function(){ return ""; }) : ""; }).then(function(dbState){
+        var problem = saveProblem(r, dbState);
+        setStatus("savestat", "no", problem.text);
+        if (el("#fallback")) el("#fallback").hidden = false;
+        if (el("#perms")) el("#perms").hidden = !problem.perms;
+      });
     }
   });
+}
+function showProfileText(note){
+  var ta = el("#ptext"); if (!ta) return;
+  ta.value = JSON.stringify(buildProfile(), null, 2);
+  ta.hidden = false;
+  try { ta.focus(); ta.select(); } catch (e) {}
+  if (note) setStatus("dlstat", "wait", note);
 }
 
 function renderResults(){
@@ -1916,18 +2063,33 @@ function renderResults(){
     + '<p class="line">' + esc(type.text) + '</p>'
     + '<div class="notice">This is a reflection on the path you took, not a pass-or-fail result. A person at the placement service reads your answers and makes any placement decision.</div>'
     + (moments ? '<div><div class="who narr" style="margin-bottom:8px">Moments you shaped</div><div class="rows">' + moments + '</div></div>' : '')
+    + (S.concerns.some(function(c){ return c.id === "welfare_concern"; })
+        ? '<div class="notice"><b>If things feel hard right now,</b> you can talk to someone any time. Lifeline: <span class="mono">13 11 14</span>. Beyond Blue: <span class="mono">1300 22 4636</span>.</div>'
+        : '')
     + '<div class="status" id="savestat"><span class="dotled wait"></span><span>Sending your profile to the placement service…</span></div>'
-    + '<div id="fallback" class="notice" hidden><b>Send it another way.</b> Save your profile file, or copy it, and email it to the placement service. Staff can add it to the review queue.'
+    + '<div id="fallback" class="notice" hidden><b>Send it another way.</b> Copy your profile, or save it as a file, and email it to the placement service. Staff add it to the review queue.'
     + '<div class="btnrow" style="margin-top:10px"><button class="cont primary small" id="retry">Try again</button>'
-    + '<button class="cont small" id="dl">Download profile file</button><button class="cont ghost small" id="copy">Copy profile</button></div>'
-    + '<div class="status" id="dlstat" style="margin-top:8px"></div></div>'
+    + '<button class="cont small" id="perms" hidden>Permissions</button>'
+    + '<button class="cont small" id="dl" hidden>Download profile file</button><button class="cont ghost small" id="copy">Copy profile</button>'
+    + '<button class="cont ghost small" id="showtext">Show profile text</button></div>'
+    + '<div class="status" id="dlstat" style="margin-top:8px"></div>'
+    + '<textarea id="ptext" readonly hidden aria-label="Your profile, to copy into an email" style="margin-top:8px;min-height:160px;font:400 12px/1.4 var(--mono)"></textarea></div>'
     + '<button class="cont ghost" id="done">Finish</button>'
     + '<p class="sub" style="font-size:12.5px">Reference <span class="mono">' + esc(S.pid) + '</span></p>'
     + '</div></div>';
 
+  var manual = function(){ showProfileText("Your profile is shown below, selected. Copy it (Ctrl+C or ⌘C) and paste it into an email to the placement service."); };
   el("#retry").onclick = deliverProfile;
-  el("#dl").onclick = function(){ offerDownload(file, JSON.stringify(buildProfile(), null, 2), "dlstat"); };
-  el("#copy").onclick = function(){ copyText(JSON.stringify(buildProfile(), null, 2), "dlstat"); };
+  el("#perms").onclick = function(){
+    getCap("permissions").then(function(p){
+      if (!p) return setStatus("savestat", "no", "Open this artifact’s Permissions menu and switch saving on, then press Try again.");
+      p.manage().then(function(){ deliverProfile(); }, function(){ setStatus("savestat", "no", "Open this artifact’s Permissions menu and switch saving on, then press Try again."); });
+    });
+  };
+  getCap("downloads").then(function(d){ if ((d || !window.claude) && el("#dl")) el("#dl").hidden = false; });
+  el("#dl").onclick = function(){ offerDownload(file, JSON.stringify(buildProfile(), null, 2), "dlstat", manual); };
+  el("#copy").onclick = function(){ copyText(JSON.stringify(buildProfile(), null, 2), "dlstat", manual); };
+  el("#showtext").onclick = function(){ showProfileText(); };
   el("#done").onclick = function(){ if (S.synced) clearSaved(); S = freshState(); render(); };
   if (S.synced) setStatus("savestat", "ok", "Your profile has reached the placement service. You can close this page.");
 }
@@ -1960,12 +2122,18 @@ function deepMerge(target, src){
   });
   return target;
 }
+/* Staff fields: the saved review, else what the profile itself carries (an imported file may already have them). */
+function reviewFor(item){
+  var r = desk.reviews[item.id] || {}, p = item.profile || {}, meta = p.meta || {};
+  return {pairingStatus: r.pairingStatus || meta.pairingStatus || "new", suggestedFor: r.suggestedFor || meta.suggestedFor || "",
+          checks: r.checks || p.checks || {}, watchPoint: r.watchPoint || (p.screening || {}).watchPoint || "", reviewedAt: r.reviewedAt};
+}
 /* staff fields live in reviews/<id> and are laid over the applicant's profile */
 function mergedProfile(item, profile){
-  var r = desk.reviews[item.id] || {};
+  var r = reviewFor(item);
   return deepMerge(JSON.parse(JSON.stringify(profile || item.profile || {})), {
-    meta: {pairingStatus: r.pairingStatus || "new", suggestedFor: r.suggestedFor, updatedAt: (r.reviewedAt || item.updatedAt || "").slice(0, 10)},
-    checks: r.checks || {},
+    meta: {pairingStatus: r.pairingStatus, suggestedFor: r.suggestedFor, updatedAt: (r.reviewedAt || item.updatedAt || "").slice(0, 10)},
+    checks: r.checks,
     screening: {watchPoint: r.watchPoint}
   });
 }
@@ -1979,17 +2147,22 @@ function renderStaff(){
     + '<div class="desk">'
     + '<div class="queue"><div class="qtools">'
     + '<input type="text" id="qsearch" placeholder="Search by name or email" aria-label="Search applicants">'
-    + '<select id="qfilter" aria-label="Filter by pairing status"><option value="all">All applicants</option>'
+    + '<select id="qfilter" aria-label="Filter by pairing status"><option value="all">All applicants</option><option value="attention">Needs attention</option>'
     + PAIRING.map(function(p){ return '<option value="' + p[0] + '">' + p[1] + '</option>'; }).join("") + '</select>'
     + '<div class="btnrow"><button class="cont small" id="refresh">Refresh</button>'
     + '<label class="cont ghost small" style="display:inline-flex;flex-direction:row;cursor:pointer">Add profile files<input type="file" id="importer" accept=".json,application/json" multiple hidden></label>'
-    + '<button class="cont ghost small" id="expall">Export all</button></div>'
+    + '<button class="cont ghost small" id="pastebtn">Paste a profile</button>'
+    + '<button class="cont ghost small" id="pdfall">Download all (PDF)</button>'
+    + '<button class="cont ghost small" id="expall">Download all (JSON)</button></div>'
+    + '<div id="pastebox" hidden style="display:flex;flex-direction:column;gap:6px"><textarea id="pastein" aria-label="Paste a profile" placeholder="Paste the profile text an applicant emailed you" style="min-height:110px;font:400 12px/1.4 var(--mono)"></textarea>'
+    + '<div class="btnrow"><button class="cont primary small" id="pasteadd">Add to queue</button><button class="cont ghost small" id="pastecancel">Cancel</button></div></div>'
     + '<div class="status" id="astat"><span class="dotled wait"></span><span>Reading the placement record…</span></div>'
     + '</div><ul class="qlist" id="qlist"></ul></div>'
     + '<div class="viewer"><div class="vbar">'
     + '<button class="cont small" id="prev" aria-label="Previous applicant">‹ Prev</button><button class="cont small" id="next" aria-label="Next applicant">Next ›</button>'
     + '<b class="grow" id="vname">No profile open</b>'
     + '<select id="vrun" hidden aria-label="Choose a run"></select>'
+    + '<button class="cont small" id="pdfone" disabled>Download PDF</button>'
     + '<button class="cont ghost small" id="dlone" disabled>Download JSON</button>'
     + '<span class="status" id="fstat"></span></div>'
     + '<div class="vbody"><iframe id="pframe" title="GenStay matching profile" src="' + TEMPLATE_URL + '?embed"></iframe>'
@@ -2004,10 +2177,25 @@ function renderStaff(){
   el("#prev").onclick = function(){ step(-1); };
   el("#next").onclick = function(){ step(1); };
   el("#importer").onchange = function(){ importFiles(this.files); this.value = ""; };
+  el("#pastebtn").onclick = function(){ el("#pastebox").hidden = false; el("#pastein").focus(); };
+  el("#pastecancel").onclick = function(){ el("#pastebox").hidden = true; el("#pastein").value = ""; };
+  el("#pasteadd").onclick = function(){
+    var text = el("#pastein").value.trim(); if (!text) return;
+    importTexts([text]); el("#pastein").value = ""; el("#pastebox").hidden = true;
+  };
   el("#expall").onclick = function(){
     if (!desk.items.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
     offerDownload("genstay-profiles-" + nowISO().slice(0, 10) + ".json",
       JSON.stringify(desk.items.map(function(it){ return mergedProfile(it); }), null, 2), "astat");
+  };
+  el("#pdfone").onclick = function(){
+    var it = currentItem(); if (!it) return;
+    makePdfFile([mergedProfile(it, desk.run && desk.run.profile)], "genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".pdf", "fstat");
+  };
+  el("#pdfall").onclick = function(){
+    var list = visibleItems();
+    if (!list.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
+    makePdfFile(list.map(function(it){ return mergedProfile(it); }), "genstay-profiles-" + nowISO().slice(0, 10) + ".pdf", "astat");
   };
   el("#dlone").onclick = function(){
     var it = currentItem(); if (!it) return;
@@ -2033,24 +2221,88 @@ function renderStaff(){
 
 /* ---------- the profile template, embedded ---------- */
 window.addEventListener("message", function(e){
-  if (!desk || !desk.frame || e.source !== desk.frame.contentWindow) return;
+  if (!desk) return;
   var m = e.data || {};
+  if (desk.xframe && e.source === desk.xframe.contentWindow){
+    var job = pdfJobs[m.id];
+    if (m.type === "genstay:ready" && desk.xresolve) desk.xresolve(desk.xframe);
+    else if (m.type === "genstay:pdf:progress" && job) job.progress(m.done, m.total);
+    else if (m.type === "genstay:pdf:done" && job){ delete pdfJobs[m.id]; if (m.ok) job.resolve(m.data); else job.reject(new Error(m.error)); }
+    return;
+  }
+  if (!desk.frame || e.source !== desk.frame.contentWindow) return;
   if (m.type === "genstay:ready"){ desk.ready = true; if (desk.pending) sendToFrame(desk.pending); }
   else if (m.type === "genstay:ack" && m.status) setStatus("fstat", "ok", m.status.filled + " of " + m.status.total + " fields filled");
 });
+function frameTarget(){ return location.origin && location.origin !== "null" ? location.origin : "*"; }
 function sendToFrame(profile){
   desk.pending = profile;
   if (!desk.ready || !desk.frame.contentWindow) return;
-  var target = location.origin && location.origin !== "null" ? location.origin : "*";
-  desk.frame.contentWindow.postMessage({type: "genstay:profile", mode: "load", data: profile}, target);
+  desk.frame.contentWindow.postMessage({type: "genstay:profile", mode: "load", data: profile}, frameTarget());
 }
 /* If the frame can't load the template by address, load its text instead. */
 function frameFallback(){
   fetch(TEMPLATE_URL).then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); }).then(function(html){
     if (!desk) return;
     desk.frame.removeAttribute("src");
-    desk.frame.srcdoc = html.replace("<script>", "<script>window.GENSTAY_CONFIG={embedded:true};<\/script><script>");
+    desk.srcdoc = html.replace("<script>", "<script>window.GENSTAY_CONFIG={embedded:true};<\/script><script>");
+    desk.frame.srcdoc = desk.srcdoc;
   }).catch(function(){ setStatus("fstat", "no", "The profile template didn’t load. It must be published next to this page."); });
+}
+
+/* ---------- PDFs ----------
+   The template makes them (it knows its own layout and where pages can
+   break), in a hidden copy of the frame so the profile on screen stays put. */
+var pdfJobs = {};
+function exportFrame(){
+  if (desk.xready) return desk.xready;
+  desk.xready = new Promise(function(resolve, reject){
+    var f = document.createElement("iframe");
+    f.title = "PDF export"; f.tabIndex = -1; f.setAttribute("aria-hidden", "true");
+    f.style.cssText = "position:fixed;left:-12000px;top:0;width:900px;height:1400px;border:0;pointer-events:none";
+    desk.xframe = f; desk.xresolve = resolve;
+    if (desk.srcdoc) f.srcdoc = desk.srcdoc; else f.src = TEMPLATE_URL + "?embed";
+    app.appendChild(f);
+    setTimeout(function(){ reject(new Error("The profile template didn’t load, so the PDF couldn’t be made.")); }, 15000);
+  });
+  desk.xready.then(null, function(){ if (desk.xframe) desk.xframe.remove(); desk.xframe = null; desk.xready = null; });
+  return desk.xready;
+}
+function frameView(){
+  try { return desk.frame.contentDocument.body.getAttribute("data-view") || "staff"; } catch (e) { return "staff"; }
+}
+function requestPdf(profiles, view, onProgress){
+  return exportFrame().then(function(f){
+    return new Promise(function(resolve, reject){
+      var id = "pdf-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      pdfJobs[id] = {resolve: resolve, reject: reject, progress: onProgress || function(){}};
+      f.contentWindow.postMessage({type: "genstay:pdf", id: id, profiles: profiles, view: view}, frameTarget());
+    });
+  });
+}
+function makePdfFile(profiles, filename, statusId){
+  var buttons = [el("#pdfone"), el("#pdfall")];
+  desk.pdfBusy = true;
+  buttons.forEach(function(b){ if (b) b.disabled = true; });
+  setStatus(statusId, "wait", "Making the PDF…");
+  requestPdf(profiles, frameView(), function(done, total){
+    if (total > 1) setStatus(statusId, "wait", "Making the PDF: " + done + " of " + total + " profiles…");
+  }).then(function(buf){ offerDownload(filename, buf, statusId); }, function(err){
+    /* Usually no internet for the PDF tools. Outside claude.ai the browser can still print the open profile to PDF. */
+    if (!window.claude && desk.frame && desk.frame.contentWindow){
+      try {
+        desk.frame.contentWindow.print();
+        setStatus(statusId, "wait", "The PDF tools didn’t load, so the print dialog opened instead. Choose Save as PDF. It saves the profile on screen.");
+        return;
+      } catch (e) { /* fall through to the message */ }
+    }
+    setStatus(statusId, "no", err.message || "The PDF couldn’t be made.");
+  }).then(function(){
+    if (!desk) return;
+    desk.pdfBusy = false;
+    if (el("#pdfall")) el("#pdfall").disabled = false;
+    if (el("#pdfone")) el("#pdfone").disabled = !currentItem();
+  });
 }
 
 /* ---------- queue ---------- */
@@ -2080,8 +2332,9 @@ function loadQueue(openId){
 }
 function visibleItems(){
   return desk.items.filter(function(it){
-    var status = (desk.reviews[it.id] || {}).pairingStatus || "new";
-    if (desk.filter !== "all" && status !== desk.filter) return false;
+    var status = reviewFor(it).pairingStatus;
+    if (desk.filter === "attention") { if (!it.attention) return false; }
+    else if (desk.filter !== "all" && status !== desk.filter) return false;
     return !desk.search || ((it.name || "") + " " + (it.email || "")).toLowerCase().indexOf(desk.search) !== -1;
   });
 }
@@ -2090,13 +2343,14 @@ function drawQueue(){
   var list = visibleItems();
   el("#acount").textContent = list.length + " of " + desk.items.length + " in queue";
   el("#qlist").innerHTML = list.length ? list.map(function(it){
-    var r = desk.reviews[it.id] || {}, type = PROFILE_TYPES[it.screeningProfile];
+    var r = reviewFor(it), type = PROFILE_TYPES[it.screeningProfile];
     return '<li><button class="qitem" data-id="' + esc(it.id) + '" aria-current="' + (it.id === desk.current) + '">'
       + '<span class="nm">' + esc(it.name || "Unnamed applicant") + '</span>'
       + '<span class="when">' + esc((it.updatedAt || "").slice(0, 10)) + '</span>'
       + '<span class="meta">'
       + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '<span class="pill">No game result</span>')
-      + '<span class="pill">' + esc(label(PAIRING, r.pairingStatus || "new")) + '</span>'
+      + (it.attention ? '<span class="pill dark" style="background:var(--bad)">Needs attention</span>' : '')
+      + '<span class="pill">' + esc(label(PAIRING, r.pairingStatus)) + '</span>'
       + (it.complete ? '' : '<span class="pill">Questions unfinished</span>')
       + ((it.runs || []).length > 1 ? '<span class="pill">' + it.runs.length + ' runs</span>' : '')
       + (it.imported ? '<span class="pill">From file</span>' : '')
@@ -2118,6 +2372,7 @@ function openItem(id){
   drawQueue();
   el("#vname").textContent = it.name || "Unnamed applicant";
   el("#dlone").disabled = false;
+  el("#pdfone").disabled = !!desk.pdfBusy;
   var runs = (it.runs || []).slice().sort(function(a, b){ return String(b.savedAt).localeCompare(String(a.savedAt)); });
   var sel = el("#vrun");
   sel.hidden = runs.length < 2;
@@ -2140,14 +2395,14 @@ function openRun(pid){
   });
 }
 function drawReview(it){
-  var r = desk.reviews[it.id] || {}, checks = r.checks || {};
+  var r = reviewFor(it), checks = r.checks;
   var opts = function(pairs, v){ return pairs.map(function(p){ return '<option value="' + p[0] + '"' + (p[0] === (v || "") ? " selected" : "") + '>' + p[1] + '</option>'; }).join(""); };
   el("#review").innerHTML = '<h3>Staff review</h3>'
     + '<p class="sub" style="font-size:12.5px">Saved separately from the applicant’s answers, and shown in the profile.</p>'
-    + '<label>Pairing status<select id="rv-status">' + opts(PAIRING, r.pairingStatus || "new") + '</select></label>'
-    + '<label>Suggested homeowner<input type="text" id="rv-for" maxlength="120" value="' + esc(r.suggestedFor || "") + '" placeholder="e.g. Margaret Hollis"></label>'
+    + '<label>Pairing status<select id="rv-status">' + opts(PAIRING, r.pairingStatus) + '</select></label>'
+    + '<label>Suggested homeowner<input type="text" id="rv-for" maxlength="120" value="' + esc(r.suggestedFor) + '" placeholder="e.g. Margaret Hollis"></label>'
     + CHECKS.map(function(c){ return '<label>' + c[1] + '<select id="rv-' + c[0] + '">' + opts(CHECK_STATES, checks[c[0]]) + '</select></label>'; }).join("")
-    + '<label>Watch-point<textarea id="rv-watch" maxlength="600" placeholder="e.g. Reliability is the lowest meter. Agree a weekly help schedule at the intro call.">' + esc(r.watchPoint || "") + '</textarea></label>'
+    + '<label>Watch-point<textarea id="rv-watch" maxlength="2000" placeholder="e.g. Reliability is the lowest meter. Agree a weekly help schedule at the intro call.">' + esc(r.watchPoint) + '</textarea></label>'
     + '<button class="cont primary small" id="rv-save">Save review</button>'
     + '<div class="status" id="rvstat"></div>';
   el("#rv-save").onclick = function(){ saveReview(it); };
@@ -2171,32 +2426,36 @@ function saveReview(it){
 function importFiles(files){
   var list = Array.prototype.slice.call(files || []);
   if (!list.length) return;
-  Promise.all(list.map(function(f){
-    return f.text().then(function(t){
+  Promise.all(list.map(function(f){ return f.text().then(null, function(){ return ""; }); })).then(importTexts);
+}
+function importTexts(texts){
+  var profiles = [];
+  texts.forEach(function(t){
+    try {
       var v = JSON.parse(t);
-      return (Array.isArray(v) ? v : [v]).map(function(x){ return x && x.profile ? x.profile : x; })
-        .filter(function(p){ return p && typeof p === "object" && (p.student || p.screening); });
-    }, function(){ return []; }).catch(function(){ return []; });
-  })).then(function(groups){
-    var profiles = [].concat.apply([], groups);
-    if (!profiles.length){ setStatus("astat", "no", "No profiles found in those files. They should be GenStay profile .json files."); return; }
-    var at = nowISO();
-    var items = profiles.map(function(p){
-      var pid = (p.meta && p.meta.profileId) || ("import-" + Date.now().toString(36));
-      return indexFields(p, {id: "import-" + cleanId(pid), updatedAt: at, imported: true,
-        runs: [{pid: pid, savedAt: at, complete: !!(p.meta && p.meta.stages && p.meta.stages.postGame), screeningProfile: p.screening ? p.screening.profile : null}]});
-    });
-    if (!desk.db){
-      items.forEach(function(it){ desk.items = desk.items.filter(function(x){ return x.id !== it.id; }); desk.items.unshift(it); });
-      loadQueue(items[0].id);
-      return;
-    }
-    setStatus("astat", "wait", "Adding " + items.length + " profile" + (items.length === 1 ? "" : "s") + "…");
-    items.reduce(function(chain, it){
-      return chain.then(function(){ var body = Object.assign({}, it); delete body.id; return desk.db.doc("profiles/" + it.id).set(body); });
-    }, Promise.resolve()).then(function(){ loadQueue(items[0].id); },
-      function(err){ setStatus("astat", "no", "Couldn’t add the profiles (" + ((err && err.code) || "unavailable") + ")."); });
+      (Array.isArray(v) ? v : [v]).forEach(function(x){
+        var p = x && x.profile ? x.profile : x;
+        if (p && typeof p === "object" && (p.student || p.screening)) profiles.push(p);
+      });
+    } catch (e) { /* not JSON; reported below if nothing usable was found */ }
   });
+  if (!profiles.length){ setStatus("astat", "no", "No profile found. Paste or add the whole profile text, starting with { and ending with }."); return; }
+  var at = nowISO();
+  var items = profiles.map(function(p){
+    var pid = (p.meta && p.meta.profileId) || ("import-" + Date.now().toString(36));
+    return indexFields(p, {id: "import-" + cleanId(pid), updatedAt: at, imported: true,
+      runs: [{pid: pid, savedAt: at, complete: !!(p.meta && p.meta.stages && p.meta.stages.postGame), screeningProfile: p.screening ? p.screening.profile : null}]});
+  });
+  if (!desk.db){
+    items.forEach(function(it){ desk.items = desk.items.filter(function(x){ return x.id !== it.id; }); desk.items.unshift(it); });
+    loadQueue(items[0].id);
+    return;
+  }
+  setStatus("astat", "wait", "Adding " + items.length + " profile" + (items.length === 1 ? "" : "s") + "…");
+  items.reduce(function(chain, it){
+    return chain.then(function(){ var body = Object.assign({}, it); delete body.id; return desk.db.doc("profiles/" + it.id).set(body); });
+  }, Promise.resolve()).then(function(){ loadQueue(items[0].id); },
+    function(err){ setStatus("astat", "no", "Couldn’t add the profiles (" + ((err && err.code) || "unavailable") + ")."); });
 }
 
 /* ============================================================

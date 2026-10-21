@@ -18,8 +18,10 @@
     5. JSON file / endpoint  template.html?src=/path/to/profile.json
     6. Browser storage       localStorage['genstay:profile'] = JSON.stringify(data)   (same origin, live across tabs)
 
-  URL options: ?view=family (hides staff-only rows)  ?keys (shows data paths)  ?demo (loads sample data)  ?embed (hides Print and Export)
+  URL options: ?view=family (hides staff-only rows)  ?keys (shows data paths)  ?demo (loads sample data)  ?embed (hides PDF, Print and Export)
   Settings: set window.GENSTAY_CONFIG = {...} before this script (see CONFIG below).
+  PDF: the Download PDF button, GenStayProfile.pdf(), or postMessage {type:'genstay:pdf', id, profiles?, view?}
+       (replies genstay:pdf:progress and genstay:pdf:done with the PDF bytes). Needs cdnjs; offline, use Print.
   Full field list: genstay-profile-fields.md
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -158,6 +160,11 @@ body[data-view="family"] [data-staff]{display:none!important}
   .meter{grid-template-columns:86px 1fr;gap:4px 10px}.meter .val{grid-column:2}
   .path .cell{height:38px;font-size:10px}.path .cell b{font-size:11px}
 }
+/* PDF capture: the page alone, without the toolbar or the screen margins */
+body.pdf{background:#fff}
+body.pdf .toolbar{display:none}
+body.pdf .page{margin:0 auto;padding:28px 32px 20px;box-shadow:none;max-width:820px}
+body.pdf *{font-variation-settings:normal!important} /* the canvas can't draw variable-font axes; lay out with the widths it will draw */
 @media print{
   @page{size:A4;margin:12mm}
   html,body{background:#fff}
@@ -178,7 +185,8 @@ body[data-view="family"] [data-staff]{display:none!important}
     </span>
     <button type="button" id="btn-keys" aria-pressed="false">Field keys</button>
     <button type="button" id="btn-json">Export JSON</button>
-    <button type="button" id="btn-print">Print / PDF</button>
+    <button type="button" id="btn-pdf">Download PDF</button>
+    <button type="button" id="btn-print">Print</button>
   </div>
 </div>
 
@@ -781,6 +789,13 @@ body[data-view="family"] [data-staff]{display:none!important}
     if (!isObj(m) || typeof m.type !== 'string' || m.type.indexOf('genstay:') !== 0) return;
     if (!originAllowed(e.origin)) { console.warn('[GenStay] Ignored a message from ' + e.origin + '. Add it to GENSTAY_CONFIG.allowedOrigins.'); return; }
     var st;
+    if (m.type === 'genstay:pdf') {
+      var reply = function (msg) { if (e.source && e.source.postMessage) e.source.postMessage(msg, e.origin === 'null' ? '*' : e.origin); };
+      makePdf({ profiles: m.profiles, view: m.view, onProgress: function (done, total) { reply({ type: 'genstay:pdf:progress', id: m.id, done: done, total: total }); } })
+        .then(function (buf) { reply({ type: 'genstay:pdf:done', id: m.id, ok: true, data: buf }); },
+              function (err) { reply({ type: 'genstay:pdf:done', id: m.id, ok: false, error: String((err && err.message) || err) }); });
+      return;
+    }
     if (m.type === 'genstay:profile') st = (m.mode === 'load' ? load : update)(m.data, 'message');
     else if (m.type === 'genstay:clear') st = clear();
     else if (m.type === 'genstay:ping') st = status();
@@ -793,6 +808,103 @@ body[data-view="family"] [data-staff]{display:none!important}
     if (e.newValue === null) { clear(); return; }
     try { load(JSON.parse(e.newValue), 'storage'); } catch (err) { console.warn('[GenStay] Bad JSON in browser storage:', err.message); }
   });
+
+  /* ---------- PDF ----------
+     Each page is a picture of the rendered profile, so the PDF looks exactly
+     like the page. Pages break between rows, never through one. The two
+     libraries load from cdnjs the first time a PDF is made. */
+  var PDF_LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+  var libsReady = null;
+  function loadLibs() {
+    if (window.html2canvas && window.jspdf) return Promise.resolve();
+    libsReady = libsReady || Promise.all(PDF_LIBS.map(function (src) {
+      return new Promise(function (ok, fail) {
+        var tag = document.createElement('script');
+        tag.src = src; tag.onload = ok;
+        tag.onerror = function () { tag.remove(); fail(new Error('The PDF tools couldn’t load. Check the internet connection, or use Print and choose Save as PDF.')); };
+        document.head.appendChild(tag);
+      });
+    })).then(null, function (e) { libsReady = null; throw e; });
+    return libsReady;
+  }
+  /* Offsets (CSS px from the top of the page) where a new PDF page may start. */
+  function breakPoints(root) {
+    var top = root.getBoundingClientRect().top, pts = [];
+    Array.prototype.forEach.call(root.querySelectorAll('section, tr, .meter, .sub-h, .outcome, .path, .legend, blockquote, .identity, .band'), function (el) {
+      if ((el.tagName === 'TR' || el.classList.contains('meter')) && !el.previousElementSibling) return; // keep a heading with its first row
+      pts.push(el.getBoundingClientRect().top - top);
+    });
+    return pts;
+  }
+  /* Renders the current profile and cuts it into A4 pages (10 mm margins). */
+  function capturePages() {
+    var root = document.getElementById('profile');
+    document.body.classList.add('pdf');
+    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    return fonts.then(function () {
+      var width = root.offsetWidth, height = root.offsetHeight, pts = breakPoints(root);
+      var pageH = width * 277 / 190, cuts = [], y = 0;
+      while (y < height - 2) {
+        var cut = Math.min(y + pageH, height);
+        if (cut < height) {
+          var fit = pts.filter(function (p) { return p > y + pageH * 0.3 && p <= cut; });
+          if (fit.length) cut = Math.max.apply(null, fit);
+        }
+        cuts.push([y, cut]); y = cut;
+      }
+      return window.html2canvas(root, { scale: 2, backgroundColor: '#ffffff', logging: false, useCORS: true }).then(function (canvas) {
+        var k = canvas.width / width;
+        return cuts.map(function (c) {
+          var page = document.createElement('canvas'), ctx = page.getContext('2d');
+          page.width = canvas.width; page.height = Math.max(1, Math.round((c[1] - c[0]) * k));
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, page.width, page.height);
+          ctx.drawImage(canvas, 0, Math.round(c[0] * k), page.width, page.height, 0, 0, page.width, page.height);
+          return { img: page.toDataURL('image/jpeg', 0.9), mm: (c[1] - c[0]) * 190 / width };
+        });
+      });
+    }).then(function (pages) { document.body.classList.remove('pdf'); return pages; },
+            function (e) { document.body.classList.remove('pdf'); throw e; });
+  }
+  /* opts.profiles: several profiles, one after another in one PDF (default: the one shown).
+     opts.view: 'staff' or 'family'. Resolves with the PDF as an ArrayBuffer. */
+  function makePdf(opts) {
+    opts = opts || {};
+    var list = opts.profiles && opts.profiles.length ? opts.profiles : null;
+    var total = list ? list.length : 1;
+    var keep = list ? clone(state) : null, keepView = document.body.getAttribute('data-view');
+    var restore = function () { if (keep) load(keep, 'api'); setView(keepView); };
+    return loadLibs().then(function () {
+      var doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+      var first = true, i = 0;
+      if (opts.view) setView(opts.view);
+      var staffOnly = document.body.getAttribute('data-view') === 'staff';
+      var next = function () {
+        if (i >= total) return doc;
+        if (list) load(list[i], 'pdf');
+        var who = (join([state.student.preferredName || state.student.firstName, state.student.lastName], ' ') || 'Profile').replace(/[^\x20-\xFF]/g, '');
+        return capturePages().then(function (pages) {
+          pages.forEach(function (pg, n) {
+            if (!first) doc.addPage();
+            first = false;
+            doc.addImage(pg.img, 'JPEG', 10, 10, 190, pg.mm);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(130);
+            doc.text('GenStay matchmaking profile · ' + who + (staffOnly ? ' · staff only, includes screening results' : ''), 10, 291);
+            doc.text('Page ' + (n + 1) + ' of ' + pages.length, 200, 291, { align: 'right' });
+          });
+          i++;
+          if (opts.onProgress) opts.onProgress(i, total);
+          return next();
+        });
+      };
+      return next();
+    }).then(function (doc) {
+      doc.setProperties({ title: total === 1 ? 'GenStay matchmaking profile' : 'GenStay matchmaking profiles', creator: 'GenStay' });
+      var buf = doc.output('arraybuffer');
+      restore();
+      return buf;
+    }, function (e) { restore(); throw e; });
+  }
 
   /* ---------- toolbar ---------- */
   function setView(v) {
@@ -812,6 +924,19 @@ body[data-view="family"] [data-staff]{display:none!important}
   });
   document.getElementById('btn-keys').addEventListener('click', function () { showKeys(!document.body.classList.contains('show-keys')); });
   document.getElementById('btn-print').addEventListener('click', function () { window.print(); });
+  document.getElementById('btn-pdf').addEventListener('click', function () {
+    var btn = this, s = state.student, name = join([s.firstName, s.lastName], '-') || 'blank';
+    btn.disabled = true; btn.textContent = 'Making PDF…';
+    makePdf().then(function (buf) {
+      var a = h('a', { href: URL.createObjectURL(new Blob([buf], { type: 'application/pdf' })),
+                       download: 'genstay-profile-' + name.toLowerCase().replace(/[^a-z0-9-]+/g, '-') + '.pdf' });
+      document.body.appendChild(a); a.click(); a.remove();
+      btn.textContent = 'Download PDF';
+    }, function (err) {
+      console.warn('[GenStay] PDF:', err.message);
+      btn.textContent = 'PDF unavailable offline: use Print';
+    }).then(function () { btn.disabled = false; });
+  });
   document.getElementById('btn-json').addEventListener('click', function () {
     var s = state.student, name = join([s.firstName, s.lastName], '-') || 'blank';
     var a = h('a', { href: URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })),
@@ -833,6 +958,7 @@ body[data-view="family"] [data-staff]{display:none!important}
     setView: setView,
     showKeys: showKeys,
     onChange: function (fn) { listeners.push(fn); return function () { listeners = listeners.filter(function (x) { return x !== fn; }); }; },
+    pdf: makePdf,                                           // resolves with the PDF bytes (ArrayBuffer)
     config: CONFIG
   };
 
@@ -840,7 +966,7 @@ body[data-view="family"] [data-staff]{display:none!important}
   var params = new URLSearchParams(location.search);
   setView(params.get('view') || CONFIG.defaultView);
   if (params.has('keys')) showKeys(true);
-  if (CONFIG.embedded || params.has('embed')) ['btn-print', 'btn-json'].forEach(function (id) { document.getElementById(id).hidden = true; });
+  if (CONFIG.embedded || params.has('embed')) ['btn-pdf', 'btn-print', 'btn-json'].forEach(function (id) { document.getElementById(id).hidden = true; });
   render();
   var got = false;
   if (isObj(window.GENSTAY_PROFILE)) { load(window.GENSTAY_PROFILE, 'inline'); got = true; }
