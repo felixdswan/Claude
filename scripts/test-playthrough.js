@@ -18,6 +18,10 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "../game");
+/* The PDF tools load from cdnjs. Point PDF_LIBS at a folder holding
+   html2canvas.min.js (1.4.1) and jspdf.umd.min.js (2.5.1) to serve them
+   locally; without it the tests use the network. */
+const LIBS = process.env.PDF_LIBS || "";
 const OUT = process.argv[2] || "/tmp/pepaws-out";
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -81,14 +85,18 @@ const MOCK = `
 })();`;
 
 const errors = [];
-async function newPage(browser, base, { mock = true } = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 520, height: 960 } });
+async function newPage(browser, base, { mock = true, offline = false } = {}) {
+  const ctx = await browser.newContext({ viewport: { width: 520, height: 960 }, acceptDownloads: true });
   if (mock) await ctx.addInitScript(MOCK);
+  if (offline) await ctx.route("https://cdnjs.cloudflare.com/**", (r) => r.abort());
+  else if (LIBS) await ctx.route("https://cdnjs.cloudflare.com/**", (r) =>
+    r.fulfill({ path: path.join(LIBS, path.basename(new URL(r.request().url()).pathname)), contentType: "application/javascript" }));
   const page = await ctx.newPage();
   page.on("console", (m) => {
     const t = m.text();
     if (m.type() === "error" && !/fonts\.(googleapis|gstatic)\.com|ERR_/.test(t)) errors.push("console: " + t);
     if (/\[GenStay\] Unknown field/.test(t)) errors.push("contract: " + t);
+    if (/\[GenStay\] PDF/.test(t)) errors.push("pdf: " + t);
   });
   page.on("pageerror", (e) => errors.push("pageerror: " + e.message));
   await page.goto(base + "/pepaws-porch.html");
@@ -265,10 +273,35 @@ async function checkContract(browser, base, profile, label) {
       await page.waitForTimeout(400);
       report.staffQueue = await page.$$eval(".qitem .nm", (x) => x.map((n) => n.textContent));
       if ((await page.textContent("#vname")) !== sample.student.firstName + " " + sample.student.lastName) errors.push("staff: imported profile did not open");
+      if ((await page.inputValue("#rv-status")) !== sample.meta.pairingStatus) errors.push("staff: imported pairing status not kept");
       await page.screenshot({ path: path.join(OUT, "staff-desk.png") });
       await page.click("#next");
       await page.waitForTimeout(600);
       await page.screenshot({ path: path.join(OUT, "staff-desk-next.png") });
+      /* one profile, then the whole queue, as PDFs */
+      const pdfInfo = async (label) => {
+        await page.waitForFunction((n) => window.__downloads.some((d) => /\.pdf$/.test(d.filename) && d.filename.indexOf(n) !== -1), label, { timeout: 60000 });
+        return page.evaluate((n) => {
+          const d = window.__downloads.filter((x) => /\.pdf$/.test(x.filename) && x.filename.indexOf(n) !== -1).pop();
+          const bytes = new Uint8Array(d.data);
+          let txt = ""; for (let i = 0; i < bytes.length; i++) txt += String.fromCharCode(bytes[i]);
+          return { filename: d.filename, size: bytes.length, head: txt.slice(0, 5), pages: (txt.match(/\/Type \/Page[^s]/g) || []).length, b64: btoa(txt) };
+        }, label);
+      };
+      await page.click('.qitem:has-text("Sam Lee")');
+      await page.waitForTimeout(500);
+      await page.click("#pdfone");
+      const one = await pdfInfo("sam-lee");
+      await page.click("#pdfall");
+      const all = await pdfInfo("genstay-profiles-");
+      for (const [name, info] of [["profile-one.pdf", one], ["profiles-all.pdf", all]]) {
+        fs.writeFileSync(path.join(OUT, name), Buffer.from(info.b64, "base64"));
+        if (info.head !== "%PDF-") errors.push("pdf: " + name + " is not a PDF");
+      }
+      if (one.pages < 2) errors.push("pdf: single profile has " + one.pages + " page(s)");
+      if (all.pages < one.pages + 2) errors.push("pdf: queue PDF has only " + all.pages + " pages for 3 profiles");
+      report.pdf = { one: one.filename + " · " + one.pages + " pages · " + Math.round(one.size / 1024) + " KB",
+                     all: all.filename + " · " + all.pages + " pages · " + Math.round(all.size / 1024) + " KB" };
       await page.click("#expall");
       await page.waitForTimeout(300);
       const dl = await page.evaluate(() => window.__downloads.map((d) => d.filename));
@@ -310,6 +343,35 @@ async function checkContract(browser, base, profile, label) {
     report.hostile = { type: sc.profile, meters: sc.meters, flags: sc.flags, watchPoint: sc.watchPoint };
     await page.screenshot({ path: path.join(OUT, "results-hostile.png"), fullPage: true });
     await ctx.close();
+  }
+
+  /* outside claude.ai: plain browser downloads, and print when the PDF tools can't load */
+  {
+    const sample = fs.readFileSync(path.resolve(__dirname, "../genstay/genstay-profile.sample.json"), "utf8");
+    const local = await newPage(browser, base, { mock: false });
+    await local.page.goto(base + "/pepaws-porch.html#staff");
+    await local.page.setViewportSize({ width: 1360, height: 980 });
+    await local.page.click("#pastebtn"); await local.page.fill("#pastein", sample); await local.page.click("#pasteadd");
+    await local.page.waitForSelector(".qitem");
+    await local.page.waitForFunction(() => window.desk && desk.ready, null, { timeout: 8000 });
+    const [dl] = await Promise.all([local.page.waitForEvent("download", { timeout: 60000 }), local.page.click("#pdfone")]);
+    if (!/\.pdf$/.test(dl.suggestedFilename())) errors.push("local: desk PDF download was " + dl.suggestedFilename());
+    await local.page.goto(base + "/genstay-profile-template.html?demo");
+    const [dl2] = await Promise.all([local.page.waitForEvent("download", { timeout: 60000 }), local.page.click("#btn-pdf")]);
+    if (!/\.pdf$/.test(dl2.suggestedFilename())) errors.push("template: PDF button downloaded " + dl2.suggestedFilename());
+    await dl2.saveAs(path.join(OUT, "template-button.pdf"));
+    await local.ctx.close();
+
+    const off = await newPage(browser, base, { mock: false, offline: true });
+    await off.page.goto(base + "/pepaws-porch.html#staff");
+    await off.page.click("#pastebtn"); await off.page.fill("#pastein", sample); await off.page.click("#pasteadd");
+    await off.page.waitForFunction(() => window.desk && desk.ready, null, { timeout: 8000 });
+    await off.page.evaluate(() => { desk.frame.contentWindow.print = () => { window.__printed = true; }; });
+    await off.page.click("#pdfone");
+    await off.page.waitForFunction(() => window.__printed || /couldn/.test(document.getElementById("fstat").textContent), null, { timeout: 20000 });
+    if (!(await off.page.evaluate(() => window.__printed))) errors.push("offline: print fallback not used");
+    report.pdfLocal = { desk: dl.suggestedFilename(), template: dl2.suggestedFilename(), offlinePrint: true };
+    await off.ctx.close();
   }
 
   /* the Day 14 timer runs out; no record store, so the fallback shows */

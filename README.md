@@ -61,7 +61,13 @@ answers and shown in the profile.
 - **Search** and the status filter (including **Needs attention**) narrow the queue.
 - **Add profile files** imports `.json` profiles that applicants emailed in. **Paste a profile**
   takes the profile text itself, when an applicant pasted it into an email.
-- **Download JSON** saves the open profile. **Export all** saves the whole queue as one file.
+- **Download PDF** saves the open profile as a PDF that looks exactly like the template, in
+  whichever view (Staff or Family) is showing. **Download all (PDF)** puts every profile in the
+  queue, as filtered, into one PDF, each starting on a new page. Pages break between rows.
+- **Download JSON** and **Download all (JSON)** save the same data for the matching algorithm.
+- Offline, the PDF tools (html2canvas and jsPDF, loaded from cdnjs on first use) can't load, so
+  **Download PDF** opens the print dialog instead: choose **Save as PDF**. The template opened on
+  its own has the same **Download PDF** and **Print** buttons.
 - If an applicant played more than once, a run picker appears. The latest run opens first.
 
 ## Access and storage
@@ -104,9 +110,13 @@ offers the download fallback, and the desk shows profile files you add without s
 
     node scripts/test-playthrough.js /tmp/pepaws-out
 
+The PDF checks load html2canvas 1.4.1 and jsPDF 2.5.1 from cdnjs. Where cdnjs is blocked, put
+`html2canvas.min.js` and `jspdf.umd.min.js` (from the npm packages' `dist/` folders) in a folder
+and set `PDF_LIBS=/that/folder`.
+
 plays a best run, a worst run, a hostile run and a timed-out run against a stand-in record store, checks each
-stored profile against the template's contract, exercises the staff desk, and saves screenshots
-of every scene.
+stored profile against the template's contract, exercises the staff desk and the PDF downloads,
+and saves screenshots of every scene.
 
 ## Before this goes to real applicants
 

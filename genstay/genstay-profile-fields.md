@@ -56,7 +56,9 @@ const url = 'genstay-profile-template.html#data=' + btoa(s).replace(/\+/g, '-').
 | `GenStayProfile.get()` | Returns the current data |
 | `onChange(fn)` | Calls `fn` after every render |
 | `genstay:profile:rendered` | Window event fired after each render |
-| Export JSON / Print / PDF | Toolbar buttons |
+| Download PDF / Print / Export JSON | Toolbar buttons. Download PDF makes an A4 file that looks like the page, breaking between rows; it loads html2canvas and jsPDF from cdnjs, so offline use Print and choose Save as PDF |
+| `GenStayProfile.pdf({profiles?, view?})` | Resolves with the PDF bytes. Pass several profiles to get one PDF with each starting on a new page |
+| `{type:'genstay:pdf', id, profiles?, view?}` | The same over postMessage; replies `genstay:pdf:progress` and `genstay:pdf:done` with `{ok, data}` |
 
 **Safety.**
 

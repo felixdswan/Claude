@@ -29,7 +29,7 @@ body{
   color:var(--ink);
   font:400 16px/1.55 var(--body);
   -webkit-font-smoothing:antialiased;
-  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;
+  min-height:100vh;display:flex;padding:16px;
 }
 h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;line-height:1.12;text-wrap:balance}
 p{margin:0}
@@ -43,6 +43,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   background:var(--card);border-radius:18px;overflow:hidden;
   box-shadow:0 24px 60px rgba(0,0,0,.42);
   display:flex;flex-direction:column;position:relative;
+  margin:auto; /* centres when there's room, never pushes the top off-screen when there isn't */
 }
 #app.wide{max-width:1240px;height:min(96vh,1000px)}
 
@@ -1974,6 +1975,7 @@ function saveProblem(r, dbState){
 /* onFail runs when no file could be saved (not when the viewer cancels). */
 function offerDownload(filename, text, statusId, onFail){
   getCap("downloads").then(function(d){
+    if (!d && !window.claude){ browserDownload(filename, text); setStatus(statusId, "ok", "Saved " + filename + ". Check your downloads folder."); return; }
     if (!d){ setStatus(statusId, "no", "Downloads aren’t available in this view."); if (onFail) onFail(); return; }
     setStatus(statusId, "wait", "Confirm the download to save the file…");
     d.save({filename: filename, data: text}).then(function(){
@@ -1985,6 +1987,15 @@ function offerDownload(filename, text, statusId, onFail){
       if (onFail) onFail();
     });
   });
+}
+/* Outside claude.ai (a local copy of the page) the browser can download directly. */
+function browserDownload(filename, data){
+  var type = /\.pdf$/.test(filename) ? "application/pdf" : "application/json";
+  var url = URL.createObjectURL(new Blob([data], {type: type}));
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
 }
 function copyText(text, statusId, onFail){
   var fail = function(){ setStatus(statusId, "no", "Copying isn’t allowed in this view."); if (onFail) onFail(); };
@@ -2075,7 +2086,7 @@ function renderResults(){
       p.manage().then(function(){ deliverProfile(); }, function(){ setStatus("savestat", "no", "Open this artifact’s Permissions menu and switch saving on, then press Try again."); });
     });
   };
-  getCap("downloads").then(function(d){ if (d && el("#dl")) el("#dl").hidden = false; });
+  getCap("downloads").then(function(d){ if ((d || !window.claude) && el("#dl")) el("#dl").hidden = false; });
   el("#dl").onclick = function(){ offerDownload(file, JSON.stringify(buildProfile(), null, 2), "dlstat", manual); };
   el("#copy").onclick = function(){ copyText(JSON.stringify(buildProfile(), null, 2), "dlstat", manual); };
   el("#showtext").onclick = function(){ showProfileText(); };
@@ -2111,12 +2122,18 @@ function deepMerge(target, src){
   });
   return target;
 }
+/* Staff fields: the saved review, else what the profile itself carries (an imported file may already have them). */
+function reviewFor(item){
+  var r = desk.reviews[item.id] || {}, p = item.profile || {}, meta = p.meta || {};
+  return {pairingStatus: r.pairingStatus || meta.pairingStatus || "new", suggestedFor: r.suggestedFor || meta.suggestedFor || "",
+          checks: r.checks || p.checks || {}, watchPoint: r.watchPoint || (p.screening || {}).watchPoint || "", reviewedAt: r.reviewedAt};
+}
 /* staff fields live in reviews/<id> and are laid over the applicant's profile */
 function mergedProfile(item, profile){
-  var r = desk.reviews[item.id] || {};
+  var r = reviewFor(item);
   return deepMerge(JSON.parse(JSON.stringify(profile || item.profile || {})), {
-    meta: {pairingStatus: r.pairingStatus || "new", suggestedFor: r.suggestedFor, updatedAt: (r.reviewedAt || item.updatedAt || "").slice(0, 10)},
-    checks: r.checks || {},
+    meta: {pairingStatus: r.pairingStatus, suggestedFor: r.suggestedFor, updatedAt: (r.reviewedAt || item.updatedAt || "").slice(0, 10)},
+    checks: r.checks,
     screening: {watchPoint: r.watchPoint}
   });
 }
@@ -2135,7 +2152,8 @@ function renderStaff(){
     + '<div class="btnrow"><button class="cont small" id="refresh">Refresh</button>'
     + '<label class="cont ghost small" style="display:inline-flex;flex-direction:row;cursor:pointer">Add profile files<input type="file" id="importer" accept=".json,application/json" multiple hidden></label>'
     + '<button class="cont ghost small" id="pastebtn">Paste a profile</button>'
-    + '<button class="cont ghost small" id="expall">Export all</button></div>'
+    + '<button class="cont ghost small" id="pdfall">Download all (PDF)</button>'
+    + '<button class="cont ghost small" id="expall">Download all (JSON)</button></div>'
     + '<div id="pastebox" hidden style="display:flex;flex-direction:column;gap:6px"><textarea id="pastein" aria-label="Paste a profile" placeholder="Paste the profile text an applicant emailed you" style="min-height:110px;font:400 12px/1.4 var(--mono)"></textarea>'
     + '<div class="btnrow"><button class="cont primary small" id="pasteadd">Add to queue</button><button class="cont ghost small" id="pastecancel">Cancel</button></div></div>'
     + '<div class="status" id="astat"><span class="dotled wait"></span><span>Reading the placement record…</span></div>'
@@ -2144,6 +2162,7 @@ function renderStaff(){
     + '<button class="cont small" id="prev" aria-label="Previous applicant">‹ Prev</button><button class="cont small" id="next" aria-label="Next applicant">Next ›</button>'
     + '<b class="grow" id="vname">No profile open</b>'
     + '<select id="vrun" hidden aria-label="Choose a run"></select>'
+    + '<button class="cont small" id="pdfone" disabled>Download PDF</button>'
     + '<button class="cont ghost small" id="dlone" disabled>Download JSON</button>'
     + '<span class="status" id="fstat"></span></div>'
     + '<div class="vbody"><iframe id="pframe" title="GenStay matching profile" src="' + TEMPLATE_URL + '?embed"></iframe>'
@@ -2169,6 +2188,15 @@ function renderStaff(){
     offerDownload("genstay-profiles-" + nowISO().slice(0, 10) + ".json",
       JSON.stringify(desk.items.map(function(it){ return mergedProfile(it); }), null, 2), "astat");
   };
+  el("#pdfone").onclick = function(){
+    var it = currentItem(); if (!it) return;
+    makePdfFile([mergedProfile(it, desk.run && desk.run.profile)], "genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".pdf", "fstat");
+  };
+  el("#pdfall").onclick = function(){
+    var list = visibleItems();
+    if (!list.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
+    makePdfFile(list.map(function(it){ return mergedProfile(it); }), "genstay-profiles-" + nowISO().slice(0, 10) + ".pdf", "astat");
+  };
   el("#dlone").onclick = function(){
     var it = currentItem(); if (!it) return;
     var p = mergedProfile(it, desk.run && desk.run.profile);
@@ -2193,24 +2221,88 @@ function renderStaff(){
 
 /* ---------- the profile template, embedded ---------- */
 window.addEventListener("message", function(e){
-  if (!desk || !desk.frame || e.source !== desk.frame.contentWindow) return;
+  if (!desk) return;
   var m = e.data || {};
+  if (desk.xframe && e.source === desk.xframe.contentWindow){
+    var job = pdfJobs[m.id];
+    if (m.type === "genstay:ready" && desk.xresolve) desk.xresolve(desk.xframe);
+    else if (m.type === "genstay:pdf:progress" && job) job.progress(m.done, m.total);
+    else if (m.type === "genstay:pdf:done" && job){ delete pdfJobs[m.id]; if (m.ok) job.resolve(m.data); else job.reject(new Error(m.error)); }
+    return;
+  }
+  if (!desk.frame || e.source !== desk.frame.contentWindow) return;
   if (m.type === "genstay:ready"){ desk.ready = true; if (desk.pending) sendToFrame(desk.pending); }
   else if (m.type === "genstay:ack" && m.status) setStatus("fstat", "ok", m.status.filled + " of " + m.status.total + " fields filled");
 });
+function frameTarget(){ return location.origin && location.origin !== "null" ? location.origin : "*"; }
 function sendToFrame(profile){
   desk.pending = profile;
   if (!desk.ready || !desk.frame.contentWindow) return;
-  var target = location.origin && location.origin !== "null" ? location.origin : "*";
-  desk.frame.contentWindow.postMessage({type: "genstay:profile", mode: "load", data: profile}, target);
+  desk.frame.contentWindow.postMessage({type: "genstay:profile", mode: "load", data: profile}, frameTarget());
 }
 /* If the frame can't load the template by address, load its text instead. */
 function frameFallback(){
   fetch(TEMPLATE_URL).then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); }).then(function(html){
     if (!desk) return;
     desk.frame.removeAttribute("src");
-    desk.frame.srcdoc = html.replace("<script>", "<script>window.GENSTAY_CONFIG={embedded:true};<\/script><script>");
+    desk.srcdoc = html.replace("<script>", "<script>window.GENSTAY_CONFIG={embedded:true};<\/script><script>");
+    desk.frame.srcdoc = desk.srcdoc;
   }).catch(function(){ setStatus("fstat", "no", "The profile template didn’t load. It must be published next to this page."); });
+}
+
+/* ---------- PDFs ----------
+   The template makes them (it knows its own layout and where pages can
+   break), in a hidden copy of the frame so the profile on screen stays put. */
+var pdfJobs = {};
+function exportFrame(){
+  if (desk.xready) return desk.xready;
+  desk.xready = new Promise(function(resolve, reject){
+    var f = document.createElement("iframe");
+    f.title = "PDF export"; f.tabIndex = -1; f.setAttribute("aria-hidden", "true");
+    f.style.cssText = "position:fixed;left:-12000px;top:0;width:900px;height:1400px;border:0;pointer-events:none";
+    desk.xframe = f; desk.xresolve = resolve;
+    if (desk.srcdoc) f.srcdoc = desk.srcdoc; else f.src = TEMPLATE_URL + "?embed";
+    app.appendChild(f);
+    setTimeout(function(){ reject(new Error("The profile template didn’t load, so the PDF couldn’t be made.")); }, 15000);
+  });
+  desk.xready.then(null, function(){ if (desk.xframe) desk.xframe.remove(); desk.xframe = null; desk.xready = null; });
+  return desk.xready;
+}
+function frameView(){
+  try { return desk.frame.contentDocument.body.getAttribute("data-view") || "staff"; } catch (e) { return "staff"; }
+}
+function requestPdf(profiles, view, onProgress){
+  return exportFrame().then(function(f){
+    return new Promise(function(resolve, reject){
+      var id = "pdf-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      pdfJobs[id] = {resolve: resolve, reject: reject, progress: onProgress || function(){}};
+      f.contentWindow.postMessage({type: "genstay:pdf", id: id, profiles: profiles, view: view}, frameTarget());
+    });
+  });
+}
+function makePdfFile(profiles, filename, statusId){
+  var buttons = [el("#pdfone"), el("#pdfall")];
+  desk.pdfBusy = true;
+  buttons.forEach(function(b){ if (b) b.disabled = true; });
+  setStatus(statusId, "wait", "Making the PDF…");
+  requestPdf(profiles, frameView(), function(done, total){
+    if (total > 1) setStatus(statusId, "wait", "Making the PDF: " + done + " of " + total + " profiles…");
+  }).then(function(buf){ offerDownload(filename, buf, statusId); }, function(err){
+    /* Usually no internet for the PDF tools. Outside claude.ai the browser can still print the open profile to PDF. */
+    if (!window.claude && desk.frame && desk.frame.contentWindow){
+      try {
+        desk.frame.contentWindow.print();
+        setStatus(statusId, "wait", "The PDF tools didn’t load, so the print dialog opened instead. Choose Save as PDF. It saves the profile on screen.");
+        return;
+      } catch (e) { /* fall through to the message */ }
+    }
+    setStatus(statusId, "no", err.message || "The PDF couldn’t be made.");
+  }).then(function(){
+    if (!desk) return;
+    desk.pdfBusy = false;
+    if (el("#pdfall")) el("#pdfall").disabled = false;
+    if (el("#pdfone")) el("#pdfone").disabled = !currentItem();
+  });
 }
 
 /* ---------- queue ---------- */
@@ -2240,7 +2332,7 @@ function loadQueue(openId){
 }
 function visibleItems(){
   return desk.items.filter(function(it){
-    var status = (desk.reviews[it.id] || {}).pairingStatus || "new";
+    var status = reviewFor(it).pairingStatus;
     if (desk.filter === "attention") { if (!it.attention) return false; }
     else if (desk.filter !== "all" && status !== desk.filter) return false;
     return !desk.search || ((it.name || "") + " " + (it.email || "")).toLowerCase().indexOf(desk.search) !== -1;
@@ -2251,14 +2343,14 @@ function drawQueue(){
   var list = visibleItems();
   el("#acount").textContent = list.length + " of " + desk.items.length + " in queue";
   el("#qlist").innerHTML = list.length ? list.map(function(it){
-    var r = desk.reviews[it.id] || {}, type = PROFILE_TYPES[it.screeningProfile];
+    var r = reviewFor(it), type = PROFILE_TYPES[it.screeningProfile];
     return '<li><button class="qitem" data-id="' + esc(it.id) + '" aria-current="' + (it.id === desk.current) + '">'
       + '<span class="nm">' + esc(it.name || "Unnamed applicant") + '</span>'
       + '<span class="when">' + esc((it.updatedAt || "").slice(0, 10)) + '</span>'
       + '<span class="meta">'
       + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '<span class="pill">No game result</span>')
       + (it.attention ? '<span class="pill dark" style="background:var(--bad)">Needs attention</span>' : '')
-      + '<span class="pill">' + esc(label(PAIRING, r.pairingStatus || "new")) + '</span>'
+      + '<span class="pill">' + esc(label(PAIRING, r.pairingStatus)) + '</span>'
       + (it.complete ? '' : '<span class="pill">Questions unfinished</span>')
       + ((it.runs || []).length > 1 ? '<span class="pill">' + it.runs.length + ' runs</span>' : '')
       + (it.imported ? '<span class="pill">From file</span>' : '')
@@ -2280,6 +2372,7 @@ function openItem(id){
   drawQueue();
   el("#vname").textContent = it.name || "Unnamed applicant";
   el("#dlone").disabled = false;
+  el("#pdfone").disabled = !!desk.pdfBusy;
   var runs = (it.runs || []).slice().sort(function(a, b){ return String(b.savedAt).localeCompare(String(a.savedAt)); });
   var sel = el("#vrun");
   sel.hidden = runs.length < 2;
@@ -2302,14 +2395,14 @@ function openRun(pid){
   });
 }
 function drawReview(it){
-  var r = desk.reviews[it.id] || {}, checks = r.checks || {};
+  var r = reviewFor(it), checks = r.checks;
   var opts = function(pairs, v){ return pairs.map(function(p){ return '<option value="' + p[0] + '"' + (p[0] === (v || "") ? " selected" : "") + '>' + p[1] + '</option>'; }).join(""); };
   el("#review").innerHTML = '<h3>Staff review</h3>'
     + '<p class="sub" style="font-size:12.5px">Saved separately from the applicant’s answers, and shown in the profile.</p>'
-    + '<label>Pairing status<select id="rv-status">' + opts(PAIRING, r.pairingStatus || "new") + '</select></label>'
-    + '<label>Suggested homeowner<input type="text" id="rv-for" maxlength="120" value="' + esc(r.suggestedFor || "") + '" placeholder="e.g. Margaret Hollis"></label>'
+    + '<label>Pairing status<select id="rv-status">' + opts(PAIRING, r.pairingStatus) + '</select></label>'
+    + '<label>Suggested homeowner<input type="text" id="rv-for" maxlength="120" value="' + esc(r.suggestedFor) + '" placeholder="e.g. Margaret Hollis"></label>'
     + CHECKS.map(function(c){ return '<label>' + c[1] + '<select id="rv-' + c[0] + '">' + opts(CHECK_STATES, checks[c[0]]) + '</select></label>'; }).join("")
-    + '<label>Watch-point<textarea id="rv-watch" maxlength="2000" placeholder="e.g. Reliability is the lowest meter. Agree a weekly help schedule at the intro call.">' + esc(r.watchPoint || (it.profile.screening || {}).watchPoint || "") + '</textarea></label>'
+    + '<label>Watch-point<textarea id="rv-watch" maxlength="2000" placeholder="e.g. Reliability is the lowest meter. Agree a weekly help schedule at the intro call.">' + esc(r.watchPoint) + '</textarea></label>'
     + '<button class="cont primary small" id="rv-save">Save review</button>'
     + '<div class="status" id="rvstat"></div>';
   el("#rv-save").onclick = function(){ saveReview(it); };
