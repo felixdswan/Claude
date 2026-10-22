@@ -25,6 +25,8 @@ new form.
     genstay/genstay-profile-fields.md    the profile data contract, and how the game fills and stores it
     genstay/genstay-profile.sample.json  a complete example profile
     scripts/test-playthrough.js          automated runs in a real browser
+    app/genstay-app.html                 the GenStay homesharer app prototype, one file, no build step
+    scripts/test-app.js                  automated checks for the app at iPhone size
     design/pepaws-porch.html             the original design bible (from the earlier Bruce version, kept for reference)
 
 The two files in `game/` are published together as one artifact. The game finds the template by
@@ -117,6 +119,34 @@ and set `PDF_LIBS=/that/folder`.
 plays a best run, a worst run, a hostile run and a timed-out run against a stand-in record store, checks each
 stored profile against the template's contract, exercises the staff desk and the PDF downloads,
 and saves screenshots of every scene.
+
+## GenStay app (prototype)
+
+`app/genstay-app.html` is a clickable version of the homesharer app mockups (Home, Logbook, Log a
+Task), built to demo on a phone. On a phone it fills the screen. On a laptop it sits in a phone
+frame. Add `#logbook` or `#contact` to the link to open on that tab.
+
+- **Home**: the week strip (tap a day to see its tasks), hours contributed against the 18-hour
+  agreement, and overdue tasks.
+- **Logbook**: the week's hours and tasks, filters, and every task with its status. The arrows
+  step through weeks.
+- **Log a Task**: a task done today or earlier goes to Margaret as **Awaiting review** and its time
+  counts straight away. A future date schedules it. **Repeat** sets it daily, weekly, monthly or on
+  chosen days.
+- **Open any task** to mark it done (with the time it took), edit or remove it, stop it repeating,
+  or confirm it as Margaret would (marked Demo). Each change offers **Undo**.
+- **Contact Us**: the coordinator's number and email to copy, a message thread with a canned
+  reply, common questions, and the 000 reminder. The contact details are placeholders (`CONTACT`
+  at the top of the script).
+
+The demo date is fixed at Tuesday 13 October 2026, the date in the mockups (`TODAY` in the
+script). Changes stay in that browser. The profile button resets the demo.
+
+    npx http-server app -p 8080      # then open http://localhost:8080/genstay-app.html
+    node scripts/test-app.js /tmp/genstay-app-out
+
+The test logs, completes, confirms, removes and schedules tasks, sends a message, reloads, resets,
+and saves screenshots of each screen.
 
 ## Before this goes to real applicants
 
