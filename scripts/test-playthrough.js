@@ -253,7 +253,7 @@ async function checkContract(browser, base, profile, label) {
       await page.waitForFunction(() => document.querySelectorAll("#board-grid .bcard .b-name").length >= 2, null, { timeout: 5000 })
         .catch(() => errors.push("board: finished applicants aren't shown with a host"));
       report.board = await page.$$eval("#board-grid .bcard", (c) => c.map((n) => n.innerText.replace(/\s+/g, " ").slice(0, 80)));
-      if (!report.board.some((t) => /^Sam .*kept out of automatic matching/i.test(t))) errors.push("board: Sam Lee, kept out by screening, is shown as paired: " + report.board.join(" | "));
+      if (!report.board.some((t) => /^Sam .*not placed this time/i.test(t))) errors.push("board: Sam Lee, kept out by screening, is shown as paired: " + report.board.join(" | "));
     }
     await ctx.close();
   }

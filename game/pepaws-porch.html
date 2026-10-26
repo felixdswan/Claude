@@ -231,6 +231,9 @@ details.parts .mparts{margin-top:6px}
 .b-why{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.4}
 .b-why li{padding-left:18px;position:relative}
 .b-why li::before{content:"✓";position:absolute;left:1px;color:var(--good);font-weight:700}
+.bcard.waiting{border-style:dashed}
+.bcard.out{background:var(--paper)}
+.b-state{font:600 19px/1.2 var(--display)}
 @media (max-width:900px){
   #app.wide{height:auto;min-height:94vh}
   .desk{grid-template-columns:1fr}
@@ -1020,12 +1023,12 @@ var DAYS = [
     {t:"say", narr:true, text:"Early morning. A crash comes from the kitchen. Marg is on the floor. She is breathing, but groggy and not responding clearly."},
     {t:"choice", timer:15, prompt:"What do you do first?", sub:"You have fifteen seconds.", timeoutFx:impact(0,0,0,-1), timeoutNote:"The moment passes. You can still act now.", options:[
       {text:"Check whether she responds, call 000 now and put the phone on speaker.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called", reply:"The call-taker answers. You stay with Marg and follow their instructions."},
-      {text:"Shake her and call David first.", fx:impact(0,-1,0,-2), tag:"emergency_delayed", reply:"David doesn’t pick up straight away. You realise this needs 000, now."},
+      {text:"Shake her and call David first.", fx:impact(0,-1,0,-2), tag:"emergency_shaken", reply:"David doesn’t pick up straight away. You realise this needs 000, now."},
       {text:"Run next door for help before calling anyone.", fx:impact(0,0,0,-1), tag:"emergency_delayed", reply:"The neighbour comes to the door. You ask them to call 000 while you go back to Marg."},
       {text:"Freeze for a moment, then take a breath.", fx:impact(0,0,0,-1), tag:"emergency_froze", reply:"You find your phone. There is still time to call 000."}
     ]},
-    {t:"say", narr:true, requiresAnyTags:["emergency_froze","emergency_delayed","timeout_emergency"], text:"You take a breath. There is still time to get help."},
-    {t:"choice", timer:15, prompt:"What next?", sub:"You can still change what happens.", requiresAnyTags:["emergency_froze","emergency_delayed","timeout_emergency"],
+    {t:"say", narr:true, requiresAnyTags:["emergency_froze","emergency_delayed","emergency_shaken","timeout_emergency"], text:"You take a breath. There is still time to get help."},
+    {t:"choice", timer:15, prompt:"What next?", sub:"You can still change what happens.", requiresAnyTags:["emergency_froze","emergency_delayed","emergency_shaken","timeout_emergency"],
      timeoutNote:"A neighbour hears you call out and rings 000. You stay with Marg.", options:[
       {text:"Call 000 and put the phone on speaker.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called", reply:"The call-taker is with you now."},
       {text:"Call out to a neighbour to ring 000 while you stay beside Marg.", fx:impact(0,1,1,1), tag:"emergency_called", flag:"emergency_called", reply:"A neighbour rings 000, and you stay with Marg."}
@@ -2875,6 +2878,7 @@ function overviewHTML(){
     + ' in the matching pool · ' + count(mt.pairings.length, "pairing") + ' suggested.</p>'
     + '<p class="sub" style="font-size:12.5px">Each pairing is scored from both sides: how well the applicant meets the host’s needs, and how well the home suits the applicant. '
     + 'The suggestions use one applicant per room and make the most suitable pairings overall, so someone may be suggested for their second-best host when their best suits another applicant much better. '
+    + 'Only pairings scoring ' + mt.minScore + ' or more are suggested: an applicant whose best is lower waits on the shortlist for a suitable host. '
     + 'Pairings staff have made are kept. Suggesting a pairing shortlists the applicant for that homeowner in their review. Nobody is contacted.</p>'
     + '<div class="secthead">Suggested pairings</div>'
     + (mt.pairings.length ? mt.pairings.map(function(p){ var r = resultFor(p.hostId, p.studentId); return r ? matchCardHTML(r, true, p) : ""; }).join("")
@@ -2889,8 +2893,11 @@ function overviewHTML(){
       + esc(u.eligible ? count(u.eligible, "suitable applicant") + ", each placed with a host that suits them better overall"
         : "no suitable applicant yet" + (u.reasons.length ? "; most were ruled out by " + u.reasons.join(", ") : "")) + '.</li>';
   }).join("") + '</ul>';
-  if (mt.unmatchedStudents.length) html += '<div class="secthead">Applicants without a suggestion</div><p class="sub">'
-    + esc(mt.unmatchedStudents.map(function(u){ return u.name + (u.eligible ? " (" + count(u.eligible, "possible host") + ")" : " (no suitable host yet)"); }).join(", ")) + '.</p>';
+  if (mt.unmatchedStudents.length) html += '<div class="secthead">Shortlisted: waiting for a suitable host</div><p class="sub">'
+    + esc(mt.unmatchedStudents.map(function(u){
+        return u.name + (u.strongEnough ? " (" + count(u.strongEnough, "strong enough host") + ", each placed with someone who suits them better overall)"
+          : u.eligible ? " (best so far " + u.best + ")" : " (no host passes every check yet)");
+      }).join(", ")) + '.</p>';
   return html;
 }
 
@@ -2910,6 +2917,7 @@ function matchCardHTML(r, pairMode, p){
     + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '')
     + (paired ? '<span class="pill dark" style="background:var(--slate)">' + esc(label(PAIRING, status)) + ' by staff</span>' : '')
     + (p && !p.locked && p.studentRank > 1 ? '<span class="pill">' + esc(who + "’s " + ordinal(p.studentRank) + " choice") + '</span>' : '')
+    + (r.eligible && desk.match && r.score < desk.match.minScore ? '<span class="pill">Under ' + desk.match.minScore + ': not suggested automatically</span>' : '')
     + '</div>'
     + '<div class="sides"><span>For ' + esc(host) + ' <b>' + r.hostFit + '</b></span><span>For ' + esc(who) + ' <b>' + r.studentFit + '</b></span></div>'
     + whyHTML(r)
@@ -2965,7 +2973,8 @@ function drawBestHosts(it){
       + (near ? ' Closest: ' + esc(near.hostName) + ' (' + esc(near.blockers.map(function(b){ return b.text; }).join("; ")) + ').' : '') + '</p>';
     return;
   }
-  box.innerHTML = head + s.ranked.slice(0, 3).map(function(r){
+  box.innerHTML = head + (s.ranked[0].score < desk.match.minScore ? '<p class="sub" style="font-size:12.5px">None reaches ' + desk.match.minScore + ' yet, so the applicant waits on the shortlist for a suitable host.</p>' : '')
+    + s.ranked.slice(0, 3).map(function(r){
     var h = hostById(r.hostId);
     return '<div class="hrow"><span class="score" style="background:' + BAND[r.band][1] + '" title="' + esc(BAND[r.band][0]) + '">' + r.score + '</span>'
       + '<span class="grow"><b>' + esc(r.hostName) + '</b><small>' + esc([h && (h.home || {}).suburb, BAND[r.band][0]].filter(Boolean).join(" · ")) + '</small></span>'
@@ -2982,28 +2991,36 @@ function drawBestHosts(it){
 }
 
 /* ---------- the live board ---------- */
-/* A best match, as the participant's results screen and this board show it. */
+/* A participant's outcome, as the results screen and this board show it: matched
+   with a host, shortlisted and waiting for a suitable host, or not placed. */
 function matchSummary(best){
   if (!best) return null;
-  var M = GenStayMatch, h = best.host, x = h.host || {}, r = best.result;
-  return {hostId: M.hostId(h), hostName: M.hostName(h), first: M.hostFirst(h), age: x.age || null,
+  var M = GenStayMatch, out = {status: best.status, minScore: best.minScore, at: nowISO()};
+  if (best.status === "screened_out"){
+    out.reasons = [].concat.apply([], best.screenedOut.map(function(b){ return b.points; }));
+    return out;
+  }
+  var h = best.host, x = h.host || {}, r = best.result;
+  return Object.assign(out, {hostId: M.hostId(h), hostName: M.hostName(h), first: M.hostFirst(h), age: x.age || null,
           partnerAge: x.householdType === "couple" && x.partner ? x.partner.age || null : null,
           suburb: (h.home || {}).suburb || "", career: String(x.formerCareer || "").split(",")[0],
           score: r.score, hostFit: r.hostFit, studentFit: r.studentFit, band: r.band,
           highlights: r.forStudent, talkAbout: r.talkAbout, closest: best.closest, standsInWay: best.standsInWay,
-          setAside: best.setAside, at: nowISO()};
+          shortfall: best.shortfall, setAside: best.setAside});
 }
-/* The match the participant saw, or (for applicants who never saw one) their best host here.
-   Someone screening keeps out of matching is shown as held back, not paired. */
+/* The outcome of a summary, including ones saved before outcomes had names. */
+function outcomeOf(m){ return !m ? null : m.status || (m.heldBack ? "screened_out" : m.closest ? "waiting" : "matched"); }
+function outcomeLabel(m){
+  var o = outcomeOf(m);
+  return o === "matched" ? "Demo match: " + m.first + " · " + m.score : o === "waiting" ? "Shortlisted: waiting for a host" : o === "screened_out" ? "Not placed: screening" : "";
+}
+/* The outcome the participant saw, or (for applicants who never saw one) their outcome against the hosts here. */
 function boardMatch(it){
   if (it.demoMatch) return it.demoMatch;
   if (!window.GenStayMatch || !desk.hosts.length) return null;
   desk.boardCache = desk.boardCache || {};
   var key = it.id + "@" + it.updatedAt + "@" + desk.hosts.length, c = desk.boardCache[key];
-  if (c === undefined){
-    var best = GenStayMatch.bestMatch({id: it.id, name: it.name, profile: mergedProfile(it)}, desk.hosts);
-    c = desk.boardCache[key] = !best ? null : best.setAside.length ? {heldBack: true} : matchSummary(best);
-  }
+  if (c === undefined) c = desk.boardCache[key] = matchSummary(GenStayMatch.bestMatch({id: it.id, name: it.name, profile: mergedProfile(it)}, desk.hosts));
   return c;
 }
 function ago(iso){
@@ -3014,29 +3031,32 @@ function drawBoard(){
   if (!desk || !el("#board-grid")) return;
   var done = desk.items.filter(function(it){ return it.complete; });
   var rows = done.map(function(it){ return {it: it, m: boardMatch(it)}; });
-  var tally = {};
-  var paired = rows.filter(function(r){ return r.m && !r.m.heldBack; });
-  paired.forEach(function(r){ if (!r.m.closest) tally[r.m.first] = (tally[r.m.first] || 0) + 1; });
+  var tally = {}, n = {matched: 0, waiting: 0, screened_out: 0};
+  rows.forEach(function(r){ var o = outcomeOf(r.m); if (o) n[o]++; if (o === "matched") tally[r.m.first] = (tally[r.m.first] || 0) + 1; });
   var top = Object.keys(tally).sort(function(a, b){ return tally[b] - tally[a]; }).slice(0, 3);
-  el("#board-stats").innerHTML = '<span><b>' + done.length + '</b> played</span><span><b>' + paired.length + '</b> matched</span>'
-    + (top.length ? '<span>Most matched: ' + esc(top.map(function(n){ return n + " (" + tally[n] + ")"; }).join(", ")) + '</span>' : '');
+  el("#board-stats").innerHTML = '<span><b>' + done.length + '</b> played</span><span><b>' + n.matched + '</b> placed</span>'
+    + '<span><b>' + n.waiting + '</b> on the shortlist</span><span><b>' + n.screened_out + '</b> not placed</span>'
+    + (top.length ? '<span>Most matched: ' + esc(top.map(function(k){ return k + " (" + tally[k] + ")"; }).join(", ")) + '</span>' : '');
   /* a new arrival animates in once, and stays highlighted for 20 seconds */
   var seen = desk.boardSeen, firstDraw = !seen, now = Date.now();
   desk.boardSeen = seen = seen || {};
   el("#board-grid").innerHTML = rows.length ? rows.slice(0, 60).map(function(r){
-    var it = r.it, m = r.m && !r.m.heldBack ? r.m : null, arrive = !firstDraw && !seen[it.id];
+    var it = r.it, m = r.m, o = outcomeOf(m), arrive = !firstDraw && !seen[it.id];
     if (!seen[it.id]) seen[it.id] = firstDraw ? 1 : now;
     var fresh = seen[it.id] > 1 && now - seen[it.id] < 20000;
-    var initials = m ? m.hostName.split(/\s+/).filter(function(w){ return w !== "and"; }) : [];
+    var initials = o === "matched" ? m.hostName.split(/\s+/).filter(function(w){ return w !== "and"; }) : [];
     initials = initials.length ? initials[0].charAt(0) + (initials.length > 1 ? initials[initials.length - 1].charAt(0) : "") : "";
-    return '<article class="bcard' + (fresh ? " fresh" : "") + (arrive ? " arrive" : "") + '">'
+    return '<article class="bcard' + (o === "waiting" ? " waiting" : o === "screened_out" ? " out" : "") + (fresh ? " fresh" : "") + (arrive ? " arrive" : "") + '">'
       + '<div class="b-top"><span class="b-person">' + esc(String(it.name || "Someone").split(" ")[0]) + '</span><span class="b-when">' + esc(ago(it.updatedAt)) + '</span></div>'
-      + (m ? '<div class="b-arrow">' + (m.closest ? "came closest to" : "matched with") + '</div>'
+      + (o === "matched" ? '<div class="b-arrow">matched with</div>'
           + '<div class="b-host"><span class="b-avatar" aria-hidden="true">' + esc(initials) + '</span><span class="b-name">' + esc(m.first) + (m.age ? ", " + m.age + (m.partnerAge ? " and " + m.partnerAge : "") : "") + '</span>'
           + '<span class="b-score">' + m.score + '</span></div>'
           + '<div class="b-sub">' + esc([m.suburb, m.career].filter(Boolean).join(" · ")) + '</div>'
           + (m.highlights && m.highlights.length ? '<ul class="b-why">' + m.highlights.slice(0, 2).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>' : '')
-        : '<div class="b-arrow">' + (r.m ? "kept out of automatic matching" : desk.hosts.length ? "no match yet" : "add hosts to see matches") + '</div>')
+        : o === "waiting" ? '<div class="b-arrow">shortlisted</div><div class="b-state">Waiting for a suitable host</div>'
+          + '<div class="b-sub">' + (m.closest ? "No current host passes every check yet" : "Best so far " + m.score + "; we place at " + (m.minScore || 65) + " or more") + '</div>'
+        : o === "screened_out" ? '<div class="b-arrow">not placed this time</div><div class="b-sub">Safety and screening come first</div>'
+        : '<div class="b-arrow">' + (desk.hosts.length ? "no match yet" : "add hosts to see matches") + '</div>')
       + '</article>';
   }).join("") : '<div class="empty-state">Matches appear here, newest first, as people finish.</div>';
 }

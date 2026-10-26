@@ -105,12 +105,19 @@ The desk's second tab holds the homeowners' profiles and suggests pairings.
 - **The game's evidence counts.** A host's risk flags decide which of the applicant's choices
   matter: with a falls risk, how they handled Marg's fall and the emergency; after a bereavement,
   how they met her grief; with mild memory loss, how calmly they handled the biased remark.
+- **Unsafe answers screen people out.** Four answers rule out automatic matching on their own,
+  because each would put a homeowner at real risk: lifting Marg straight up after her fall,
+  walking away and leaving her on the ground, shaking her and ringing her son before 000 when she
+  collapses, and giving her water and sitting her up. A later recovery doesn't undo the first
+  instinct. Staff see which answer it was; anything else in the game only weighs in the score.
 - **Suggested pairings** are the best allocation overall (an optimal assignment, the Hungarian
   method): one applicant per room, making the most suitable pairings in total, so someone may be
   suggested for their second-best host when their best suits another applicant much better. The
-  card says so. Pairings staff have made are kept first. Applicants screened as The Transactional
-  Guest, or with threatening language or drug references, are never suggested; hosts on hold or
-  with a sharer get no new suggestions.
+  card says so. Only pairings scoring **65 or more** (a Good match) are suggested: an applicant
+  whose best is lower is listed as shortlisted, waiting for a suitable host. Pairings staff have
+  made are kept first. Applicants screened out (The Transactional Guest, threatening language,
+  drug references or an unsafe answer) are never suggested; hosts on hold or with a sharer get no
+  new suggestions.
 - **Each card** shows the score and both sides' fit, what's good (✓), what to check (!), anything
   that rules it out (✕), and a score breakdown.
 - **Select a host** to see their details, every applicant ranked for them, and who was ruled out
@@ -151,13 +158,20 @@ The full game is unchanged.
   area of study), whether they'd like a homeowner from their field, how much time they'd like to
   spend together, languages, hobbies, something they'd like to learn, hours a week, and help
   offered and not offered.
-- **A fictional pairing.** The results screen shows the participant's best homeowner from
-  `genstay-hosts.sample.json`: name, age, suburb, former career, the score, up to four reasons in
-  plain words ("Bob was a paediatric surgeon, and you're heading for medicine", "8 minutes to UNSW
-  Kensington by light rail and bus") and anything to talk through. It uses the same matching as the
-  staff desk, and says the homeowner is made up. Everyone gets their own best match (rooms aren't
-  used up at a stall). If no host passes every filter, it shows the closest and what stands in
-  the way. If the hosts file can't load within six seconds, the results show without a match.
+- **A curated outcome, one of three.** The results screen uses the same matching as the staff
+  desk, against the fictional hosts in `genstay-hosts.sample.json`:
+  - **Matched:** their best homeowner, scoring 65 or more: name, age, suburb, former career, the
+    score, up to four reasons in plain words ("Bob was a paediatric surgeon, and you're heading
+    for medicine") and anything to talk through. It says the homeowner is made up. Everyone gets
+    their own best match (rooms aren't used up at a stall).
+  - **Shortlisted, waiting for a suitable host:** no homeowner scores 65 yet (or none passes every
+    check). The screen gives the closest score and what held it back, without naming anyone.
+  - **No placement this time:** an unsafe answer, or a screening result that keeps people out of
+    matching. The screen says which choices, and what to do instead (keep her still, call 000
+    first), and that a coordinator would talk it through in a real application.
+
+  The Live board shows the same outcome, with first names only and no reasons for anyone not
+  placed. If the hosts file can't load within six seconds, the results show without an outcome.
 - **About 4 to 5 minutes in all.** The nine days take about 3 to 4 minutes depending on reading
   speed, and the questions about a minute.
 - **The same GenStay profile.** It fills fewer fields (no written answers, no contact details).

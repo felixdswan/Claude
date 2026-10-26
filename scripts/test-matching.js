@@ -257,19 +257,57 @@ filters.forEach(([name, hostId, kind, change], i) => {
     "a second staff pairing with the same one-room host isn't listed as also paired: " + JSON.stringify(twice.alsoPaired));
 }
 
-/* 7. the market-day pairing: everyone gets a host */
+/* 7. the market-day outcome: matched, waiting for a suitable host, or screened out */
 {
+  const ella = M.bestMatch(who("Ella"), HOSTS);
+  check(ella.status === "matched" && ella.result.score >= M.MIN_SCORE && ella.host.meta.hostId === "GH-2027-001", "Ella wasn't matched with Helen: " + ella.status);
   const late = M.bestMatch(who("Ella", (p) => { p.placement.moveInDate = "2028-06-01"; }), HOSTS);
-  check(late.host && late.closest && late.standsInWay.length && /room is free/.test(late.standsInWay[0]), "no closest host, or no reason, when every room is free too early: " + JSON.stringify(late.standsInWay));
-  const guest = M.bestMatch(who("Ella", (p) => { p.screening.profile = "transactional_guest"; }), HOSTS);
-  check(guest.host && guest.host.meta.hostId === "GH-2027-001" && guest.setAside.indexOf("screening") !== -1 && !guest.closest,
-    "a participant kept out by screening didn't still get a demo match: " + JSON.stringify({ host: guest.host && guest.host.meta.hostId, setAside: guest.setAside }));
+  check(late.status === "waiting" && late.closest && late.standsInWay.length && /room is free/.test(late.standsInWay[0]), "no host passing the filters didn't mean waiting, with the reason: " + JSON.stringify(late.standsInWay));
+  /* a weak but eligible best match: waiting, with what held it back */
+  const weak = M.bestMatch(who("Ella", (p) => { p.placement.campus = "WSU Parramatta"; p.interests.hobbies = []; p.interests.wantsToLearn = []; p.lifestyle.socialLevel = 1;
+    p.support.helpTypes = ["Bins and light chores"]; p.interests.fieldMentor = "no"; }), HOSTS);
+  check(weak.status === "waiting" && !weak.closest && weak.result.eligible && weak.result.score < M.MIN_SCORE && weak.shortfall.length,
+    "a best match under " + M.MIN_SCORE + " wasn't a wait, with what held it back: " + JSON.stringify({ status: weak.status, score: weak.result && weak.result.score, shortfall: weak.shortfall }));
+  check(weak.shortfall.every((t) => typeof t === "string" && t.length > 4), "the shortfall isn't in words: " + JSON.stringify(weak.shortfall));
   const unfinished = M.bestMatch(who("Ella", (p) => { p.meta.stages.postGame = false; }), HOSTS);
-  check(unfinished.host && unfinished.setAside.indexOf("questions") !== -1, "an unfinished profile didn't get a demo match");
+  check(unfinished.status === "matched" && unfinished.setAside.indexOf("questions") !== -1, "an unfinished profile didn't get a demo match");
   check(M.bestMatch(who("Ella"), []) === null, "a match was invented with no hosts");
   check(M.bestMatch(who("Tom"), [byId("GH-2027-009")]) === null, "a host on hold was offered as a demo match");
   const jenny = M.bestMatch({ id: "jenny", name: "Jenny Graffet", profile: SAMPLE }, HOSTS);
   check(jenny.host && jenny.result.score > 0, "the sample student profile has no match");
+}
+
+/* 7b. answers that screen someone out on their own; anything else only weighs in the score */
+{
+  const at = (day, tag) => (p) => { p.screening.landmarks.find((l) => l.day === day).tags = [tag]; };
+  for (const [day, tag, words] of [[11, "fall_lifted", /keep her still/], [11, "fall_dismissed", /needs checking/], [14, "emergency_shaken", /call 000 straight away/], [14, "emergency_water", /anything to drink/]]) {
+    const b = M.bestMatch(who("Ella", at(day, tag)), HOSTS);
+    check(b.status === "screened_out" && b.host === null && b.result === null, tag + " didn't screen the participant out: " + b.status);
+    check(b.screenedOut.length === 1 && words.test(b.screenedOut[0].points.join(" ")), tag + ": the participant isn't told what to do instead: " + JSON.stringify(b.screenedOut));
+    const r = M.score(who("Ella", at(day, tag)), byId("GH-2027-001"));
+    check(!r.eligible && r.blockers.some((x) => x.kind === "screening" && /Unsafe answer in screening/.test(x.text)), tag + ": staff aren't told why: " + JSON.stringify(r.blockers));
+    const res = M.matchAll([who("Ella", at(day, tag))], HOSTS);
+    check(!res.pairings.length && res.students["DEMO-Ella"].excluded.some((t) => /Unsafe/.test(t)), tag + ": still suggested on the staff desk");
+  }
+  const both = M.bestMatch(who("Ella", (p) => { at(11, "fall_lifted")(p); at(14, "emergency_water")(p); }), HOSTS);
+  check(both.screenedOut[0].points.length === 2 && /answers/.test(both.screenedOut[0].text), "two unsafe answers aren't both given");
+  /* a later recovery doesn't undo the first instinct, and safe or merely weak answers don't screen out */
+  check(M.bestMatch(who("Ella", (p) => { p.screening.landmarks.find((l) => l.day === 14).tags = ["emergency_shaken", "emergency_called"]; }), HOSTS).status === "screened_out",
+    "calling 000 after shaking Marg undid the screen-out");
+  for (const [day, tag] of [[11, "fall_asked"], [11, "fall_called"], [14, "emergency_delayed"], [14, "emergency_froze"], [14, "timeout"], [6, "grief_dismissed"]])
+    check(M.bestMatch(who("Ella", at(day, tag)), HOSTS).status !== "screened_out", tag + " screened the participant out");
+  const guest = M.bestMatch(who("Ella", (p) => { p.screening.profile = "transactional_guest"; }), HOSTS);
+  check(guest.status === "screened_out" && guest.host === null && /room to rent/.test(guest.screenedOut[0].points[0]), "The Transactional Guest wasn't screened out: " + guest.status);
+}
+
+/* 7c. the staff desk suggests only pairings at least as strong as the demo's bar */
+{
+  const res = M.matchAll(Object.keys(P).map((n) => who(n)), HOSTS);
+  check(res.minScore === M.MIN_SCORE && res.pairings.filter((p) => !p.locked).every((p) => p.score >= M.MIN_SCORE), "a pairing under the bar was suggested");
+  const weakOnly = M.matchAll([who("Ella", (p) => { p.placement.campus = "WSU Parramatta"; p.interests.hobbies = []; p.interests.wantsToLearn = []; p.lifestyle.socialLevel = 1;
+    p.support.helpTypes = ["Bins and light chores"]; p.interests.fieldMentor = "no"; })], HOSTS);
+  const u = weakOnly.unmatchedStudents[0];
+  check(!weakOnly.pairings.length && u && u.eligible > 0 && u.strongEnough === 0 && u.best < M.MIN_SCORE, "a weak applicant was paired, or isn't listed as waiting: " + JSON.stringify(u));
 }
 
 /* 8. reading host lists */

@@ -88,6 +88,7 @@ The JSON can also carry `checks` (identity, references, home visit…: anything 
 **1. Filters.** Any clash rules the pairing out, and the desk says which, in words for staff and (in the demo) for the participant:
 
 - **Availability and screening:** the applicant is matched elsewhere, on hold or not suitable; the host is on hold or has a sharer. No game result, The Transactional Guest, threatening language or drug references, or unfinished matching questions.
+- **Unsafe answers** (`UNSAFE` in the code), each enough on its own because it would put a homeowner at real risk: lifting Marg straight up after her fall (`fall_lifted`), walking away and leaving her on the ground (`fall_dismissed`), shaking her and ringing her son before 000 when she collapses (`emergency_shaken`), giving her water and sitting her up (`emergency_water`). Any of these in the day's choices counts, even if a later choice recovers. Weaker choices (running next door for help, freezing, running out of time) only lower the score.
 - **The host's requirements:** sharer gender, age range and student type; smoking; pets; two sharers wanted; hours; nights at home; a driver; a falls risk with low safety awareness (Awareness 3 or less); deal-breakers the student's answers clash with; stairs with a mobility need.
 - **The student's requirements:** homeowner gender (a couple counts both partners); a smoke-free home; the payment over budget; a minimum stay longer than theirs; their own deal-breakers; a commute past their limit; dates too far apart.
 
@@ -126,11 +127,17 @@ The JSON can also carry `checks` (identity, references, home visit…: anything 
 
 **4. Overall** = the geometric mean of the two sides. A pairing scores well only when it suits both people: 90 for one side and 40 for the other gives 60, not 65. Strong is 80 and over, Good 65 to 79, Possible 50 to 64, Weak under 50. Each card shows both sides' numbers, what's good (✓), what to check (!), anything that rules it out (✕), and a score breakdown.
 
-**5. Suggested pairings: the best allocation overall.** One student per room. The desk makes the set of pairings with the highest total score (an optimal assignment, the Hungarian method), not first come first served, so someone may be suggested for their second-best host when their best suits another applicant much better; the card says so ("Pat's 2nd choice"). Pairings staff have already made (shortlisted, intro booked or matched for a homeowner) are kept first. If staff have shortlisted more applicants for a host than it has rooms, the best takes the room and the rest are listed under **Also paired by staff**. Hosts and applicants left over are listed with the reasons.
+**5. Suggested pairings: the best allocation overall.** One student per room. The desk makes the set of pairings with the highest total score (an optimal assignment, the Hungarian method), not first come first served, so someone may be suggested for their second-best host when their best suits another applicant much better; the card says so ("Pat's 2nd choice"). Only pairings scoring at least `MIN_SCORE` (65, the start of a Good match) are suggested; an applicant whose best is lower is listed as **shortlisted, waiting for a suitable host**, with their best score so far. Pairings staff have already made (shortlisted, intro booked or matched for a homeowner) are kept first, whatever their score, and staff can still suggest a weaker pairing by hand (the card says it's under the bar). If staff have shortlisted more applicants for a host than it has rooms, the best takes the room and the rest are listed under **Also paired by staff**. Hosts and applicants left over are listed with the reasons.
 
 **Suggest this pairing** writes the applicant's review: their status becomes Shortlisted (unless it's already further along) and the host becomes their suggested homeowner, shown in their profile. Typing a host's name into an applicant's **Suggested homeowner** box links them the same way. Nobody is contacted.
 
-**The demo's pairing.** `bestMatch()` gives one participant their single best host, without using rooms up: at a market stall everyone can be paired with the same homeowner. If no host passes every filter, it gives the closest one and what stands in the way. Screening and status are set aside for the demo (the participant is told a coordinator would talk with them first), but a host on hold is never offered.
+**The demo's outcome.** `bestMatch()` gives one participant one of three outcomes, without using rooms up (at a market stall everyone can be paired with the same homeowner):
+
+- `matched`: their best host passes every filter and scores at least 65.
+- `waiting`: shortlisted, waiting for a suitable host. Their best scores under 65 (`shortfall` names the two parts that held it back), or no host passes every filter (`standsInWay` says why, for the closest).
+- `screened_out`: a screening result or an unsafe answer rules a placement out. No host is given; `screenedOut` carries the reasons, with what to do instead in words for the participant.
+
+A host on hold is never offered.
 
 The weights and filters are a starting point, not a finished policy. Check them with placement coordinators against pairings that worked and pairings that didn't, and change `HOST_WEIGHTS`, `STUDENT_WEIGHTS` and the filters in `genstay-matching.js` to suit.
 

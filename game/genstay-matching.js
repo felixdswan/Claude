@@ -167,7 +167,7 @@
     grief_present: 1, grief_invited: 1, grief_practical: 0.8, grief_shared: 0.7, grief_withdrawn: 0.4, grief_dismissed: 0.1,
     boundary_calm: 1, boundary_curious: 1, boundary_sharp: 0.5, boundary_lecture: 0.4, boundary_laughed: 0.3, boundary_avoided: 0.3,
     fall_checked: 1, fall_asked: 0.9, fall_called: 0.9, fall_lifted: 0.2, fall_dismissed: 0.1,
-    emergency_called: 1, emergency_delayed: 0.4, emergency_froze: 0.3, emergency_water: 0.2, timeout: 0.3
+    emergency_called: 1, emergency_delayed: 0.4, emergency_froze: 0.3, emergency_shaken: 0.2, emergency_water: 0.2, timeout: 0.3
   };
   var RISK_WORDS = {fall_risk: "a falls risk", recent_bereavement: "a recent bereavement", mild_memory_loss: "mild memory loss",
     remote_nominee: "family overseas or interstate", shared_bathroom: "a shared bathroom", home_cleanup_pending: "the home isn't ready yet",
@@ -185,6 +185,21 @@
   var AVAILABLE = ["new", "screening", "shortlisted", "intro_booked"];
   var STAFF_PAIRED = ["shortlisted", "intro_booked", "matched"];
   var SERIOUS = {threatening_language: "threatening language", drug_references: "drug references"};
+  /* Answers that on their own keep someone out of matching: each would put a
+     homeowner at real risk. Every other choice in the game only weighs in the score.
+     `you` is what the participant reads. */
+  var UNSAFE = {
+    fall_lifted: {staff: "lifted Marg straight up after her fall (Day 11)",
+      you: "After Marg’s fall, you helped her straight up. With a possible head, neck or hip injury, the safe thing is to keep her still, check where it hurts and call for help."},
+    fall_dismissed: {staff: "walked away and left Marg on the ground after her fall (Day 11)",
+      you: "After Marg’s fall, you took her word for it and left. Someone who has fallen needs checking, and company, until it’s clear they’re safe."},
+    emergency_shaken: {staff: "shook Marg and rang her son before calling 000 when she collapsed (Day 14)",
+      you: "When Marg collapsed, you shook her and rang her son first. In an emergency, call 000 straight away and follow the call-taker’s instructions."},
+    emergency_water: {staff: "gave Marg water and sat her up when she collapsed (Day 14)",
+      you: "When Marg collapsed, you gave her water and sat her up. Someone who has collapsed shouldn’t be given anything to drink, or moved, unless 000 says so."}
+  };
+  /* A placement needs at least a Good match. Below this, the applicant waits for a suitable host. */
+  var MIN_SCORE = 65;
   var TYPE_NAMES = {connector: "The Connector", considerate_companion: "The Considerate Companion",
                     independent_tenant: "The Independent Tenant", transactional_guest: "The Transactional Guest"};
   var GENDER_WORD = {female: "female", male: "male"};
@@ -422,10 +437,13 @@
     var hh = p.household || {}, sup = p.support || {}, life = p.lifestyle || {}, sc = p.screening || {};
     var field = stu.discipline && stu.discipline !== "other" ? (FIELDS[stu.discipline] ? stu.discipline : fieldOf(stu.discipline)) : null;
     var goalField = fieldOf(it.careerGoal);
-    var tags = {};
+    var tags = {}, unsafe = [];
     (sc.landmarks || []).forEach(function (l) {
       if (!isObj(l)) return;
-      list(l.tags || l.tag).forEach(function (t) { if (TAG_QUALITY[t] != null) tags[l.day] = (tags[l.day] || []).concat([{tag: t, response: l.response}]); });
+      list(l.tags || l.tag).forEach(function (t) {
+        if (TAG_QUALITY[t] != null) tags[l.day] = (tags[l.day] || []).concat([{tag: t, response: l.response}]);
+        if (UNSAFE[t] && unsafe.indexOf(t) === -1) unsafe.push(t);
+      });
     });
     var licence = sup.driversLicence;
     var offers = concepts(list(sup.helpTypes).concat(list(it.canOffer)));
@@ -435,7 +453,7 @@
       status: meta.pairingStatus || "new", suggestedFor: meta.suggestedFor || "", suggestedHostId: s.suggestedHostId || "",
       complete: !!(meta.stages && meta.stages.postGame), hasGame: !blank(sc.profile), type: sc.profile || null,
       meters: sc.meters || {}, flags: sc.flags || [], motivation: sc.motivation || null, quickDemo: (sc.flags || []).indexOf("quick_demo") !== -1,
-      evidence: tags,
+      evidence: tags, unsafe: unsafe,
       gender: genderCode(stu.gender), age: num(stu.age), studentType: norm(stu.studentType) || null, languages: list(stu.languages),
       field: field || goalField, goalField: goalField, discipline: stu.discipline || null, careerGoal: it.careerGoal || "",
       fieldMentor: it.fieldMentor || null,
@@ -466,9 +484,15 @@
       out.push({kind: "status", text: s.status === "matched" ? "Already matched" + (s.suggestedFor ? " with " + s.suggestedFor : "")
         : s.status === "not_suitable" ? "Marked not suitable" : s.status === "on_hold" ? "On hold" : "Status: " + s.status});
     if (!s.hasGame) out.push({kind: "screening", text: "Hasn’t finished the screening game"});
-    else if (serious.length) out.push({kind: "screening", text: "Screening flagged " + joinAnd(serious.map(function (f) { return SERIOUS[f]; })) + ", so they’re kept out of automatic matching"});
-    else if (s.type === "transactional_guest") out.push({kind: "screening", text: "Screening result is The Transactional Guest, which is kept out of automatic matching"});
+    else if (serious.length) out.push({kind: "screening", text: "Screening flagged " + joinAnd(serious.map(function (f) { return SERIOUS[f]; })) + ", so they’re kept out of automatic matching",
+      points: ["Some of what you wrote needs a conversation with our team before any placement."]});
+    else if (s.type === "transactional_guest") out.push({kind: "screening", text: "Screening result is The Transactional Guest, which is kept out of automatic matching",
+      points: ["Your choices leaned towards treating the home as a room to rent, rather than a home to share with someone."]});
+    if (s.hasGame && s.unsafe.length) out.push({kind: "screening", unsafe: s.unsafe,
+      text: "Unsafe " + (s.unsafe.length > 1 ? "answers" : "answer") + " in screening: " + joinAnd(s.unsafe.map(function (t) { return UNSAFE[t].staff; })) + ", so they’re kept out of automatic matching",
+      points: s.unsafe.map(function (t) { return UNSAFE[t].you; })});
     if (!s.complete) out.push({kind: "questions", text: "Hasn’t finished the matching questions"});
+    out.forEach(function (b) { b.you = b.points ? b.points.join(" ") : b.text; });
     return out;
   }
 
@@ -500,7 +524,7 @@
     var hostWord = h.first;
 
     /* 1. filters: availability and screening */
-    studentBlockers(s, out.linked).forEach(function (b) { out.blockers.push({kind: b.kind, text: b.text, you: b.text}); });
+    studentBlockers(s, out.linked).forEach(function (b) { out.blockers.push({kind: b.kind, text: b.text, you: b.you}); });
     if (!h.available && !out.linked) block("hostStatus", hostWord + " is " + (HOST_STATUS[h.status] || h.status.replace(/_/g, " ")).toLowerCase());
 
     /* the host's requirements */
@@ -843,21 +867,22 @@
     var cost = rows.map(function (rw) {
       return cols.map(function (cl) {
         var r = byPair[(studentsAreRows ? rw : cl) + "\u0000" + (studentsAreRows ? cl : rw)];
-        return r && r.eligible ? 100 - r.score : BIG;
+        return r && r.eligible && r.score >= MIN_SCORE ? 100 - r.score : BIG;
       });
     });
     return assign(cost).map(function (c, i) {
       if (c < 0) return null;
       var sid = studentsAreRows ? rows[i] : cols[c], hid = studentsAreRows ? cols[c] : rows[i], r = byPair[sid + "\u0000" + hid];
-      return r && r.eligible ? r : null;
+      return r && r.eligible && r.score >= MIN_SCORE ? r : null;
     }).filter(Boolean);
   }
 
   /* Every pairing ranked both ways, and the best allocation: staff's own
-     pairings first, then one student per remaining room. */
+     pairings first, then one student per remaining room, using only
+     pairings that score at least MIN_SCORE. */
   function matchAll(students, hosts) {
     var ss = (students || []).map(studentView), hs = (hosts || []).map(hostView);
-    var res = {version: VERSION, method: "optimal", hosts: {}, students: {}, pairings: [], alsoPaired: [], unmatchedHosts: [], unmatchedStudents: []};
+    var res = {version: VERSION, method: "optimal", minScore: MIN_SCORE, hosts: {}, students: {}, pairings: [], alsoPaired: [], unmatchedHosts: [], unmatchedStudents: []};
     hs.forEach(function (h) { res.hosts[h.id] = {id: h.id, name: h.name, status: h.status, available: h.available, rooms: h.rooms, ranked: [], ruledOut: [], why: {}}; });
     ss.forEach(function (s) { res.students[s.id] = {id: s.id, name: s.name, ranked: [], ruledOut: [], excluded: studentBlockers(s, false).map(function (b) { return b.text; })}; });
     var all = [];
@@ -905,34 +930,59 @@
     res.unmatchedHosts = hs.filter(function (h) { return h.available && rooms[h.id] === h.rooms; }).map(function (h) {
       var why = res.hosts[h.id].why;
       return {id: h.id, name: h.name, eligible: res.hosts[h.id].ranked.length, ruledOut: res.hosts[h.id].ruledOut.length,
+              strongEnough: res.hosts[h.id].ranked.filter(function (r) { return r.score >= MIN_SCORE; }).length,
               reasons: Object.keys(why).sort(function (x, y) { return why[y] - why[x]; }).slice(0, 3).map(function (k) { return BLOCK_LABELS[k] + " (" + why[k] + ")"; })};
     });
     res.unmatchedStudents = ss.filter(function (s) { return !placed[s.id] && !staffLinked[s.id] && !res.students[s.id].excluded.length; })
-      .map(function (s) { return {id: s.id, name: s.name, eligible: res.students[s.id].ranked.length}; });
+      .map(function (s) {
+        var ranked = res.students[s.id].ranked;
+        return {id: s.id, name: s.name, eligible: ranked.length, best: ranked.length ? ranked[0].score : null,
+                strongEnough: ranked.filter(function (r) { return r.score >= MIN_SCORE; }).length};
+      });
     return res;
   }
 
-  /* One person's best host among those available, for the market-day demo:
-     every participant gets their own best match (hosts aren't used up).
-     When no host passes every filter, the closest one is returned with
-     what stands in the way. */
+  /* What held a pairing's score back, in words for the participant. */
+  var SHORTFALL_WORDS = {help: "the help homeowners are looking for", care: "how you handled Marg’s care needs in the game",
+    company: "how much time together you’d each like", reciprocity: "what homeowners would like a hand with", field: "the study areas homeowners hoped for",
+    lifestyle: "daily routines", language: "languages", commute: "the commute to your campus", interests: "shared interests",
+    career: "overlap with homeowners’ careers", money: "the cost", timing: "move-in dates", motivation: "what you’re looking for in a homeshare"};
+
+  /* One person's outcome among the hosts available, for the market-day demo.
+     status "matched": their best host, if it passes every filter and scores
+     at least MIN_SCORE; everyone gets their own best (hosts aren't used up).
+     "waiting": shortlisted, waiting for a suitable host; the closest host and
+     what held it back are given for staff. "screened_out": an answer in
+     screening rules a placement out, so no host is given. */
   function bestMatch(student, hosts) {
     var s = studentView(student);
     var hs = (hosts || []).map(hostView).filter(function (h) { return h.available; });
     if (!hs.length) return null;
+    var mine = studentBlockers(s, false), own = mine.map(function (b) { return b.kind; });
+    var screened = mine.filter(function (b) { return b.kind === "screening"; });
     var all = hs.map(function (h) { return judge(s, h); });
-    var own = studentBlockers(s, false).map(function (b) { return b.kind; });
     var hostOnly = function (r) { return r.blockers.filter(function (b) { return own.indexOf(b.kind) === -1; }); };
     var ok = all.filter(function (r) { return r.eligible; }).sort(byScore);
     var pick = ok[0], closest = false;
     if (!pick) {
-      /* rank by the pairing's own blockers, setting aside the student's (screening, status) */
+      /* rank by the pairing's own blockers, setting aside the student's (status, unfinished questions) */
       pick = all.slice().sort(function (a, b) { return hostOnly(a).length - hostOnly(b).length || b.score - a.score; })[0];
       closest = hostOnly(pick).length > 0;
     }
-    var h = hs.filter(function (x) { return x.id === pick.hostId; })[0].raw;
-    return {host: h, result: pick, closest: closest, setAside: own, ranked: ok.map(function (r) { return {hostId: r.hostId, hostName: r.hostName, score: r.score}; }),
-            standsInWay: closest ? hostOnly(pick).map(function (b) { return b.you; }) : []};
+    var status = screened.length ? "screened_out" : !closest && pick.score >= MIN_SCORE ? "matched" : "waiting";
+    var shortfall = status !== "waiting" || closest ? [] : pick.parts.host.concat(pick.parts.student)
+      .map(function (x) { return {key: x.key, lost: x.weight * (1 - x.value)}; })
+      .sort(function (a, b) { return b.lost - a.lost; })
+      .filter(function (x, i, list) { return x.lost > 0 && list.map(function (y) { return y.key; }).indexOf(x.key) === i; })
+      .slice(0, 2).map(function (x) { return SHORTFALL_WORDS[x.key]; });
+    return {status: status, minScore: MIN_SCORE,
+            host: status === "screened_out" ? null : hs.filter(function (x) { return x.id === pick.hostId; })[0].raw,
+            result: status === "screened_out" ? null : pick, closest: closest,
+            setAside: own.filter(function (k) { return k !== "screening"; }),
+            screenedOut: screened.map(function (b) { return {text: b.text, points: b.points || [b.you], unsafe: b.unsafe || []}; }),
+            ranked: ok.map(function (r) { return {hostId: r.hostId, hostName: r.hostName, score: r.score}; }),
+            standsInWay: status === "waiting" && closest ? hostOnly(pick).map(function (b) { return b.you; }) : [],
+            shortfall: shortfall};
   }
 
   /* ---------- reading and writing host lists ---------- */
@@ -1162,7 +1212,7 @@
   }
 
   return {
-    version: VERSION, HOST_COLUMNS: HOST_COLUMNS, HOST_STATUS: HOST_STATUS, CAMPUSES: CAMPUSES, FIELDS: FIELDS, PROGRAM_FIELDS: PROGRAM_FIELDS, VOCAB: VOCAB,
+    version: VERSION, HOST_COLUMNS: HOST_COLUMNS, HOST_STATUS: HOST_STATUS, CAMPUSES: CAMPUSES, FIELDS: FIELDS, PROGRAM_FIELDS: PROGRAM_FIELDS, VOCAB: VOCAB, MIN_SCORE: MIN_SCORE, UNSAFE: UNSAFE,
     HOST_WEIGHTS: HOST_WEIGHTS, STUDENT_WEIGHTS: STUDENT_WEIGHTS, PART_LABELS: PART_LABELS, EXAMPLE_HOST: EXAMPLE_HOST, TAG_QUALITY: TAG_QUALITY,
     score: score, matchAll: matchAll, bestMatch: bestMatch, assign: assign, hostStatus: hostStatus,
     parseHosts: parseHosts, hostsToCsv: hostsToCsv, hostCsvTemplate: hostCsvTemplate, blankHost: blankHost, hostFacts: hostFacts,

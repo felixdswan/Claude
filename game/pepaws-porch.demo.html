@@ -143,6 +143,9 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 .mc-why li::before{content:"✓";position:absolute;left:2px;color:var(--good);font-weight:700}
 .mc-talk{font-size:13.5px;line-height:1.45;color:var(--ink-2);margin:0}
 .mc-note{font-size:12px;color:var(--ink-3);margin:0}
+.matchcard.mc-wait{border-style:dashed}
+.matchcard.mc-out{background:var(--paper)}
+.mc-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.45}
 
 /* staff review desk */
 .desk{flex:1;min-height:0;display:grid;grid-template-columns:330px 1fr;background:var(--paper)}
@@ -239,6 +242,9 @@ details.parts .mparts{margin-top:6px}
 .b-why{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.4}
 .b-why li{padding-left:18px;position:relative}
 .b-why li::before{content:"✓";position:absolute;left:1px;color:var(--good);font-weight:700}
+.bcard.waiting{border-style:dashed}
+.bcard.out{background:var(--paper)}
+.b-state{font:600 19px/1.2 var(--display)}
 @media (max-width:900px){
   #app.wide{height:auto;min-height:94vh}
   .desk{grid-template-columns:1fr}
@@ -893,7 +899,7 @@ var DAYS = [
       {text:"Call 000 on speaker, and stay with her.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called",
        reply:"The call-taker guides you until the paramedics arrive.",
        replyByFlag:{flag:"learned_meds_folder", text:"The call-taker guides you. You hand the paramedics her medical folder."}},
-      {text:"Shake her, and call her son, David.", fx:impact(0,-1,0,-2), tag:"emergency_delayed", reply:"David doesn’t answer. Minutes pass before you ring 000."},
+      {text:"Shake her, and call her son, David.", fx:impact(0,-1,0,-2), tag:"emergency_shaken", reply:"David doesn’t answer. Minutes pass before you ring 000."},
       {text:"Run next door for help.", fx:impact(0,0,0,-1), tag:"emergency_delayed", reply:"The neighbour rings 000 while you go back to Marg."},
       {text:"Give her water, and help her sit up.", fx:impact(0,-1,0,-2), tag:"emergency_water", reply:"Paramedics say not to move her or give her anything."}
     ]}
@@ -912,7 +918,8 @@ var LOW_NOTES = {
   grief_dismissed:"Said Dorothy was in a better place", friction_defensive:"Defensive about the late-night noise",
   boundary_laughed:"Laughed along with the remark", boundary_avoided:"Let the remark pass",
   fall_lifted:"Lifted Marg straight after the fall", fall_dismissed:"Walked away after the fall",
-  emergency_delayed:"Delayed calling 000 in the emergency", emergency_water:"Gave Marg water and moved her in the emergency"
+  emergency_delayed:"Delayed calling 000 in the emergency", emergency_shaken:"Shook Marg and rang David before 000",
+  emergency_water:"Gave Marg water and moved her in the emergency"
 };
 </script>
 <script>
@@ -1795,7 +1802,7 @@ function renderResults(){
     + '<div id="matchcard"></div>'
     + '<div><span class="band" style="background:' + type.colour + '">' + esc(type.title) + '</span></div>'
     + '<p class="line">' + esc(type.text) + '</p>'
-    + '<div class="notice">This is a reflection on the path you took, not a pass-or-fail result. It comes from the quick demo; the full screening is fourteen days with written answers. A person at the placement service makes any placement decision.</div>'
+    + '<div class="notice" id="resultnote">' + resultNote() + '</div>'
     + (moments ? '<div><div class="who narr" style="margin-bottom:8px">The big moments</div><div class="rows">' + moments + '</div></div>' : '')
     + (S.concerns.some(function(c){ return c.id === "welfare_concern"; })
         ? '<div class="notice"><b>If things feel hard right now,</b> you can talk to someone any time. Lifeline: <span class="mono">13 11 14</span>. Beyond Blue: <span class="mono">1300 22 4636</span>.</div>'
@@ -1875,25 +1882,53 @@ function findDemoMatch(){
   }, function(){ return null; });
 }
 function capFirst(t){ t = String(t || ""); return t.charAt(0).toUpperCase() + t.slice(1); }
+/* The note under the profile type. A run screened out by an unsafe answer isn't told there's no pass or fail. */
+function resultNote(){
+  return (outcomeOf(S.demoMatch) === "screened_out"
+    ? "Most of the game is a reflection on the path you took, but the choices above rule a placement out on their own."
+    : "This is a reflection on the path you took, not a pass-or-fail result.")
+    + " It comes from the quick demo; the full screening is fourteen days with written answers. A person at the placement service makes any placement decision.";
+}
+/* The participant's outcome: their homeowner; shortlisted and waiting for a
+   suitable host (no match strong enough yet); or no placement, when an answer
+   in the game rules one out. */
 function drawMatchCard(){
   var box = el("#matchcard");
   if (!box) return;
-  var m = S.demoMatch;
+  var m = S.demoMatch, o = outcomeOf(m);
+  if (el("#resultnote")) el("#resultnote").textContent = resultNote();
   if (S.matchPending){ box.innerHTML = '<div class="matchcard"><div class="mc-kicker">Your demo match</div><p class="sub">Finding your homeowner…</p></div>'; return; }
   if (!m){ box.innerHTML = ""; return; }
+  if (o === "screened_out"){
+    box.innerHTML = '<div class="matchcard mc-out"><div class="mc-kicker">No placement this time</div>'
+      + '<div class="mc-name">We can’t offer you a homeowner from this run</div>'
+      + '<p class="mc-talk">Safety comes first in a homeshare, and some choices rule a placement out on their own.</p>'
+      + '<ul class="mc-list">' + (m.reasons || []).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>'
+      + '<p class="mc-note">In a real application, a coordinator would talk this through with you. You’re welcome to play again.</p></div>';
+    return;
+  }
+  if (o === "waiting"){
+    var bar = m.minScore || 65;
+    box.innerHTML = '<div class="matchcard mc-wait"><div class="mc-kicker">Shortlisted</div>'
+      + '<div class="mc-name">Waiting for a suitable host</div>'
+      + '<p class="mc-talk">You’re on our shortlist, but none of our current homeowners is a strong enough match for you yet. '
+      + (m.closest ? esc("None passes every check" + (m.standsInWay && m.standsInWay[0] ? " (for the closest, " + m.standsInWay[0] + ")" : "") + ".")
+          : esc("Your closest scored " + m.score + ", and we only place pairings of " + bar + " or more.")) + '</p>'
+      + (!m.closest && m.shortfall && m.shortfall.length ? '<p class="mc-talk"><b>What held it back:</b> ' + esc(m.shortfall.join(" and ")) + '.</p>' : '')
+      + '<p class="mc-note">In a real placement, we’d match you when the right homeowner joins. We only place pairings that suit both people.</p></div>';
+    return;
+  }
   var initials = m.hostName.split(/\s+/).filter(function(w){ return w !== "and"; });
   initials = (initials[0] || "").charAt(0) + (initials.length > 1 ? initials[initials.length - 1].charAt(0) : "");
   var couple = m.first.indexOf(" and ") !== -1;
   box.innerHTML = '<div class="matchcard">'
-    + '<div class="mc-kicker">' + (m.closest ? "Your closest demo match" : "Your demo match") + '</div>'
+    + '<div class="mc-kicker">Your demo match</div>'
     + '<div class="mc-head"><div class="mc-avatar" aria-hidden="true">' + esc(initials) + '</div>'
     + '<div class="mc-who"><div class="mc-name">' + esc(m.first) + (m.age ? ", " + m.age + (m.partnerAge ? " and " + m.partnerAge : "") : "") + '</div>'
     + '<div class="mc-sub">' + esc([m.suburb, m.career].filter(Boolean).join(" · ")) + '</div></div>'
     + '<div class="mc-score" title="How well this pairing suits you both, out of 100"><b>' + m.score + '</b><span>match</span></div></div>'
     + (m.highlights.length ? '<ul class="mc-why">' + m.highlights.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>' : '')
-    + (m.closest && m.standsInWay.length ? '<p class="mc-talk"><b>What stands in the way:</b> ' + esc(capFirst(m.standsInWay[0])) + '.</p>'
-       : m.talkAbout.length ? '<p class="mc-talk"><b>Good to know:</b> ' + esc(capFirst(m.talkAbout.join("; "))) + '.</p>' : '')
-    + (m.setAside.indexOf("screening") !== -1 ? '<p class="mc-talk">In a real placement, a coordinator would talk with you about what you’re looking for before any pairing.</p>' : '')
+    + (m.talkAbout.length ? '<p class="mc-talk"><b>Good to know:</b> ' + esc(capFirst(m.talkAbout.join("; "))) + '.</p>' : '')
     + '<p class="mc-note">' + esc(m.first) + (couple ? " are" : " is") + ' made up for this demo. Real pairings are always made by people at the placement service.</p>'
     + '</div>';
 }
@@ -2212,7 +2247,7 @@ function drawQueue(){
       + (it.complete ? '' : '<span class="pill">Questions unfinished</span>')
       + (it.imported ? '<span class="pill">From file</span>' : '')
       + (/^DEMO-/.test(it.pid || "") ? '<span class="pill">Quick demo</span>' : '')
-      + (it.demoMatch ? '<span class="pill">Demo match: ' + esc(it.demoMatch.first) + ' · ' + it.demoMatch.score + '</span>' : '')
+      + (it.demoMatch ? '<span class="pill">' + esc(outcomeLabel(it.demoMatch)) + '</span>' : '')
       + '</span></button></li>';
   }).join("") : '<li class="empty-state">' + (desk.items.length ? "No applicants match this filter." : "No profiles yet. They appear here when applicants finish the demo, or when you add profile files.") + '</li>';
   Array.prototype.forEach.call(app.querySelectorAll(".qitem"), function(b){ b.onclick = function(){ openItem(b.getAttribute("data-id")); }; });
@@ -2604,6 +2639,7 @@ function overviewHTML(){
     + ' in the matching pool · ' + count(mt.pairings.length, "pairing") + ' suggested.</p>'
     + '<p class="sub" style="font-size:12.5px">Each pairing is scored from both sides: how well the applicant meets the host’s needs, and how well the home suits the applicant. '
     + 'The suggestions use one applicant per room and make the most suitable pairings overall, so someone may be suggested for their second-best host when their best suits another applicant much better. '
+    + 'Only pairings scoring ' + mt.minScore + ' or more are suggested: an applicant whose best is lower waits on the shortlist for a suitable host. '
     + 'Pairings staff have made are kept. Suggesting a pairing shortlists the applicant for that homeowner in their review. Nobody is contacted.</p>'
     + '<div class="secthead">Suggested pairings</div>'
     + (mt.pairings.length ? mt.pairings.map(function(p){ var r = resultFor(p.hostId, p.studentId); return r ? matchCardHTML(r, true, p) : ""; }).join("")
@@ -2618,8 +2654,11 @@ function overviewHTML(){
       + esc(u.eligible ? count(u.eligible, "suitable applicant") + ", each placed with a host that suits them better overall"
         : "no suitable applicant yet" + (u.reasons.length ? "; most were ruled out by " + u.reasons.join(", ") : "")) + '.</li>';
   }).join("") + '</ul>';
-  if (mt.unmatchedStudents.length) html += '<div class="secthead">Applicants without a suggestion</div><p class="sub">'
-    + esc(mt.unmatchedStudents.map(function(u){ return u.name + (u.eligible ? " (" + count(u.eligible, "possible host") + ")" : " (no suitable host yet)"); }).join(", ")) + '.</p>';
+  if (mt.unmatchedStudents.length) html += '<div class="secthead">Shortlisted: waiting for a suitable host</div><p class="sub">'
+    + esc(mt.unmatchedStudents.map(function(u){
+        return u.name + (u.strongEnough ? " (" + count(u.strongEnough, "strong enough host") + ", each placed with someone who suits them better overall)"
+          : u.eligible ? " (best so far " + u.best + ")" : " (no host passes every check yet)");
+      }).join(", ")) + '.</p>';
   return html;
 }
 
@@ -2639,6 +2678,7 @@ function matchCardHTML(r, pairMode, p){
     + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '')
     + (paired ? '<span class="pill dark" style="background:var(--slate)">' + esc(label(PAIRING, status)) + ' by staff</span>' : '')
     + (p && !p.locked && p.studentRank > 1 ? '<span class="pill">' + esc(who + "’s " + ordinal(p.studentRank) + " choice") + '</span>' : '')
+    + (r.eligible && desk.match && r.score < desk.match.minScore ? '<span class="pill">Under ' + desk.match.minScore + ': not suggested automatically</span>' : '')
     + '</div>'
     + '<div class="sides"><span>For ' + esc(host) + ' <b>' + r.hostFit + '</b></span><span>For ' + esc(who) + ' <b>' + r.studentFit + '</b></span></div>'
     + whyHTML(r)
@@ -2694,7 +2734,8 @@ function drawBestHosts(it){
       + (near ? ' Closest: ' + esc(near.hostName) + ' (' + esc(near.blockers.map(function(b){ return b.text; }).join("; ")) + ').' : '') + '</p>';
     return;
   }
-  box.innerHTML = head + s.ranked.slice(0, 3).map(function(r){
+  box.innerHTML = head + (s.ranked[0].score < desk.match.minScore ? '<p class="sub" style="font-size:12.5px">None reaches ' + desk.match.minScore + ' yet, so the applicant waits on the shortlist for a suitable host.</p>' : '')
+    + s.ranked.slice(0, 3).map(function(r){
     var h = hostById(r.hostId);
     return '<div class="hrow"><span class="score" style="background:' + BAND[r.band][1] + '" title="' + esc(BAND[r.band][0]) + '">' + r.score + '</span>'
       + '<span class="grow"><b>' + esc(r.hostName) + '</b><small>' + esc([h && (h.home || {}).suburb, BAND[r.band][0]].filter(Boolean).join(" · ")) + '</small></span>'
@@ -2711,28 +2752,36 @@ function drawBestHosts(it){
 }
 
 /* ---------- the live board ---------- */
-/* A best match, as the participant's results screen and this board show it. */
+/* A participant's outcome, as the results screen and this board show it: matched
+   with a host, shortlisted and waiting for a suitable host, or not placed. */
 function matchSummary(best){
   if (!best) return null;
-  var M = GenStayMatch, h = best.host, x = h.host || {}, r = best.result;
-  return {hostId: M.hostId(h), hostName: M.hostName(h), first: M.hostFirst(h), age: x.age || null,
+  var M = GenStayMatch, out = {status: best.status, minScore: best.minScore, at: nowISO()};
+  if (best.status === "screened_out"){
+    out.reasons = [].concat.apply([], best.screenedOut.map(function(b){ return b.points; }));
+    return out;
+  }
+  var h = best.host, x = h.host || {}, r = best.result;
+  return Object.assign(out, {hostId: M.hostId(h), hostName: M.hostName(h), first: M.hostFirst(h), age: x.age || null,
           partnerAge: x.householdType === "couple" && x.partner ? x.partner.age || null : null,
           suburb: (h.home || {}).suburb || "", career: String(x.formerCareer || "").split(",")[0],
           score: r.score, hostFit: r.hostFit, studentFit: r.studentFit, band: r.band,
           highlights: r.forStudent, talkAbout: r.talkAbout, closest: best.closest, standsInWay: best.standsInWay,
-          setAside: best.setAside, at: nowISO()};
+          shortfall: best.shortfall, setAside: best.setAside});
 }
-/* The match the participant saw, or (for applicants who never saw one) their best host here.
-   Someone screening keeps out of matching is shown as held back, not paired. */
+/* The outcome of a summary, including ones saved before outcomes had names. */
+function outcomeOf(m){ return !m ? null : m.status || (m.heldBack ? "screened_out" : m.closest ? "waiting" : "matched"); }
+function outcomeLabel(m){
+  var o = outcomeOf(m);
+  return o === "matched" ? "Demo match: " + m.first + " · " + m.score : o === "waiting" ? "Shortlisted: waiting for a host" : o === "screened_out" ? "Not placed: screening" : "";
+}
+/* The outcome the participant saw, or (for applicants who never saw one) their outcome against the hosts here. */
 function boardMatch(it){
   if (it.demoMatch) return it.demoMatch;
   if (!window.GenStayMatch || !desk.hosts.length) return null;
   desk.boardCache = desk.boardCache || {};
   var key = it.id + "@" + it.updatedAt + "@" + desk.hosts.length, c = desk.boardCache[key];
-  if (c === undefined){
-    var best = GenStayMatch.bestMatch({id: it.id, name: it.name, profile: mergedProfile(it)}, desk.hosts);
-    c = desk.boardCache[key] = !best ? null : best.setAside.length ? {heldBack: true} : matchSummary(best);
-  }
+  if (c === undefined) c = desk.boardCache[key] = matchSummary(GenStayMatch.bestMatch({id: it.id, name: it.name, profile: mergedProfile(it)}, desk.hosts));
   return c;
 }
 function ago(iso){
@@ -2743,29 +2792,32 @@ function drawBoard(){
   if (!desk || !el("#board-grid")) return;
   var done = desk.items.filter(function(it){ return it.complete; });
   var rows = done.map(function(it){ return {it: it, m: boardMatch(it)}; });
-  var tally = {};
-  var paired = rows.filter(function(r){ return r.m && !r.m.heldBack; });
-  paired.forEach(function(r){ if (!r.m.closest) tally[r.m.first] = (tally[r.m.first] || 0) + 1; });
+  var tally = {}, n = {matched: 0, waiting: 0, screened_out: 0};
+  rows.forEach(function(r){ var o = outcomeOf(r.m); if (o) n[o]++; if (o === "matched") tally[r.m.first] = (tally[r.m.first] || 0) + 1; });
   var top = Object.keys(tally).sort(function(a, b){ return tally[b] - tally[a]; }).slice(0, 3);
-  el("#board-stats").innerHTML = '<span><b>' + done.length + '</b> played</span><span><b>' + paired.length + '</b> matched</span>'
-    + (top.length ? '<span>Most matched: ' + esc(top.map(function(n){ return n + " (" + tally[n] + ")"; }).join(", ")) + '</span>' : '');
+  el("#board-stats").innerHTML = '<span><b>' + done.length + '</b> played</span><span><b>' + n.matched + '</b> placed</span>'
+    + '<span><b>' + n.waiting + '</b> on the shortlist</span><span><b>' + n.screened_out + '</b> not placed</span>'
+    + (top.length ? '<span>Most matched: ' + esc(top.map(function(k){ return k + " (" + tally[k] + ")"; }).join(", ")) + '</span>' : '');
   /* a new arrival animates in once, and stays highlighted for 20 seconds */
   var seen = desk.boardSeen, firstDraw = !seen, now = Date.now();
   desk.boardSeen = seen = seen || {};
   el("#board-grid").innerHTML = rows.length ? rows.slice(0, 60).map(function(r){
-    var it = r.it, m = r.m && !r.m.heldBack ? r.m : null, arrive = !firstDraw && !seen[it.id];
+    var it = r.it, m = r.m, o = outcomeOf(m), arrive = !firstDraw && !seen[it.id];
     if (!seen[it.id]) seen[it.id] = firstDraw ? 1 : now;
     var fresh = seen[it.id] > 1 && now - seen[it.id] < 20000;
-    var initials = m ? m.hostName.split(/\s+/).filter(function(w){ return w !== "and"; }) : [];
+    var initials = o === "matched" ? m.hostName.split(/\s+/).filter(function(w){ return w !== "and"; }) : [];
     initials = initials.length ? initials[0].charAt(0) + (initials.length > 1 ? initials[initials.length - 1].charAt(0) : "") : "";
-    return '<article class="bcard' + (fresh ? " fresh" : "") + (arrive ? " arrive" : "") + '">'
+    return '<article class="bcard' + (o === "waiting" ? " waiting" : o === "screened_out" ? " out" : "") + (fresh ? " fresh" : "") + (arrive ? " arrive" : "") + '">'
       + '<div class="b-top"><span class="b-person">' + esc(String(it.name || "Someone").split(" ")[0]) + '</span><span class="b-when">' + esc(ago(it.updatedAt)) + '</span></div>'
-      + (m ? '<div class="b-arrow">' + (m.closest ? "came closest to" : "matched with") + '</div>'
+      + (o === "matched" ? '<div class="b-arrow">matched with</div>'
           + '<div class="b-host"><span class="b-avatar" aria-hidden="true">' + esc(initials) + '</span><span class="b-name">' + esc(m.first) + (m.age ? ", " + m.age + (m.partnerAge ? " and " + m.partnerAge : "") : "") + '</span>'
           + '<span class="b-score">' + m.score + '</span></div>'
           + '<div class="b-sub">' + esc([m.suburb, m.career].filter(Boolean).join(" · ")) + '</div>'
           + (m.highlights && m.highlights.length ? '<ul class="b-why">' + m.highlights.slice(0, 2).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>' : '')
-        : '<div class="b-arrow">' + (r.m ? "kept out of automatic matching" : desk.hosts.length ? "no match yet" : "add hosts to see matches") + '</div>')
+        : o === "waiting" ? '<div class="b-arrow">shortlisted</div><div class="b-state">Waiting for a suitable host</div>'
+          + '<div class="b-sub">' + (m.closest ? "No current host passes every check yet" : "Best so far " + m.score + "; we place at " + (m.minScore || 65) + " or more") + '</div>'
+        : o === "screened_out" ? '<div class="b-arrow">not placed this time</div><div class="b-sub">Safety and screening come first</div>'
+        : '<div class="b-arrow">' + (desk.hosts.length ? "no match yet" : "add hosts to see matches") + '</div>')
       + '</article>';
   }).join("") : '<div class="empty-state">Matches appear here, newest first, as people finish.</div>';
 }

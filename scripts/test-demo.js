@@ -138,15 +138,32 @@ async function matchCard(page) {
   return page.evaluate(() => {
     const box = document.getElementById("matchcard"), q = (sel) => { const n = box && box.querySelector(sel); return n ? n.textContent.trim() : ""; };
     return { saved: window.S.demoMatch, kicker: q(".mc-kicker"), name: q(".mc-name"), sub: q(".mc-sub"), score: q(".mc-score b"),
-      why: box ? [...box.querySelectorAll(".mc-why li")].map((n) => n.textContent) : [], text: box ? box.textContent : "" };
+      why: box ? [...box.querySelectorAll(".mc-why li")].map((n) => n.textContent) : [], text: box ? box.textContent : "",
+      note: (document.getElementById("resultnote") || {}).textContent || "" };
   });
+}
+/* Shortlisted, waiting for a suitable host: no homeowner named, the bar and what held it back. */
+function waitingChecks(card, label) {
+  const m = card.saved;
+  if (!m || m.status !== "waiting" || card.kicker !== "Shortlisted" || !/Waiting for a suitable host/.test(card.name)) { errors.push(label + ": no waiting screen: " + JSON.stringify(card)); return; }
+  if (!/we only place pairings of 65 or more/.test(card.text) || !/What held it back:/.test(card.text) || m.score >= 65) errors.push(label + ": the waiting screen doesn't explain the bar: " + card.text);
+  if (card.text.indexOf(m.first) !== -1) errors.push(label + ": the waiting screen names the closest homeowner");
+}
+/* No placement: an answer in the game rules one out, and the participant is told what to do instead. */
+function screenedOutChecks(card, label, want) {
+  const m = card.saved;
+  if (!m || m.status !== "screened_out" || m.hostId || card.kicker !== "No placement this time") { errors.push(label + ": not screened out: " + JSON.stringify(card)); return; }
+  want.forEach((w) => { if (!w.test(card.text)) errors.push(label + ": the screened-out card doesn't say " + w); });
+  if (/\d+\s*match/.test(card.text)) errors.push(label + ": a screened-out participant was shown a score");
+  if (/not a pass-or-fail/.test(card.note)) errors.push(label + ": a screened-out participant is told there's no pass or fail");
 }
 /* The newest run saved on the (one, shared) account. */
 const runDoc = (page) => page.evaluate(() => Object.keys(window.__store).filter((k) => /^profiles\/applicant-1\/runs\//.test(k))
   .map((k) => window.__store[k]).sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)))[0] || null);
 function cardChecks(card, label) {
   const m = card.saved;
-  if (!m || !m.hostId || !card.name) { errors.push(label + ": no demo match on the results screen"); return; }
+  if (!m || m.status !== "matched" || !m.hostId || !card.name) { errors.push(label + ": no demo match on the results screen (" + (m && m.status) + ")"); return; }
+  if (m.score < 65) errors.push(label + ": matched at " + m.score + ", under the bar of 65");
   if (card.name.indexOf(m.first) !== 0 || card.score !== String(m.score) || !/made up for this demo/.test(card.text)) errors.push(label + ": the match card doesn't show the match: " + JSON.stringify(card));
   if (!card.why.length || card.why.some((t) => /undefined|null|NaN/.test(t))) errors.push(label + ": the match card gives no reasons: " + JSON.stringify(card.why));
 }
@@ -289,9 +306,9 @@ async function hostsTab(page) {
   await page.waitForFunction(() => document.querySelectorAll("#board-grid .bcard").length === 3, null, { timeout: 5000 })
     .catch(() => errors.push("hosts: the live board doesn't show the three applicants"));
   const board = await page.$$eval("#board-grid .bcard", (cards) => cards.map((c) => c.innerText.replace(/\s+/g, " ")));
-  const samMatch = await page.evaluate(() => desk.items.filter((it) => /Sam/.test(it.name))[0].demoMatch);
-  if (!samMatch || !board.some((t) => t.indexOf("Sam") === 0 && t.indexOf(samMatch.first) !== -1)) errors.push("hosts: Sam's board card doesn't show his demo match: " + board.join(" | "));
-  if (!/3 played/.test(await page.textContent("#board-stats"))) errors.push("hosts: the board doesn't count who played");
+  if (!board.some((t) => /^Sam .*not placed this time/i.test(t)) || board.some((t) => /^Sam .*(lifted|shook|000)/i.test(t))) errors.push("hosts: Sam's board card doesn't show 'not placed' (without the reasons): " + board.join(" | "));
+  const stats = (await page.textContent("#board-stats")).replace(/\s+/g, " ");
+  if (!/3 played/.test(stats) || !/1 not placed/.test(stats)) errors.push("hosts: the board doesn't count who played and who wasn't placed: " + stats);
   out.board = board;
   await page.screenshot({ path: path.join(OUT, "live-board.png") });
   return out;
@@ -359,13 +376,13 @@ async function pdfFrom(page, nameFragment) {
       ? { prefilledMentor: "keen", careers: ["Nursing", "Midwifery", "Medicine", "Paramedicine", "Pharmacy", "Not sure yet"] }
       : { social: 2, otherLanguage: "Greek", pets: "allergic" });
     await page.screenshot({ path: path.join(OUT, "results-" + mode + ".png"), fullPage: true });
-    cardChecks(card, mode);
-    if (mode === "worst" && !/coordinator would talk with you/.test(card.text)) errors.push("worst: a participant kept out by screening isn't told a coordinator would talk with them first");
+    if (mode === "best") cardChecks(card, mode);
+    else screenedOutChecks(card, mode, [/helped her straight up/, /keep her still/, /shook her and rang her son first/, /call 000 straight away/, /coordinator would talk this through/]);
     const doc = await runDoc(page), parent = await page.evaluate(() => window.__store["profiles/applicant-1"]);
     const p = doc && doc.profile, sc = p && p.screening;
     if (!doc || !doc.complete) { errors.push(mode + ": profile not saved"); continue; }
     if (!parent || parent.latestRun !== doc.pid || parent.runs) errors.push(mode + ": the account's index doesn't point at the latest run: " + JSON.stringify(parent && { latestRun: parent.latestRun, runs: parent.runs }));
-    if (!doc.demoMatch || !card.saved || doc.demoMatch.hostId !== card.saved.hostId) errors.push(mode + ": the demo match wasn't saved with the run");
+    if (!doc.demoMatch || !card.saved || doc.demoMatch.status !== card.saved.status || doc.demoMatch.hostId !== card.saved.hostId) errors.push(mode + ": the outcome wasn't saved with the run");
     if (!/^DEMO-/.test(p.meta.profileId)) errors.push(mode + ": profile id isn't marked as a demo");
     if (JSON.stringify(sc.pathByDay.map((x) => x.day)) !== "[1,2,3,4,6,8,9,11,14]") errors.push(mode + ": path days " + JSON.stringify(sc.pathByDay));
     const it = p.interests || {}, hh = p.household || {};
@@ -384,7 +401,7 @@ async function pdfFrom(page, nameFragment) {
     if (!/nine days/.test(await page.textContent("h1"))) errors.push(mode + ": results heading doesn't count nine days");
     const st = await contract(browser, base, p, mode);
     report[mode] = { type: sc.profile, meters: sc.meters, lowest: sc.lowestMoment, path: sc.finalPath, choices: await page.evaluate(() => S.choices.length), templateFilled: st.filled + "/" + st.total,
-      demoMatch: card.kicker + ": " + card.name + " · " + card.sub + " · " + card.score, reasons: card.why };
+      demoMatch: card.kicker + ": " + card.name + (card.sub ? " · " + card.sub + " · " + card.score : ""), reasons: card.why.length ? card.why : (card.saved.reasons || []) };
     fs.writeFileSync(path.join(OUT, "profile-" + mode + ".json"), JSON.stringify(p, null, 2));
 
     if (mode === "best") {
@@ -407,7 +424,7 @@ async function pdfFrom(page, nameFragment) {
       await page.waitForFunction(() => /fields filled/.test((document.getElementById("fstat") || {}).textContent || ""), null, { timeout: 8000 });
       const pills = await page.$$eval(".qitem .pill", (x) => x.map((n) => n.textContent));
       if (pills.indexOf("Quick demo") === -1) errors.push("staff: no Quick demo label in the queue (" + pills.join(", ") + ")");
-      if (!pills.some((x) => x === "Demo match: " + doc.demoMatch.first + " · " + doc.demoMatch.score)) errors.push("staff: the queue doesn't show the demo match (" + pills.join(", ") + ")");
+      if (pills.indexOf("Not placed: screening") === -1) errors.push("staff: the queue doesn't show that the run was screened out (" + pills.join(", ") + ")");
       report.staff = { frame: await page.textContent("#fstat"), pills };
       await page.screenshot({ path: path.join(OUT, "staff-desk.png") });
       await page.click("#pdfone");
@@ -451,7 +468,11 @@ async function pdfFrom(page, nameFragment) {
     await start(page, "Dee Nied", "psychology");
     await play(page, "best");
     await page.evaluate(() => { window.__deny = true; });
-    cardChecks(await answerQuestions(page), "download");
+    /* a psychology student at Macquarie, allergic to pets, who'd like a female homeowner: no host is strong enough yet */
+    const waiting = await answerQuestions(page, { campus: "Macquarie Uni", pets: "allergic", social: 1 });
+    waitingChecks(waiting, "waiting");
+    report.waiting = { score: waiting.saved && waiting.saved.score, heldBack: waiting.saved && waiting.saved.shortfall, text: waiting.text.replace(/\s+/g, " ").trim() };
+    await page.screenshot({ path: path.join(OUT, "results-waiting.png"), fullPage: true });
     if (!(await page.isVisible("#dl"))) errors.push("download: no Download profile file button when saving failed");
     await page.click("#dl");
     await page.waitForFunction(() => window.__downloads.some((d) => /\.json$/.test(d.filename)), null, { timeout: 5000 });
