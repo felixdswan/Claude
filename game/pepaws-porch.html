@@ -1754,8 +1754,14 @@ function renderQuestionnaire(){
     + '<button class="cont primary" id="qnext">' + (last ? "Submit my profile" : "Next") + '</button></div>'
     + '</div></div>';
 
+  /* A field flagged by Next stops being flagged as soon as its answer is fine. */
+  var recheck = function(id){
+    var f = Q_FIELDS.filter(function(x){ return x.id === id; })[0], box = el("#qf-" + id);
+    if (f && box && box.classList.contains("bad") && !qInvalid(f)) box.classList.remove("bad");
+    if (!app.querySelector(".qfield.bad")) el("#qerr").innerHTML = "";
+  };
   Array.prototype.forEach.call(app.querySelectorAll("[data-q]"), function(input){
-    input.addEventListener("input", function(){ S.q[input.getAttribute("data-q")] = input.value; save(); });
+    input.addEventListener("input", function(){ S.q[input.getAttribute("data-q")] = input.value; save(); recheck(input.getAttribute("data-q").split("__")[0]); });
   });
   Array.prototype.forEach.call(app.querySelectorAll("[data-multi]"), function(b){
     b.onclick = function(){
@@ -1763,7 +1769,7 @@ function renderQuestionnaire(){
       var at = list.indexOf(val);
       if (at === -1) list.push(val); else list.splice(at, 1);
       if (id === "campusDays") list.sort(function(a, c){ return WEEK.indexOf(a) - WEEK.indexOf(c); });
-      S.q[id] = list; b.setAttribute("aria-pressed", String(at === -1)); save();
+      S.q[id] = list; b.setAttribute("aria-pressed", String(at === -1)); save(); recheck(id);
     };
   });
   Array.prototype.forEach.call(app.querySelectorAll("[data-one]"), function(b){
@@ -1771,7 +1777,7 @@ function renderQuestionnaire(){
       var id = b.getAttribute("data-one"), raw = b.getAttribute("data-v");
       S.q[id] = raw === "true" ? true : raw === "false" ? false : Number(raw);
       Array.prototype.forEach.call(b.parentNode.children, function(x){ x.setAttribute("aria-pressed", String(x === b)); });
-      save();
+      save(); recheck(id);
     };
   });
   if (el("#qback")) el("#qback").onclick = function(){ S.qPage--; save(); render(); };

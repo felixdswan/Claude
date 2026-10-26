@@ -1,0 +1,2061 @@
+<title>Pepaws Porch Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Pepaws Porch quick demo — one weatherboard cottage in real light, drawn soft.
+   A committed single visual world: every surface is painted explicitly so
+   the page holds on either host ground. Layout: one phone-width card for the
+   applicant; a wide two-pane review desk for staff. */
+:root{
+  --surround:#2B302C; --surround-2:#232823;
+  --paper:#EFE9DD; --card:#F8F3E9; --card-2:#E7DFCF; --sunk:#DED5C2; --field:#FDFAF3;
+  --ink:#31302B; --ink-2:#6B6459; --ink-3:#8A8171;
+  --line:#CDC3B0; --line-2:#B5A995;
+  --sage:#6F7C5A; --sage-lo:#5A6649; --slate:#5B6C74; --slate-lo:#4E5D64;
+  --rust:#A8563E; --ochre:#BE9350; --clay:#A8785F; --rose:#B98585;
+  --good:#5F7A50; --warn:#B08A3C; --bad:#A2523C; --on-dark:#F6F2E8;
+  --display:Fraunces,Georgia,serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{
+  background:var(--surround);
+  background-image:radial-gradient(120% 90% at 50% 0%, #333A34 0%, var(--surround) 45%, var(--surround-2) 100%);
+  color:var(--ink);
+  font:400 16px/1.55 var(--body);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;display:flex;padding:16px;
+}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;line-height:1.12;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--slate);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.kicker{font:600 11px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3)}
+
+#app{
+  width:100%;max-width:468px;height:min(94vh,880px);min-height:560px;
+  background:var(--card);border-radius:18px;overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,.42);
+  display:flex;flex-direction:column;position:relative;
+  margin:auto; /* centres when there's room, never pushes the top off-screen when there isn't */
+}
+#app.wide{max-width:1240px;height:min(96vh,1000px)}
+
+.topbar{flex:none;background:var(--card-2);border-bottom:1px solid var(--line);padding:10px 14px 11px}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pause{background:transparent;border:1px solid var(--line-2);border-radius:7px;padding:5px 9px;font-size:12px;font-weight:600}
+.daylabel{font:600 12px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.clock{font:500 12px/1 var(--mono);color:var(--ink-3);margin-left:auto}
+
+.stage{flex:none;position:relative;background:#B9C6CC;line-height:0}
+.stage svg{display:block;width:100%;height:auto}
+.stagenote{position:absolute;left:12px;top:12px;font:500 10px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--on-dark);background:rgba(31,34,30,.5);padding:5px 8px;border-radius:5px}
+
+.panel{flex:1;min-height:0;overflow-y:auto;padding:16px 16px 20px;display:flex;flex-direction:column;gap:13px;background:var(--card)}
+.panel::-webkit-scrollbar,.scroll::-webkit-scrollbar{width:8px}
+.panel::-webkit-scrollbar-thumb,.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.who{font:700 11px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--rust)}
+.who.narr{color:var(--ink-3)}
+.line{font-size:17px;line-height:1.5;color:var(--ink)}
+.prompt{font-family:var(--display);font-size:19px;font-weight:600;line-height:1.25}
+.sub{font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;background:var(--card);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;font-size:15.5px;line-height:1.4;transition:background .14s,border-color .14s}
+.opt:hover{background:var(--field);border-color:var(--slate)}
+
+.cont{align-self:flex-start;background:var(--slate);color:var(--on-dark);border:0;border-radius:9px;padding:11px 20px;font-weight:600;font-size:15px}
+.cont:hover{background:var(--slate-lo)}
+.cont.primary{background:var(--sage)}
+.cont.primary:hover{background:var(--sage-lo)}
+.cont.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line-2)}
+.cont.ghost:hover{background:var(--field)}
+.cont[disabled]{background:var(--line-2);color:var(--on-dark);cursor:default}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+textarea{width:100%;min-height:132px;resize:vertical;padding:12px 13px;border-radius:10px;border:1px solid var(--line-2);background:var(--field);color:var(--ink);font:400 15.5px/1.5 var(--body)}
+textarea:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0 3px rgba(91,108,116,.16)}
+
+.timer{flex:none;height:4px;background:var(--sunk);position:relative;overflow:hidden}
+.timer i{display:block;height:100%;background:var(--rust);width:100%}
+.timerlabel{font:600 11px/1 var(--mono);letter-spacing:.08em;color:var(--rust);text-transform:uppercase}
+
+.notice{border-left:3px solid var(--ochre);background:#F2EADA;padding:11px 13px;border-radius:0 8px 8px 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.notice b{color:var(--ink)}
+
+.scroll{flex:1;min-height:0;overflow-y:auto}
+.pad{padding:20px 18px 24px;display:flex;flex-direction:column;gap:14px}
+.title h1{font-size:38px;letter-spacing:-.01em}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2)}
+input[type=text],input[type=email],input[type=tel],input[type=number],input[type=date],input[type=time],select{padding:10px 12px;border:1px solid var(--line-2);border-radius:9px;background:var(--field);font:400 15.5px/1.4 var(--body);color:var(--ink);width:100%}
+input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0 3px rgba(91,108,116,.16)}
+.check{flex-direction:row;align-items:flex-start;gap:9px;font-weight:400;font-size:13.5px;line-height:1.45;color:var(--ink-2);cursor:pointer}
+.check input{margin-top:3px;width:17px;height:17px;accent-color:var(--sage);flex:none}
+.err{font-size:13px;color:var(--rust);font-weight:600}
+
+/* questionnaire */
+.qhead{display:flex;flex-direction:column;gap:6px}
+.qprog{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+.qprog i{height:4px;border-radius:2px;background:var(--sunk)}
+.qprog i.on{background:var(--sage)}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qgrid .full{grid-column:1 / -1}
+.qfield{display:flex;flex-direction:column;gap:6px;min-width:0}
+.qlabel{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+.qlabel .opt-tag{font-weight:400;color:var(--ink-3)}
+.qhint{font-size:12px;color:var(--ink-3);line-height:1.4}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line-2);background:var(--field);border-radius:999px;padding:6px 12px;font-size:13.5px;line-height:1.2;color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--sage);border-color:var(--sage);color:var(--on-dark)}
+.qfield.bad .qlabel{color:var(--rust)}
+.qfield.bad input,.qfield.bad select{border-color:var(--rust)}
+.qsec{font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);padding-top:6px;border-top:1px solid var(--line)}
+@media (max-width:420px){.qgrid{grid-template-columns:1fr}}
+
+/* results */
+.band{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 15px;font-weight:700;font-size:14px;color:var(--on-dark)}
+.rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.status{font-size:13px;color:var(--ink-2);display:flex;align-items:flex-start;gap:7px}
+.status .dotled{margin-top:6px}
+.dotled{width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-3)}
+.dotled.ok{background:var(--good)} .dotled.no{background:var(--bad)} .dotled.wait{background:var(--warn)}
+
+/* staff review desk */
+.desk{flex:1;min-height:0;display:grid;grid-template-columns:330px 1fr;background:var(--paper)}
+.queue{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--card)}
+.qtools{padding:12px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
+.qlist{flex:1;min-height:0;overflow-y:auto;list-style:none;margin:0;padding:0}
+.qitem{width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;padding:11px 12px;display:grid;grid-template-columns:1fr auto;gap:3px 10px}
+.qitem:hover{background:var(--field)}
+.qitem[aria-current="true"]{background:var(--card-2);box-shadow:inset 3px 0 0 var(--sage)}
+.qitem .nm{font-weight:700;font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qitem .when{font:500 11px/1.6 var(--mono);color:var(--ink-3)}
+.qitem .meta{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:5px}
+.pill{font:600 10.5px/1 var(--mono);letter-spacing:.04em;padding:5px 8px;border-radius:999px;background:var(--sunk);color:var(--ink-2)}
+.pill.dark{color:var(--on-dark)}
+.viewer{display:flex;flex-direction:column;min-width:0;min-height:0}
+.vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--card)}
+.vbar .grow{flex:1;min-width:120px}
+.vbody{flex:1;min-height:0;display:grid;grid-template-columns:1fr 260px}
+.vbody iframe{width:100%;height:100%;border:0;background:#eceef1;display:block}
+.review{border-left:1px solid var(--line);background:var(--card);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.review h3{font-size:16px}
+.review label{font-size:12px}
+.review select,.review input,.review textarea{font-size:14px;padding:8px 10px}
+.review textarea{min-height:76px}
+.empty-state{padding:28px 20px;display:flex;flex-direction:column;gap:8px;color:var(--ink-2);font-size:14px}
+.cont.small{padding:7px 12px;font-size:13px}
+@media (max-width:900px){
+  #app.wide{height:auto;min-height:94vh}
+  .desk{grid-template-columns:1fr}
+  .queue{border-right:0;border-bottom:1px solid var(--line);max-height:42vh}
+  .vbody{grid-template-columns:1fr}
+  .vbody iframe{height:70vh}
+  .review{border-left:0;border-top:1px solid var(--line)}
+}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<div id="app" role="application" aria-label="Pepaws Porch quick demo"></div>
+<script>
+"use strict";
+/* ============================================================
+   PEPAWS PORCH — scenes
+   One weatherboard cottage and its back yard, drawn as soft SVG.
+   Every room is a function of the light and a few props, so a day can
+   show exactly what its story mentions and nothing it doesn't.
+   ============================================================ */
+
+/* ---------- light presets: one cottage, different hours ---------- */
+var LIGHT = {
+  day:   {s1:"#A7BDCB", s2:"#DCE1D8", amb:"",                      warm:"#F2E4C4", glow:0},
+  gold:  {s1:"#BCC0B4", s2:"#EEDCB6", amb:"rgba(214,158,78,0.14)",  warm:"#FBEBC6", glow:0.25},
+  grey:  {s1:"#9FA9A9", s2:"#C9CBC2", amb:"rgba(96,104,112,0.13)",  warm:"#DCDCD2", glow:0.1},
+  dusk:  {s1:"#5E6E82", s2:"#C39E85", amb:"rgba(58,64,94,0.28)",    warm:"#E7C48F", glow:0.6},
+  night: {s1:"#2C3542", s2:"#495062", amb:"rgba(20,26,42,0.34)",    warm:"#F0D08A", glow:0.85}
+};
+
+function R(x, y, w, h, fill, extra){
+  return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'"'+(extra ? " "+extra : "")+'/>';
+}
+function P(d, fill, extra){ return '<path d="'+d+'" fill="'+fill+'"'+(extra ? " "+extra : "")+'/>'; }
+function C(cx, cy, r, fill, extra){ return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+fill+'"'+(extra ? " "+extra : "")+'/>'; }
+function E(cx, cy, rx, ry, fill, extra){ return '<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" fill="'+fill+'"'+(extra ? " "+extra : "")+'/>'; }
+function SL(d, stroke, w, extra){ return '<path d="'+d+'" fill="none" stroke="'+stroke+'" stroke-width="'+w+'" stroke-linecap="round"'+(extra ? " "+extra : "")+'/>'; }
+/* a soft contact shadow — blurred, so objects sit on surfaces instead of floating */
+function shade(cx, cy, rx, ry, o){ return E(cx, cy, rx, ry, "#262A22", 'opacity="'+(o || 0.22)+'" filter="url(#blur)"'); }
+
+function defsFor(L){
+  return '<defs>'
+    + '<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="3.2"/></filter>'
+    + '<filter id="blurBig" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>'
+    + '<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+L.s1+'"/><stop offset="1" stop-color="'+L.s2+'"/></linearGradient>'
+    + '<linearGradient id="grassg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8E9A72"/><stop offset="1" stop-color="#6E7A57"/></linearGradient>'
+    + '<linearGradient id="glassg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+L.warm+'" stop-opacity="0.9"/><stop offset="1" stop-color="#9FB1B2" stop-opacity="0.75"/></linearGradient>'
+    + '<linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EBCBB1"/><stop offset="1" stop-color="#D9B194"/></linearGradient>'
+    + Object.keys(OUTFITS).map(function(k){
+        var f = OUTFITS[k];
+        return '<linearGradient id="cardi-'+k+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="'+f.c1+'"/><stop offset="0.55" stop-color="'+f.c1+'"/><stop offset="1" stop-color="'+f.c2+'"/></linearGradient>'
+          + '<linearGradient id="skirt-'+k+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="'+f.k1+'"/><stop offset="0.5" stop-color="'+f.k1+'"/><stop offset="1" stop-color="'+f.k2+'"/></linearGradient>';
+      }).join("")
+    + '<radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="'+L.warm+'" stop-opacity="0.7"/><stop offset="1" stop-color="'+L.warm+'" stop-opacity="0"/></radialGradient>'
+    + '<pattern id="wb" width="12" height="13" patternUnits="userSpaceOnUse"><rect width="12" height="13" fill="#E6DECD"/><rect y="10.5" width="12" height="1.4" fill="#CBBFA8"/><rect y="11.9" width="12" height="1.1" fill="#F1EADB"/></pattern>'
+    + '<pattern id="corr" width="7" height="10" patternUnits="userSpaceOnUse"><rect width="7" height="10" fill="#636D68"/><rect width="2.2" height="10" fill="#57615C"/><rect x="2.2" width="1" height="10" fill="#6E7873"/></pattern>'
+    + '<pattern id="brick" width="26" height="13" patternUnits="userSpaceOnUse"><rect width="26" height="13" fill="#C9B8A2"/><rect x="1" y="1" width="24" height="5" rx="1" fill="#A9604A"/><rect x="-12" y="7.5" width="24" height="5" rx="1" fill="#9C5642"/><rect x="14" y="7.5" width="24" height="5" rx="1" fill="#B26A51"/></pattern>'
+    + '<pattern id="boards" width="80" height="16" patternUnits="userSpaceOnUse"><rect width="80" height="16" fill="#A98A66"/><rect y="14.6" width="80" height="1.4" fill="#8E7152"/><rect x="52" width="1.4" height="15" fill="#8E7152"/></pattern>'
+    + '<pattern id="deck" width="60" height="9" patternUnits="userSpaceOnUse"><rect width="60" height="9" fill="#B79C7A"/><rect y="7.8" width="60" height="1.2" fill="#957B5B"/></pattern>'
+    + '<pattern id="lino" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#C9C0AE"/><rect width="20" height="20" fill="#B6AD9A"/><rect x="20" y="20" width="20" height="20" fill="#B6AD9A"/></pattern>'
+    + '<pattern id="tiles" width="22" height="11" patternUnits="userSpaceOnUse"><rect width="22" height="11" fill="#D3D9D1"/><rect x="0.6" y="0.6" width="20.8" height="9.8" rx="1" fill="#E7EBE3"/></pattern>'
+    + '<pattern id="paper" width="28" height="28" patternUnits="userSpaceOnUse"><rect width="28" height="28" fill="#DCD3BF"/><rect x="12" width="4" height="28" fill="#D3C9B3"/><circle cx="2" cy="14" r="1.3" fill="#CDBFA4"/></pattern>'
+    + '<pattern id="gingham" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#F1ECE2"/><rect width="6" height="12" fill="#C9D3D6" opacity="0.7"/><rect width="12" height="6" fill="#C9D3D6" opacity="0.7"/></pattern>'
+    + '<pattern id="paling" width="14" height="60" patternUnits="userSpaceOnUse"><rect width="14" height="60" fill="#9C8A70"/><rect x="0.8" width="12.4" height="60" fill="#AD9A7E"/></pattern>'
+    + '</defs>';
+}
+function ambient(L){ return L.amb ? R(0, 0, 800, 400, L.amb) : ""; }
+
+/* ---------- foliage: many small leaves, not one blob ---------- */
+var GREENS = ["#7E8C67", "#66754F", "#93A07C"];
+var GREENS_D = ["#5D6A4C", "#4B573C", "#6E7B5B"];
+var GUM = ["#7F9283", "#6B7F70", "#97A797"];
+function bush(cx, cy, w, h, hue, seed){
+  var out = E(cx, cy, (w*0.8).toFixed(1), (h*0.74).toFixed(1), hue[1]);
+  for (var i = 0; i < 26; i++){
+    var a = (i*2.399 + seed) % 6.283, r = 0.35 + ((i*37 + seed*11) % 100)/155;
+    var rr = 5 + ((i*13 + seed*7) % 9);
+    out += E((cx + Math.cos(a)*w*r).toFixed(1), (cy + Math.sin(a)*h*r*0.85).toFixed(1), rr, (rr*0.82).toFixed(1), i % 3 === 0 ? hue[1] : (i % 3 === 1 ? hue[0] : hue[2]));
+  }
+  return '<g>' + out + '</g>';
+}
+function gumTree(x, base, h, seed){
+  var t = SL("M "+x+" "+base+" C "+(x-4)+" "+(base-h*0.4)+" "+(x+6)+" "+(base-h*0.6)+" "+(x-2)+" "+(base-h*0.85), "#D9D2C2", 9)
+    + SL("M "+x+" "+(base-h*0.5)+" C "+(x+14)+" "+(base-h*0.62)+" "+(x+22)+" "+(base-h*0.72)+" "+(x+26)+" "+(base-h*0.86), "#CFC6B3", 5)
+    + SL("M "+(x-2)+" "+(base-h*0.2)+" L "+(x-1)+" "+(base-h*0.4), "#B9AF9B", 2);
+  return t + bush(x-6, base-h*0.9, 46, 34, GUM, seed) + bush(x+24, base-h*0.82, 34, 26, GUM, seed+3);
+}
+
+/* ---------- Marg: soft tonal shading, no outlines ---------- */
+var OUTFITS = {
+  home:    {c1:"#C99090", c2:"#AE7676", k1:"#706B86", k2:"#5D5972", blouse:"#F2EBDD"},
+  garden:  {c1:"#A8B08F", c2:"#8E9677", k1:"#706B86", k2:"#5D5972", blouse:"#F2EBDD"},
+  funeral: {c1:"#424A5C", c2:"#353B4B", k1:"#30343F", k2:"#262A33", blouse:"#E6E2D8"}
+};
+var SKIN = "#E2BFA3", SKIN_D = "#C99B7E", LEG = "#D7B59A", LEG_D = "#C6A387", SHOE = "#5A4639",
+    HAIR = "#ECE8E1", HAIR_D = "#CBC5BB", FRAME = "#7A5F52", BLUSH = "#E39686";
+
+function curls(list, fill){
+  return list.map(function(c){ return C(c[0], c[1], c[2], fill); }).join("");
+}
+function margHead(cx, cy, tilt, mood, outfit){
+  var g = '<g transform="translate('+cx+','+cy+') rotate('+(tilt || 0)+')">';
+  g += curls([[-11,-3,7],[11,-3,7],[-9,-11,8],[9,-11,8],[0,-15,9],[-12.5,5,5],[12.5,5,5]], HAIR_D);
+  g += E(-11.8, 2, 2.6, 3.6, SKIN_D) + E(11.8, 2, 2.6, 3.6, SKIN_D)
+    +  C(-12.1, 6.6, 1.5, "#F7F2E8") + C(12.1, 6.6, 1.5, "#F7F2E8");
+  g += E(0, 1, 11.5, 13.5, "url(#skin)")
+    +  P("M -11 4 C -9 13 -4 15 0 15 C 4 15 9 13 11 4 C 8 11 -8 11 -11 4 Z", SKIN_D, 'opacity="0.35"')
+    +  E(-6.6, 6.2, 3, 2, BLUSH, 'opacity="0.4"') + E(6.6, 6.2, 3, 2, BLUSH, 'opacity="0.4"');
+  if (mood === "pain"){
+    g += SL("M -7 0.4 Q -5 1.8 -3 0.4", "#3B322D", 1.2) + SL("M 3 0.4 Q 5 1.8 7 0.4", "#3B322D", 1.2);
+  } else {
+    g += E(-5, 0, 1.25, 1.6, "#3B322D") + E(5, 0, 1.25, 1.6, "#3B322D")
+      +  C(-4.6, -0.6, 0.45, "#FFFFFF") + C(5.4, -0.6, 0.45, "#FFFFFF");
+  }
+  var brow = mood === "sad" || mood === "pain" ? ["M -8.5 -5 Q -5.5 -6.8 -2.6 -6.2", "M 2.6 -6.2 Q 5.5 -6.8 8.5 -5"]
+                                                : ["M -8.4 -5.6 Q -5.4 -7.2 -2.4 -6", "M 2.4 -6 Q 5.4 -7.2 8.4 -5.6"];
+  g += SL(brow[0], "#B3AA9C", 1.3) + SL(brow[1], "#B3AA9C", 1.3);
+  g += C(-5, 0, 4.3, "#DCE6E8", 'fill-opacity="0.26" stroke="'+FRAME+'" stroke-width="1.05"')
+    +  C(5, 0, 4.3, "#DCE6E8", 'fill-opacity="0.26" stroke="'+FRAME+'" stroke-width="1.05"')
+    +  SL("M -0.8 -0.5 Q 0 -1.6 0.8 -0.5", FRAME, 1) + SL("M -9.3 -0.6 L -11.4 0.4", FRAME, 1) + SL("M 9.3 -0.6 L 11.4 0.4", FRAME, 1);
+  g += SL("M 0.2 2.2 Q 1.8 4.9 0 5.7", SKIN_D, 1);
+  var mouth = {smile:"M -3.6 9 Q 0 11.8 3.6 9", neutral:"M -3 9.8 Q 0 10.4 3 9.8", sad:"M -3 10.6 Q 0 9 3 10.6", pain:"M -3.2 10.2 Q 0 8.8 3.2 10.6"};
+  g += SL(mouth[mood] || mouth.smile, "#A86E5C", 1.3);
+  g += curls([[-7,-12.5,5],[-1,-14,5.6],[5.6,-12.8,5],[10,-8.4,3.9],[-10.4,-8,3.9]], HAIR)
+    +  SL("M -6 -16.6 Q 0 -19.5 6 -16.6", "#FFFFFF", 1.3, 'stroke-opacity="0.55"');
+  if (outfit === "garden"){
+    g += E(0, -13, 21, 5.2, "#D8BE86") + P("M -11 -14 Q -10 -25 0 -25 Q 10 -25 11 -14 Z", "#CDB176") + R(-11, -17, 22, 3, "#8E9677");
+  } else if (outfit === "funeral"){
+    g += E(0, -14, 14.5, 3.4, "#2B2F39") + P("M -9 -15 Q -8 -23 0 -23 Q 8 -23 9 -15 Z", "#333845");
+  }
+  return g + '</g>';
+}
+
+/* o: {pose, x, y, s, outfit, mood, hold} */
+function marg(o){
+  var key = OUTFITS[o.outfit] ? o.outfit : "home", fit = OUTFITS[key];
+  var CARDI = "url(#cardi-"+key+")", SKIRT = "url(#skirt-"+key+")";
+  var g = '<g transform="translate('+o.x+','+o.y+') scale('+(o.s || 0.8)+')">';
+  var mood = o.mood || "smile";
+  if (o.pose === "stand"){
+    g += shade(0, 1, 30, 6);
+    g += P("M -11 -46 L -10 -6 L -4 -6 L -3 -46 Z", LEG) + P("M 3 -46 L 4 -6 L 10 -6 L 11 -46 Z", LEG_D)
+      +  E(-8, -4, 7.5, 3.8, SHOE) + E(8, -4, 7.5, 3.8, SHOE);
+    g += P("M -20 -98 C -23 -80 -26 -60 -28 -44 Q 0 -38 28 -44 C 26 -60 23 -80 20 -98 Z", SKIRT)
+      +  SL("M -8 -90 L -11 -46 M 8 -90 L 11 -46", fit.k2, 1.4, 'opacity="0.6"');
+    g += P("M -20 -132 Q -25 -122 -24 -104 L -23 -92 Q 0 -88 23 -92 L 24 -104 Q 25 -122 20 -132 Q 0 -139 -20 -132 Z", CARDI)
+      +  P("M -23 -96 Q 0 -91 23 -96 L 23 -92 Q 0 -87 -23 -92 Z", fit.c2, 'opacity="0.7"')
+      +  P("M -7 -135 L 0 -112 L 7 -135 Z", fit.blouse) + P("M -7 -135 L -10.5 -127 L -3 -126 Z M 7 -135 L 10.5 -127 L 3 -126 Z", fit.blouse)
+      +  C(0, -107, 1.4, fit.c2) + C(0, -100, 1.4, fit.c2)
+      +  R(-18, -106, 9, 7, "none", 'rx="1.5" stroke="'+fit.c2+'" stroke-width="1.2"');
+    if (o.outfit !== "garden") g += C(9, -125, 1.9, "#D8C27A");
+    g += P("M -20 -130 C -30 -120 -31 -102 -29 -86 L -21 -85 C -23 -100 -22 -114 -14 -124 Z", fit.c1);
+    if (o.hold === "phone"){
+      g += P("M 20 -130 C 29 -122 31 -110 29 -100 L 21 -101 C 22 -110 21 -118 14 -124 Z", fit.c2)
+        +  SL("M 25 -100 L 12 -112", fit.c2, 8.5)
+        +  R(2.5, -128, 9.5, 15.5, "#2F3338", 'rx="2"') + R(3.8, -126.4, 6.9, 11.6, "#A9CAD3", 'rx="1"')
+        +  C(11, -114, 4.6, SKIN);
+    } else {
+      g += P("M 20 -130 C 30 -120 31 -102 29 -86 L 21 -85 C 23 -100 22 -114 14 -124 Z", fit.c2)
+        +  C(25, -82, 4.8, o.outfit === "garden" ? "#7E8C67" : SKIN);
+    }
+    g += C(-25, -82, 4.8, o.outfit === "garden" ? "#7E8C67" : SKIN);
+    if (o.hold === "trug"){
+      g += P("M -24 -86 L 24 -86 L 19 -68 L -19 -68 Z", "#A9844F") + SL("M -20 -86 Q 0 -108 20 -86", "#8A6A3E", 2.4)
+        +  E(-10, -90, 5, 4, "#7E8C67") + E(0, -92, 5.5, 4.5, "#93A07C") + E(10, -90, 5, 4, "#66754F");
+    }
+    if (o.hold === "bag"){
+      g += SL("M -30 -82 Q -25 -96 -20 -82", "#3A2F2A", 1.8) + P("M -34 -80 L -16 -80 L -17 -62 L -33 -62 Z", "#3E322C");
+    }
+    g += P("M -5 -146 L -5 -134 Q 0 -131 5 -134 L 5 -146 Z", SKIN_D)
+      +  margHead(0, -152, o.hold === "phone" ? 7 : 0, mood, o.outfit);
+  } else if (o.pose === "sit"){
+    g += shade(0, 1, 28, 5);
+    g += P("M -16 -36 L -15 -6 L -8 -6 L -7 -36 Z", LEG) + P("M 7 -36 L 8 -6 L 15 -6 L 16 -36 Z", LEG_D)
+      +  E(-11, -4, 7.5, 3.8, SHOE) + E(11, -4, 7.5, 3.8, SHOE);
+    g += P("M -22 -70 Q -28 -50 -25 -34 Q 0 -29 25 -34 Q 28 -50 22 -70 Z", SKIRT)
+      +  E(-12, -40, 8, 3, fit.k2, 'opacity="0.35"') + E(12, -40, 8, 3, fit.k2, 'opacity="0.35"');
+    g += P("M -20 -116 Q -24 -106 -23 -88 L -22 -70 Q 0 -66 22 -70 L 23 -88 Q 24 -106 20 -116 Q 0 -123 -20 -116 Z", CARDI)
+      +  P("M -7 -119 L 0 -97 L 7 -119 Z", fit.blouse) + P("M -7 -119 L -10.5 -111 L -3 -110 Z M 7 -119 L 10.5 -111 L 3 -110 Z", fit.blouse)
+      +  C(0, -91, 1.4, fit.c2) + C(0, -84, 1.4, fit.c2);
+    if (o.outfit !== "garden") g += C(9, -109, 1.9, "#D8C27A");
+    g += P("M -20 -114 C -29 -104 -29 -86 -24 -74 L -15 -70 C -19 -84 -20 -100 -14 -108 Z", fit.c1)
+      +  P("M 20 -114 C 29 -104 29 -86 24 -74 L 15 -70 C 19 -84 20 -100 14 -108 Z", fit.c2);
+    if (o.hold === "cup"){
+      g += R(-7, -80, 13, 12, "#EDE6D7", 'rx="2"') + SL("M 6 -77 Q 10 -74 6 -71", "#EDE6D7", 2)
+        +  C(-10, -70, 4.8, SKIN) + C(9, -70, 4.8, SKIN);
+    } else {
+      g += C(-12, -67, 4.8, SKIN) + C(12, -67, 4.8, SKIN);
+    }
+    g += P("M -5 -130 L -5 -118 Q 0 -115 5 -118 L 5 -130 Z", SKIN_D)
+      +  margHead(-1, -136, -4, mood, o.outfit);
+  } else { /* floor: on her side, propped on one elbow */
+    g += shade(-26, 1, 72, 7, 0.26);
+    g += P("M -86 -17 L -52 -19 L -52 -11 L -86 -9 Z", LEG) + P("M -84 -9 L -54 -10 L -54 -3 L -84 -2 Z", LEG_D)
+      +  E(-90, -13, 5, 6.5, SHOE) + E(-88, -5, 5, 5.5, SHOE);
+    g += P("M -58 -24 Q -34 -30 -12 -28 L -10 -4 Q -34 0 -60 -2 Q -64 -12 -58 -24 Z", SKIRT);
+    g += P("M -16 -34 Q 2 -42 16 -38 L 20 -14 Q 2 -6 -14 -8 Z", CARDI)
+      +  C(-8, -23, 4.4, SKIN)
+      +  P("M 10 -36 C 24 -36 28 -24 26 -10 L 17 -10 C 19 -20 15 -26 8 -28 Z", fit.c2)
+      +  C(23, -7, 4.8, SKIN)
+      +  R(10, -48, 12, 11, SKIN_D, 'rx="4" transform="rotate(-20 16 -42)"');
+    g += margHead(25, -54, -18, o.mood || "pain", o.outfit);
+  }
+  return g + '</g>';
+}
+
+/* ---------- small props ---------- */
+function cat(x, y){
+  return '<g>' + shade(x+4, y+1, 20, 4)
+    + SL("M "+(x+14)+" "+(y-4)+" Q "+(x+30)+" "+(y-6)+" "+(x+24)+" "+(y-22), "#C58F5A", 4.5)
+    + E(x, y-12, 14, 13, "#D29B63") + E(x+2, y-8, 9, 8, "#E7C49A")
+    + C(x, y-30, 10, "#D29B63")
+    + P("M "+(x-9)+" "+(y-34)+" L "+(x-8)+" "+(y-45)+" L "+(x-1)+" "+(y-38)+" Z", "#D29B63")
+    + P("M "+(x+9)+" "+(y-34)+" L "+(x+8)+" "+(y-45)+" L "+(x+1)+" "+(y-38)+" Z", "#D29B63")
+    + P("M "+(x-7.5)+" "+(y-36)+" L "+(x-7)+" "+(y-42)+" L "+(x-3)+" "+(y-38)+" Z", "#E9B9A0")
+    + P("M "+(x+7.5)+" "+(y-36)+" L "+(x+7)+" "+(y-42)+" L "+(x+3)+" "+(y-38)+" Z", "#E9B9A0")
+    + SL("M "+(x-6)+" "+(y-31)+" Q "+(x-4)+" "+(y-29)+" "+(x-2)+" "+(y-31), "#4A3A2E", 1.2)
+    + SL("M "+(x+2)+" "+(y-31)+" Q "+(x+4)+" "+(y-29)+" "+(x+6)+" "+(y-31), "#4A3A2E", 1.2)
+    + P("M "+(x-1.4)+" "+(y-27)+" L "+(x+1.4)+" "+(y-27)+" L "+x+" "+(y-25.4)+" Z", "#B86E5E")
+    + SL("M "+(x-6)+" "+(y-34)+" L "+(x-4)+" "+(y-33)+" M "+(x-1)+" "+(y-38)+" L "+(x-1)+" "+(y-35)+" M "+(x+3)+" "+(y-37)+" L "+(x+3)+" "+(y-34), "#B57A45", 1.4)
+    + E(x-6, y-1, 4, 2.4, "#E7C49A") + E(x+6, y-1, 4, 2.4, "#E7C49A") + '</g>';
+}
+function frame(x, y, w, h, inner){
+  return R(x, y, w, h, "#8E7454", 'rx="1.5"') + R(x+3, y+3, w-6, h-6, "#EFE7D6")
+    + (inner || (E(x+w/2, y+h*0.62, w*0.22, h*0.2, "#A9B4A6") + C(x+w/2, y+h*0.38, w*0.12, "#C8A88E")));
+}
+function window2(x, y, w, h, L, curtain){
+  var s = R(x-6, y-6, w+12, h+12, "#EFE8DA", 'rx="2"') + R(x, y, w, h, "url(#glassg)");
+  if (L.glow > 0.3) s += R(x, y, w, h, L.warm, 'opacity="'+(L.glow*0.55).toFixed(2)+'"');
+  s += R(x, y + h/2 - 2.5, w, 5, "#EFE8DA") + R(x + w/2 - 2, y, 4, h, "#EFE8DA")
+    +  P("M "+(x+4)+" "+(y+4)+" L "+(x+w*0.35)+" "+(y+4)+" L "+(x+4)+" "+(y+h*0.3)+" Z", "#FFFFFF", 'opacity="0.22"');
+  if (curtain){
+    s += P("M "+(x-2)+" "+(y-2)+" Q "+(x+w*0.22)+" "+(y+h*0.5)+" "+(x+w*0.08)+" "+(y+h+2)+" L "+(x-2)+" "+(y+h+2)+" Z", curtain, 'opacity="0.92"')
+      +  P("M "+(x+w+2)+" "+(y-2)+" Q "+(x+w*0.78)+" "+(y+h*0.5)+" "+(x+w*0.92)+" "+(y+h+2)+" L "+(x+w+2)+" "+(y+h+2)+" Z", curtain, 'opacity="0.92"');
+  }
+  return s + R(x-10, y+h+6, w+20, 6, "#E3DACA", 'rx="1.5"') + shade(x+w/2, y+h+16, w*0.5, 3, 0.12);
+}
+function pot(x, y, w, hue, seed, bloom){
+  var s = shade(x, y+1, w*0.7, 3.5) + P("M "+(x-w/2)+" "+(y-w*0.9)+" L "+(x+w/2)+" "+(y-w*0.9)+" L "+(x+w*0.38)+" "+y+" L "+(x-w*0.38)+" "+y+" Z", "#B07B5F")
+    + R(x-w/2-2, y-w*0.9-5, w+4, 6, "#9C6A50", 'rx="2"') + bush(x, y-w*1.4, w*0.62, w*0.5, hue, seed);
+  if (bloom) for (var i = 0; i < 6; i++) s += C((x - w*0.4 + i*w*0.16).toFixed(1), (y - w*1.5 - (i%2)*w*0.3).toFixed(1), 3, bloom);
+  return s;
+}
+function teapot(x, y){
+  return shade(x, y, 22, 3) + E(x, y-14, 18, 15, "#E9E2D3") + P("M "+(x-18)+" "+(y-18)+" Q "+(x-30)+" "+(y-24)+" "+(x-32)+" "+(y-32), "none", 'stroke="#E9E2D3" stroke-width="5" stroke-linecap="round"')
+    + SL("M "+(x+17)+" "+(y-22)+" Q "+(x+28)+" "+(y-16)+" "+(x+16)+" "+(y-6), "#E9E2D3", 4) + E(x, y-28, 9, 3, "#D9D0BE") + C(x, y-31, 3, "#C9BFAA")
+    + P("M "+(x-14)+" "+(y-12)+" Q "+x+" "+(y-6)+" "+(x+14)+" "+(y-12), "none", 'stroke="#9DB0B8" stroke-width="2"');
+}
+function cup(x, y, chipped){
+  return shade(x, y, 11, 2) + E(x, y, 12, 3.5, "#E3DACA") + P("M "+(x-7)+" "+(y-12)+" L "+(x+7)+" "+(y-12)+" L "+(x+6)+" "+(y-1)+" L "+(x-6)+" "+(y-1)+" Z", "#F1EBDF")
+    + SL("M "+(x+7)+" "+(y-10)+" Q "+(x+12)+" "+(y-7)+" "+(x+6)+" "+(y-3), "#F1EBDF", 2)
+    + (chipped ? P("M "+(x-7)+" "+(y-12)+" L "+(x-3)+" "+(y-12)+" L "+(x-5)+" "+(y-9)+" Z", "#C9BFAA") : "");
+}
+function cake(x, y){
+  return shade(x, y, 30, 3) + E(x, y-2, 30, 5, "#E9E2D3") + R(x-22, y-24, 44, 20, "#C9935E", 'rx="3"')
+    + R(x-22, y-15, 44, 3, "#F2E3C4") + P("M "+(x-22)+" "+(y-24)+" Q "+x+" "+(y-29)+" "+(x+22)+" "+(y-24)+" L "+(x+22)+" "+(y-21)+" Q "+x+" "+(y-25)+" "+(x-22)+" "+(y-21)+" Z", "#F5ECDC")
+    + C(x-8, y-27, 2.4, "#B8574A") + C(x+6, y-27, 2.4, "#B8574A");
+}
+function phoneHandset(x, y){
+  return shade(x, y, 12, 2) + R(x-5, y-24, 10, 24, "#3A3E44", 'rx="3"') + R(x-3.5, y-21, 7, 6, "#9FC3CF", 'rx="1"')
+    + [0,1,2].map(function(r){ return [0,1,2].map(function(c){ return C(x-2.4+c*2.4, y-12+r*3, 0.8, "#C9CDD2"); }).join(""); }).join("");
+}
+
+/* ---------- scenes ---------- */
+function scenePorch(L, o){
+  o = o || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="The front verandah of Marg’s weatherboard cottage">' + defsFor(L);
+  s += R(0, 0, 800, 400, "url(#sky)");
+  s += P("M 0 222 L 70 186 L 140 222 Z", "#8C948F", 'opacity="0.5"') + P("M 690 214 L 750 182 L 810 214 Z", "#8C948F", 'opacity="0.5"');
+  s += gumTree(120, 300, 210, 4) + gumTree(730, 300, 190, 9);
+  s += R(0, 296, 800, 104, "url(#grassg)") + P("M 300 400 L 330 330 L 372 330 L 410 400 Z", "#CDBFA6", 'opacity="0.85"');
+  /* house */
+  s += R(190, 150, 482, 152, "url(#wb)");
+  s += P("M 170 158 L 431 70 L 692 158 Z", "url(#corr)") + P("M 170 158 L 431 70 L 431 82 L 190 160 Z", "#FFFFFF", 'opacity="0.08"')
+    +  R(168, 154, 526, 8, "#E8E1D2", 'rx="2"');
+  /* bullnose verandah roof + posts with brackets */
+  s += P("M 160 186 L 702 186 Q 712 186 712 196 L 712 200 L 150 200 L 150 196 Q 150 186 160 186 Z", "url(#corr)")
+    +  R(150, 199, 562, 6, "#EAE3D4") + R(176, 205, 510, 22, "#262A22", 'opacity="0.12"');
+  [198, 424, 652].forEach(function(px){
+    s += R(px, 205, 11, 98, "#EDE6D6") + R(px+8, 205, 3, 98, "#C6BCA6")
+      +  P("M "+(px-14)+" 205 L "+px+" 205 L "+px+" 219 Z", "#EDE6D6") + P("M "+(px+11)+" 205 L "+(px+25)+" 205 L "+(px+11)+" 219 Z", "#E2DACA");
+  });
+  s += R(176, 300, 512, 14, "url(#deck)") + R(176, 313, 512, 4, "#8F7657")
+    +  R(312, 317, 72, 10, "#B49B7C") + R(302, 327, 92, 10, "#A88F70") + shade(348, 340, 50, 3, 0.15);
+  /* front door with leadlight */
+  s += R(312, 208, 72, 94, "#7E5242", 'rx="2"') + R(320, 216, 56, 34, "#E6CF93", 'opacity="0.8"')
+    +  R(320, 216, 56, 34, "none", 'stroke="#6D4636" stroke-width="2"') + SL("M 348 216 L 348 250 M 320 233 L 376 233", "#6D4636", 1.5)
+    +  C(334, 225, 4, "#B9675A", 'opacity="0.8"') + C(362, 225, 4, "#7D9A7E", 'opacity="0.8"')
+    +  R(322, 258, 22, 36, "#714A3B") + R(352, 258, 22, 36, "#714A3B") + C(370, 262, 3, "#C7A25E")
+    +  R(300, 296, 96, 6, "#8C6F4F", 'rx="1"');
+  s += window2(462, 220, 104, 66, L, "#F1E7D2") + window2(224, 222, 58, 64, L, "#F1E7D2");
+  /* garden */
+  s += pot(612, 302, 30, GREENS, 2, "#C25E4F") + pot(222, 302, 24, GREENS, 6, "#E2B1A8");
+  s += bush(170, 318, 46, 22, GREENS_D, 7) + bush(704, 320, 52, 22, GREENS_D, 5);
+  for (var i = 0; i < 7; i++) s += C(156 + i*7, 306 - (i%3)*5, 3.2, "#8F86B6");
+  for (var j = 0; j < 7; j++) s += C(690 + j*7, 308 - (j%2)*6, 3.2, "#F2EFE6");
+  /* letterbox */
+  s += R(64, 320, 5, 50, "#8A6E4E") + R(50, 304, 34, 20, "#B85A44", 'rx="3"') + R(56, 310, 22, 3, "#3A2F2A");
+  if (o.cat !== false) s += cat(286, 300);
+  if (o.marg) s += marg(o.marg);
+  return s + ambient(L) + '</svg>';
+}
+
+function sceneKitchen(L, o){
+  o = o || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="Marg’s kitchen">' + defsFor(L);
+  s += R(0, 0, 800, 310, "#DCD6C3") + R(0, 0, 800, 18, "#E8E2D2");
+  s += R(0, 306, 800, 94, "url(#lino)") + R(0, 302, 800, 6, "#A99E88");
+  /* window over the sink, café curtain */
+  s += window2(46, 76, 132, 92, L, null) + R(40, 120, 144, 50, "#EBDDC4", 'opacity="0.92"') + SL("M 40 121 L 184 121", "#B7A98F", 2);
+  /* upper cupboard */
+  s += R(196, 66, 106, 104, "#C9BEA7", 'rx="2"') + R(202, 72, 44, 92, "#D3C9B3", 'rx="2"') + R(252, 72, 44, 92, "#D3C9B3", 'rx="2"')
+    +  R(240, 114, 3, 14, "#8C8270") + R(255, 114, 3, 14, "#8C8270") + shade(250, 176, 52, 4, 0.12);
+  /* splashback, bench, lower cupboards */
+  s += R(0, 184, 312, 60, "url(#tiles)") + R(0, 240, 320, 12, "#8E8470") + R(0, 252, 316, 54, "#C2B79F");
+  [0, 1, 2, 3].forEach(function(k){ s += R(8 + k*76, 258, 68, 42, "#CDC3AD", 'rx="2"') + R(36 + k*76, 264, 12, 3, "#8C8270", 'rx="1.5"'); });
+  s += E(112, 240, 36, 4, "#9DA6A3") + SL("M 112 240 L 112 220 Q 112 212 120 212", "#AAB3B1", 3);
+  /* kettle */
+  s += shade(238, 240, 18, 2) + P("M 222 240 L 254 240 L 250 214 L 226 214 Z", "#B9C1BF") + SL("M 228 214 Q 238 202 248 214", "#5F6664", 3) + P("M 254 228 L 264 220 L 262 226 Z", "#B9C1BF");
+  if (o.gloves) s += P("M 160 240 L 170 222 L 176 223 L 170 240 Z", "#7E8C67") + P("M 172 240 L 186 226 L 191 229 L 180 240 Z", "#6E7B5B");
+  if (o.note) s += R(276, 222, 26, 20, "#F6EFB9", 'transform="rotate(-6 289 232)"') + SL("M 280 229 L 296 227 M 280 234 L 292 233", "#9A9070", 1);
+  if (o.milk) s += shade(196, 240, 10, 2) + R(188, 212, 16, 28, "#F7F5EF", 'rx="3"') + R(188, 218, 16, 9, "#6F8FA3");
+  /* calendar + clock */
+  s += R(346, 92, 70, 84, "#F1EADA", 'stroke="#B7AC94" stroke-width="2"') + R(346, 92, 70, 18, "#8B9670");
+  for (var r = 0; r < 4; r++) for (var c = 0; c < 5; c++) s += R(352 + c*12.5, 116 + r*14, 8, 9, "#DAD2BF");
+  s += C(470, 70, 20, "#F3EDE0", 'stroke="#8E7454" stroke-width="3"') + SL("M 470 70 L 470 58 M 470 70 L 479 74", "#4C463D", 2);
+  /* fridge, photos and the medical folder */
+  s += shade(704, 308, 76, 5, 0.2) + R(640, 100, 130, 206, "#E1DDD2", 'rx="8"') + R(640, 168, 130, 3, "#C7C2B6")
+    +  R(754, 116, 6, 40, "#AFA99C", 'rx="3"') + R(754, 184, 6, 44, "#AFA99C", 'rx="3"')
+    +  R(652, 118, 30, 24, "#EDE6D4", 'transform="rotate(-5 667 130)"') + E(667, 133, 7, 5, "#A9B4A6") + C(667, 125, 3.5, "#C8A88E")
+    +  R(692, 122, 26, 22, "#EDE6D4", 'transform="rotate(4 705 133)"') + C(705, 131, 5, "#BCA4C0")
+    +  C(675, 186, 5, "#C25E4F") + C(728, 192, 5, "#7D9A7E");
+  if (o.folder !== false){
+    s += R(660, 196, 52, 64, "#2D6C78", 'rx="3"') + R(664, 202, 44, 13, "#F6F2E8", 'rx="1.5"')
+      +  '<text x="686" y="211.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7.5" font-weight="600" fill="#2D6C78">MEDICAL</text>'
+      +  R(681, 226, 10, 22, "#F6F2E8") + R(675, 232, 22, 10, "#F6F2E8") + C(686, 198, 3.5, "#C25E4F");
+  }
+  /* pendant light */
+  s += SL("M 440 0 L 440 46", "#5F5A50", 1.5) + P("M 418 62 L 462 62 L 450 44 L 430 44 Z", "#8B9670") + E(440, 63, 18, 3, L.warm);
+  /* chairs, Marg, then the table in front of her */
+  if (o.fallen){
+    /* a chair tipped onto its back */
+    s += shade(650, 384, 70, 4) + R(596, 370, 76, 10, "#8E7052", 'rx="3"') + R(606, 362, 8, 10, "#8E7052") + R(652, 362, 8, 10, "#8E7052")
+      +  R(668, 318, 11, 62, "#A98A63", 'rx="3"') + SL("M 676 324 L 716 304 M 676 372 L 716 352", "#8E7052", 7);
+  } else if (o.chair !== false){
+    s += R(408, 196, 10, 64, "#8E7052", 'rx="4"') + R(462, 196, 10, 64, "#8E7052", 'rx="4"') + R(408, 200, 64, 8, "#A98A63", 'rx="3"');
+  }
+  if (o.marg && o.marg.pose === "sit") s += marg(o.marg);
+  s += shade(440, 310, 160, 6, 0.18) + P("M 296 246 L 584 246 L 592 286 L 288 286 Z", "url(#gingham)") + P("M 288 286 L 592 286 L 590 292 L 290 292 Z", "#D9D1C2")
+    +  R(306, 292, 12, 20, "#8E7052") + R(562, 292, 12, 20, "#8E7052");
+  if (o.tea){ s += teapot(470, 252) + cup(410, 252) + cup(526, 254); }
+  if (o.cake) s += cake(354, 254);
+  if (o.breakfast){ s += E(380, 252, 24, 6, "#EDE7D8") + R(368, 244, 22, 7, "#D9B57A", 'rx="2"') + cup(430, 254) + phoneHandset(510, 256); }
+  if (o.chipped){ s += cup(388, 254, true) + cup(500, 254); }
+  if (o.biscuits){ s += E(470, 252, 26, 6, "#EDE7D8") + C(460, 248, 6, "#C9935E") + C(474, 247, 6, "#D2A06A") + C(484, 250, 6, "#C9935E") + cup(390, 254); }
+  if (o.album){ s += P("M 360 254 L 420 254 L 424 240 L 364 240 Z", "#8B5B4A") + P("M 362 252 L 390 252 L 392 242 L 366 242 Z", "#F1EBDF") + P("M 392 252 L 418 252 L 421 242 L 394 242 Z", "#F1EBDF") + R(370, 244, 9, 6, "#A9B4A6") + R(398, 244, 9, 6, "#C8A88E") + cup(500, 254); }
+  if (o.marg && o.marg.pose !== "sit") s += marg(o.marg);
+  if (o.fallen){
+    s += E(500, 384, 30, 4, "#A7B9C0", 'opacity="0.5"') + P("M 478 376 L 492 370 L 488 382 Z", "#F1EBDF")
+      +  P("M 500 380 L 512 376 L 508 386 Z", "#F1EBDF") + P("M 520 384 L 528 380 L 530 388 Z", "#E3DACA");
+  }
+  s += ambient(L);
+  if (o.lamp) s += E(440, 160, 300, 180, "url(#lamp)");
+  return s + '</svg>';
+}
+
+function sceneLounge(L, o){
+  o = o || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="Marg’s lounge room">' + defsFor(L);
+  s += R(0, 0, 800, 300, "url(#paper)") + R(0, 58, 800, 5, "#B9AA8E") + R(0, 286, 800, 14, "#E9E2D2");
+  s += R(0, 300, 800, 100, "url(#boards)");
+  s += P("M 120 400 L 190 318 L 640 318 L 720 400 Z", "#9C6F5E") + P("M 150 392 L 204 326 L 626 326 L 690 392 Z", "none", 'stroke="#C4A27F" stroke-width="3"')
+    +  P("M 182 382 L 222 336 L 608 336 L 654 382 Z", "#A97B68");
+  /* window with drapes and pelmet */
+  s += window2(46, 96, 136, 120, L, null) + R(24, 78, 180, 16, "#7D6B88", 'rx="2"')
+    +  P("M 28 94 Q 48 160 40 286 L 22 286 L 22 94 Z", "#8D7B98") + P("M 200 94 Q 182 160 190 286 L 208 286 L 208 94 Z", "#7D6B88");
+  /* framed photos */
+  s += frame(266, 84, 46, 38) + frame(326, 76, 58, 48) + frame(398, 86, 40, 34, R(401, 89, 34, 28, "#C9D2CF") + E(418, 112, 10, 6, "#8E9A72"));
+  /* TV cabinet + TV */
+  s += shade(356, 300, 120, 5, 0.2) + R(250, 248, 214, 44, "#8A7357", 'rx="3"') + R(258, 256, 96, 30, "#7C664C", 'rx="2"') + R(360, 256, 96, 30, "#7C664C", 'rx="2"')
+    +  R(286, 150, 140, 86, "#2F3236", 'rx="4"') + R(350, 236, 12, 12, "#2F3236");
+  if (o.tvOn){
+    s += R(292, 156, 128, 74, "#4F7288") + R(292, 210, 128, 14, "#B8574A") + R(296, 214, 70, 6, "#F6F2E8", 'opacity="0.85"')
+      +  C(330, 186, 10, "#D7B59A") + P("M 314 210 Q 330 190 346 210 Z", "#2F3A4A") + R(372, 168, 40, 28, "#7E9AAE", 'opacity="0.7"')
+      +  E(356, 300, 150, 40, "#9FC3D6", 'opacity="0.12" filter="url(#blurBig)"');
+  } else {
+    s += R(292, 156, 128, 74, "#24272B") + P("M 300 160 L 336 160 L 300 196 Z", "#FFFFFF", 'opacity="0.06"');
+  }
+  /* armchair */
+  s += shade(610, 306, 80, 6, 0.24)
+    +  R(552, 196, 116, 70, "#8F7E9C", 'rx="16"') + R(540, 236, 140, 54, "#9C8BA8", 'rx="12"')
+    +  R(536, 230, 26, 64, "#857492", 'rx="11"') + R(658, 230, 26, 64, "#857492", 'rx="11"')
+    +  R(548, 290, 10, 14, "#6B5A48") + R(662, 290, 10, 14, "#6B5A48");
+  for (var d = 0; d < 9; d++) s += C(562 + (d%3)*40, 210 + Math.floor(d/3)*18, 3, "#B3A3BE", 'opacity="0.7"');
+  if (o.marg) s += marg(o.marg);
+  /* side table: radio or phone, and a standard lamp */
+  s += R(696, 240, 72, 8, "#9A8261", 'rx="2"') + R(727, 248, 10, 54, "#8A7052") + R(712, 300, 40, 4, "#8A7052", 'rx="2"');
+  if (o.radio){
+    s += shade(732, 240, 30, 3) + R(708, 206, 50, 34, "#9B6B4A", 'rx="6"') + R(713, 211, 24, 24, "#D8C7A4", 'rx="4"')
+      +  [0,1,2,3].map(function(k){ return SL("M 716 "+(215+k*5)+" L 734 "+(215+k*5), "#A78E68", 1.2); }).join("")
+      +  C(748, 216, 4, "#E8DCC0") + C(748, 230, 4, "#E8DCC0")
+      +  SL("M 766 196 Q 772 188 768 180 M 774 202 Q 784 190 778 176", "#8E7454", 1.5, 'opacity="0.6"');
+  }
+  if (o.phone) s += phoneHandset(740, 240);
+  if (o.dinner) s += R(560, 262, 70, 6, "#A98A63", 'rx="2"') + E(595, 260, 20, 5, "#EDE7D8") + E(595, 258, 11, 3, "#B98A5A");
+  s += SL("M 778 300 L 778 120", "#7A6449", 3) + P("M 756 124 L 800 124 L 792 92 L 764 92 Z", "#E8DCC0")
+    +  (L.glow > 0.2 ? E(778, 130, 70, 60, "url(#lamp)") : "");
+  /* knitting basket */
+  s += shade(500, 330, 24, 3) + P("M 478 330 L 522 330 L 518 308 L 482 308 Z", "#B49163") + C(492, 304, 8, "#B98585") + C(506, 302, 7, "#8FA3B4") + SL("M 494 300 L 512 288 M 498 300 L 516 290", "#8A6E4E", 1.5);
+  return s + ambient(L) + '</svg>';
+}
+
+function sceneHall(L, o){
+  o = o || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="The hallway, with a box of Marg’s old work papers">' + defsFor(L);
+  s += R(0, 0, 800, 400, "#C9C0AC") + P("M 0 0 L 250 96 L 250 306 L 0 400 Z", "url(#paper)") + P("M 0 0 L 250 96 L 250 306 L 0 400 Z", "#000000", 'opacity="0.06"')
+    +  P("M 800 0 L 550 96 L 550 306 L 800 400 Z", "url(#paper)") + P("M 800 0 L 550 96 L 550 306 L 800 400 Z", "#000000", 'opacity="0.1"')
+    +  R(250, 96, 300, 210, "#D6CDB9") + P("M 0 0 L 800 0 L 550 96 L 250 96 Z", "#E6DFCF");
+  s += P("M 0 400 L 250 306 L 550 306 L 800 400 Z", "url(#boards)");
+  /* front door with fanlight at the end of the hall */
+  s += R(354, 138, 92, 168, "#EFE8DA") + R(362, 160, 76, 146, "#7E5242") + P("M 362 160 Q 400 132 438 160 Z", "#E6CF93", 'opacity="0.85"')
+    +  R(372, 172, 56, 40, L.warm, 'opacity="0.55"') + C(426, 240, 3, "#C7A25E");
+  /* side doorway (left) in perspective */
+  s += P("M 120 150 L 196 172 L 196 336 L 120 360 Z", "#5E4A3E") + P("M 120 150 L 196 172 L 196 178 L 120 158 Z", "#EFE8DA");
+  /* runner */
+  s += P("M 300 400 L 340 306 L 460 306 L 500 400 Z", "#96705C") + P("M 318 392 L 348 316 L 452 316 L 482 392 Z", "none", 'stroke="#C4A27F" stroke-width="2.5"');
+  /* hall table with a vase and a framed photo */
+  s += shade(640, 330, 70, 5, 0.18) + P("M 590 238 L 702 248 L 702 258 L 590 248 Z", "#8E7052") + R(598, 250, 6, 78, "#7A5F45") + R(690, 258, 6, 82, "#7A5F45")
+    +  frame(606, 196, 34, 44) + P("M 660 246 L 676 246 L 672 214 L 664 214 Z", "#7D9A7E") + C(662, 206, 6, "#E2B1A8") + C(674, 204, 6, "#F2EFE6");
+  /* hooks with hat and coat */
+  s += R(690, 120, 70, 6, "#8E7052") + E(708, 150, 16, 26, "#7D6B88") + E(744, 140, 18, 6, "#C9B48A") + P("M 734 140 Q 744 124 754 140 Z", "#BBA67C");
+  /* pendant light */
+  s += SL("M 400 0 L 400 34", "#5F5A50", 1.5) + E(400, 44, 22, 12, "#EFE8DA") + (L.glow > 0.2 ? E(400, 120, 160, 120, "url(#lamp)") : "");
+  if (o.box){
+    s += shade(206, 360, 64, 6, 0.24)
+      +  P("M 150 356 L 262 356 L 258 300 L 154 300 Z", "#B99A6E") + P("M 154 300 L 258 300 L 270 286 L 166 286 Z", "#A98A5E")
+      +  P("M 154 300 L 140 280 L 164 272 Z", "#C4A87C")
+      +  P("M 176 304 L 230 304 L 236 262 L 182 262 Z", "#F1EBDF") + P("M 188 302 L 244 302 L 246 256 L 192 256 Z", "#E9E2D3")
+      +  P("M 200 300 L 252 300 L 250 266 L 204 266 Z", "#7FA3AE") + R(206, 270, 30, 4, "#F6F2E8")
+      +  SL("M 194 268 L 230 268 M 194 276 L 226 276 M 194 284 L 230 284", "#A69C88", 1.2)
+      +  R(168, 278, 26, 32, "#8E7454", 'transform="rotate(-12 181 294)"') + R(172, 282, 18, 24, "#EFE7D6", 'transform="rotate(-12 181 294)"')
+      +  C(180, 290, 4, "#C8A88E", 'transform="rotate(-12 181 294)"');
+  }
+  if (o.marg) s += marg(o.marg);
+  return s + ambient(L) + '</svg>';
+}
+
+function sceneYard(L, o){
+  o = o || {};
+  var s = '<svg viewBox="0 0 800 400" role="img" aria-label="The back yard, the clothesline and the brick step up to the granny flat">' + defsFor(L);
+  s += R(0, 0, 800, 400, "url(#sky)");
+  s += gumTree(330, 210, 170, 2) + gumTree(520, 210, 150, 6);
+  s += R(0, 182, 800, 54, "url(#paling)") + R(0, 180, 800, 4, "#8C7B62");
+  s += R(0, 236, 800, 164, "url(#grassg)");
+  /* back of the house: wall, back door, small timber step */
+  s += R(0, 52, 210, 250, "url(#wb)") + P("M -10 58 L 220 58 L 220 46 L -10 30 Z", "url(#corr)")
+    +  R(70, 150, 70, 136, "#EFE8DA") + R(76, 156, 58, 130, "#8A5E4B") + R(80, 160, 50, 60, "#5D6A6E", 'opacity="0.55"')
+    +  R(62, 286, 86, 9, "#B49B7C") + R(56, 295, 98, 9, "#A88F70") + shade(105, 306, 54, 3, 0.15);
+  if (L.glow > 0.3) s += R(80, 160, 50, 60, L.warm, 'opacity="0.6"');
+  /* stepping stones to the granny flat */
+  [[250, 330], [330, 336], [410, 334], [490, 328], [560, 318]].forEach(function(p){ s += E(p[0], p[1], 22, 7, "#C2B8A3") + E(p[0], p[1]-1.5, 20, 5.5, "#CFC6B2"); });
+  /* hills hoist with washing */
+  s += shade(400, 300, 40, 4) + R(397, 132, 6, 168, "#9AA0A0") + SL("M 400 132 L 300 152 M 400 132 L 500 152 M 400 140 L 340 172 M 400 140 L 460 172", "#9AA0A0", 2.5)
+    +  SL("M 300 152 L 500 152", "#B8BDBC", 1) + SL("M 340 172 L 460 172", "#B8BDBC", 1)
+    +  R(312, 152, 26, 40, "#D8D2C2", 'rx="3"') + R(350, 152, 22, 30, "#B6C0C4", 'rx="3"') + R(420, 152, 28, 44, "#C99090", 'rx="3"') + R(460, 152, 24, 32, "#E8E1D2", 'rx="3"')
+    +  R(350, 172, 30, 22, "#A8B08F", 'rx="2"');
+  /* the granny flat and its brick step */
+  s += shade(680, 302, 130, 6, 0.2) + R(570, 150, 230, 152, "url(#wb)") + P("M 560 156 L 810 134 L 810 146 L 560 166 Z", "url(#corr)")
+    +  R(640, 194, 54, 96, "#6F7C5A") + R(646, 200, 42, 36, "#C5D0CC", 'opacity="0.7"') + C(686, 250, 2.5, "#C7A25E")
+    +  window2(718, 200, 56, 46, L, "#F1E7D2");
+  s += R(626, 290, 82, 13, "url(#brick)") + R(618, 302, 98, 13, "url(#brick)") + R(618, 314, 98, 3, "#8C6E5C", 'opacity="0.5"');
+  if (o.stepLoose){
+    s += R(674, 290, 24, 7, "#5C4A3E") + P("M 668 286 L 694 282 L 698 290 L 672 294 Z", "#A9604A") + SL("M 650 304 L 656 312 L 652 316", "#4C3A30", 1.4);
+  }
+  /* veggie bed */
+  s += R(160, 334, 120, 26, "#9A7E5C", 'rx="2"') + R(160, 330, 120, 6, "#AD9171") + bush(190, 318, 26, 16, GREENS, 1) + bush(246, 318, 26, 16, GREENS, 5)
+    +  C(184, 314, 4, "#B8574A") + C(198, 322, 3.6, "#C46A4A") + C(250, 312, 4, "#B8574A");
+  s += pot(560, 300, 22, GREENS, 3, "#E2B1A8");
+  if (o.basket){
+    var bx = o.basketX || 560, by = o.basketY || 340;
+    s += shade(bx, by+2, 34, 4) + P("M "+(bx-30)+" "+by+" L "+(bx+30)+" "+by+" L "+(bx+26)+" "+(by-26)+" L "+(bx-26)+" "+(by-26)+" Z", "#DCE4E6")
+      +  [0,1,2].map(function(k){ return SL("M "+(bx-26)+" "+(by-20+k*7)+" L "+(bx+26)+" "+(by-20+k*7), "#B9C7CB", 1.2); }).join("")
+      +  E(bx-8, by-28, 14, 5, "#C99090") + E(bx+10, by-27, 12, 4, "#B6C0C4");
+    if (o.spilled) s += P("M "+(bx+30)+" "+(by-2)+" Q "+(bx+48)+" "+(by-8)+" "+(bx+62)+" "+by+" L "+(bx+40)+" "+(by+4)+" Z", "#E8E1D2") + E(bx+52, by+6, 10, 3.5, "#C99090");
+  }
+  if (o.marg) s += marg(o.marg);
+  return s + ambient(L) + '</svg>';
+}
+
+var SCENES = {porch: scenePorch, lounge: sceneLounge, kitchen: sceneKitchen, yard: sceneYard, hall: sceneHall};
+var ZONE_LABEL = {porch: "Front verandah", lounge: "Lounge room", kitchen: "Kitchen", yard: "Back yard", hall: "Hallway"};
+</script>
+<script>
+"use strict";
+/* ============================================================
+   CONTENT — the quick demo: eight days with Margaret "Marg" Hollis, 78.
+   Four big moments (loss, a biased remark, a fall, an emergency) and four
+   everyday days. Every question is multiple choice with a 25-second timer,
+   so the words on each screen are kept short enough to read in time.
+   Each day keeps its number from the full fortnight (n) so the profile's
+   landmark rows (Days 6, 9, 11 and 14) line up in the GenStay template;
+   `show` is the day the applicant sees (1 to 8).
+   ============================================================ */
+
+/* Area of study picks Marg's old career, which the profile offers as the
+   best homeowner background. */
+var DISCIPLINES = {
+  health:        {label:"Health (nursing, medicine)",                   career:"a nurse"},
+  carework:      {label:"Carework (aged care, disability support)",     career:"a community carer"},
+  allied_health: {label:"Allied health (physio, OT, speech pathology)", career:"a physiotherapist"},
+  social_work:   {label:"Social work and community services",           career:"a social worker"},
+  psychology:    {label:"Psychology and counselling",                   career:"a counsellor"},
+  education:     {label:"Education and teaching",                       career:"a primary school teacher"},
+  other:         {label:"Other",                                        career:"a nurse"}
+};
+function discipline(){ return DISCIPLINES[S.studyArea] || DISCIPLINES.other; }
+function impact(connection, respect, reliability, awareness){
+  return {connection:connection, respect:respect, reliability:reliability, awareness:awareness};
+}
+
+var QUESTION_SECONDS = 25;
+var DEFAULT_TIMEOUT_FX = impact(0, 0, -1, 0); /* no answer reads as not following through */
+
+var DAYS = [
+  /* ---------------- Day 1 — arrival ---------------- */
+  {n:1, show:1, title:"Arrival", time:"3:40 pm", zone:"kitchen", light:"gold",
+   scene:{marg:{pose:"stand", x:606, y:338, s:0.98}, tea:true, cake:true, gloves:true, chair:false},
+   steps:[
+    {t:"say", narr:true, opening:true, text:"Marg Hollis, 78, welcomes you into the Hollis family home. The kettle’s on, and a cake is set on the table."},
+    {t:"choice", prompt:"What do you do first?", timeoutFx:impact(-1,0,0,0), timeoutNote:"Marg waits, then pours the tea anyway.", options:[
+      {text:"Have a tea and ask about some photographs.", fx:impact(1,1,0,0), tag:"arrival_connected", reply:"Marg tells you who’s in each photo."},
+      {text:"Have a tea and ask about the house routines.", fx:impact(0,1,1,0), tag:"arrival_tour", flag:"learned_meds_folder", reply:"Marg shows you the routines, and her medical folder."},
+      {text:"Say you’re tired, and go and unpack.", fx:impact(-1,0,0,0), tag:"arrival_alone", reply:"Marg says the tea will keep."},
+      {text:"Ask for the Wi-Fi password first.", fx:impact(-1,0,1,0), tag:"arrival_practical", reply:"Marg points to the card by the phone."}
+    ]},
+    {t:"choice", prompt:"What are you most looking forward to here?", noReply:true, timeoutFx:impact(0,0,0,0), options:[
+      {text:"A quiet place to study.", tag:"motivation_study"},
+      {text:"Saving money on rent.", tag:"motivation_saving"},
+      {text:"Company and conversation.", tag:"motivation_company"},
+      {text:"Learning from someone with life experience.", tag:"motivation_learning"}
+    ]}
+   ]},
+
+  /* ---------------- Day 2 — house rhythms; plants the step ---------------- */
+  {n:2, show:2, title:"House rhythms", time:"10:15 am", zone:"lounge", light:"day",
+   scene:{marg:{pose:"sit", x:606, y:300, s:0.78}, radio:true},
+   steps:[
+    {t:"say", narr:true, opening:true, text:"Marg explains the routines: bins on Tuesday, the radio at half past four, dinner at six. “And mind the brick step.”"},
+    {t:"choice", prompt:"How do you fit in?", timeoutNote:"Marg moves on to the bins.", options:[
+      {text:"Offer to cook dinner one night a week.", fx:impact(1,1,1,0), tag:"shared_cooking", reply:"Marg suggests Thursdays."},
+      {text:"Say you’ll mostly do your own thing.", fx:impact(0,1,1,0), tag:"courteous_independence", reply:"Marg nods. Clear plans suit you both."},
+      {text:"Plan to eat in your room.", fx:impact(-1,0,-1,0), tag:"dinner_avoided", reply:"The invitation stays open, but Marg stops asking."},
+      {text:"Ask whether the step should be fixed.", fx:impact(0,1,1,1), tag:"noticed_step", flag:"noticed_step", reply:"Marg brushes it off: “I know where to step.”"}
+    ]}
+   ]},
+
+  /* ---------------- Day 3 — the bank text ---------------- */
+  {n:4, show:3, title:"Generational gap", time:"6:20 pm", zone:"yard", light:"dusk",
+   scene:{marg:{pose:"stand", x:250, y:320, s:0.8, hold:"phone", mood:"neutral"}, stepLoose:true},
+   steps:[
+    {t:"say", narr:true, opening:true, text:"Marg is looking at her phone when she receives a text from her bank. It says to reset her password now. She’s about to tap the link."},
+    {t:"choice", prompt:"What do you do?", timeoutFx:impact(0,0,0,-1), timeoutNote:"While you’re still thinking, Marg taps the link.", options:[
+      {text:"Go through the warning signs with her.", fx:impact(1,1,0,1), tag:"scam_taught", reply:"Marg spots the odd sender address herself."},
+      {text:"Take her phone and delete the message.", fx:impact(0,-1,0,1), tag:"phone_taken", reply:"Marg takes it back: “I can learn this.”"},
+      {text:"Suggest she rings the bank to check.", fx:impact(0,1,0,1), tag:"scam_escalated", reply:"The bank confirms it’s a scam."},
+      {text:"Leave it. It’s her phone.", fx:impact(0,1,0,-1), tag:"scam_ignored", reply:"The link opens a convincing sign-in page."}
+    ]}
+   ]},
+
+  /* ---------------- Day 4 — BIG MOMENT: loss ---------------- */
+  {n:6, show:4, title:"Loss", time:"8:10 am", zone:"kitchen", light:"grey", kind:"landmark", contentNote:"bereavement",
+   scene:{marg:{pose:"sit", x:440, y:306, s:0.78, mood:"sad"}, breakfast:true},
+   steps:[
+    {t:"say", narr:true, opening:true, pathText:{
+      warm:"The phone rings at breakfast. Marg comes to find you: “Dorothy died overnight. My closest friend, fifty years.”",
+      steady:"The phone rings at breakfast. Later, Marg sits with cold tea: “Dorothy’s gone. Fifty years, we were friends.”",
+      distant:"You overhear a call. Later, Marg says quietly, “Dorothy died last night. Fifty years, we were friends.”"
+    }, text:"The phone rings at breakfast. Marg’s closest friend, Dorothy, has died."},
+    {t:"choice", prompt:"What do you do?", timeoutFx:impact(-1,0,0,0), timeoutNote:"You can’t find the words.", options:[
+      {text:"Sit with her quietly and let her lead.", fx:impact(1,1,0,1), tag:"grief_present", reply:"Marg starts talking about Dorothy."},
+      {text:"Say you’re sorry, and ask about Dorothy.", fx:impact(1,1,0,0), tag:"grief_invited", reply:"Marg tells you about fifty years of friendship."},
+      {text:"Make tea, and offer practical help.", fx:impact(0,1,1,1), tag:"grief_practical", reply:"Marg says a meal tonight would help."},
+      {text:"Say, “At least she’s in a better place.”", fx:impact(-1,0,0,-1), tag:"grief_dismissed", reply:"Marg looks down. The words don’t help."}
+    ]}
+   ]},
+
+  /* ---------------- Day 5 — everyday friction ---------------- */
+  {n:8, show:5, title:"Everyday friction", time:"8:00 am", zone:"kitchen", light:"day",
+   scene:{marg:{pose:"sit", x:440, y:306, s:0.78, mood:"neutral"}, chipped:true, note:true, milk:true},
+   steps:[
+    {t:"say", narr:true, opening:true, text:"Your friend stayed later than you told Marg, and the music was loud. Now there’s a note about a chipped mug."},
+    {t:"choice", prompt:"What do you do?", timeoutFx:impact(0,-1,-1,0), timeoutNote:"You leave for campus without a word.", options:[
+      {text:"Apologise, and ask how you can do better.", fx:impact(1,1,1,0), tag:"friction_repair", reply:"Marg admits it was awkward. You agree on a heads-up."},
+      {text:"Wait and see if she mentions it.", fx:impact(0,0,0,0), tag:"friction_wait", reply:"The morning stays polite, and awkward."},
+      {text:"Point out that you pay rent.", fx:impact(-1,-1,0,0), tag:"friction_defensive", reply:"Marg goes quiet. Her next invitation is formal."},
+      {text:"Apologise, and suggest agreeing on quiet hours.", fx:impact(1,1,1,0), tag:"friction_guidelines", reply:"You agree on quiet hours and notice for guests."}
+    ]}
+   ]},
+
+  /* ---------------- Day 6 — BIG MOMENT: boundaries ---------------- */
+  {n:9, show:6, title:"Boundaries", time:"6:30 pm", zone:"lounge", light:"gold", kind:"landmark", contentNote:"a biased remark",
+   scene:{marg:{pose:"sit", x:606, y:300, s:0.78, mood:"neutral"}, tvOn:true, dinner:true},
+   steps:[
+    {t:"say", narr:true, opening:true, text:"Over dinner, Marg says, “That new neighbour at the community garden is so well-spoken. You’d never guess she wasn’t born here.”"},
+    {t:"choice", prompt:"What do you do?", timeoutFx:impact(0,-1,0,0), timeoutTag:"boundary_avoided", timeoutNote:"Marg moves on to the weather.", options:[
+      {text:"Laugh awkwardly and change the subject.", fx:impact(0,-1,0,0), tag:"boundary_laughed", reply:"Marg takes the laugh as agreement."},
+      {text:"Say nothing, and go to your room.", fx:impact(-1,0,0,0), tag:"boundary_avoided", flag:"avoided_boundary", reply:"The moment passes, but it stays with you."},
+      {text:"Calmly ask what she means, and share your view.", fx:impact(1,1,0,0), tag:"boundary_calm", flag:"brought_up_remark", reply:"Marg is defensive at first, then listens."},
+      {text:"Tell her it’s racist, and leave the room.", fx:impact(-1,1,0,0), tag:"boundary_sharp", flag:"brought_up_remark", reply:"Your point was clear. The evening is over."}
+    ]}
+   ]},
+
+  /* ---------------- Day 7 — BIG MOMENT: the fall ---------------- */
+  {n:11, show:7, title:"Safety", time:"5:20 pm", zone:"yard", light:"gold", kind:"landmark", contentNote:"a fall",
+   scene:{marg:{pose:"floor", x:640, y:338, s:0.8}, stepLoose:true, basket:true, basketX:500, basketY:350, spilled:true},
+   steps:[
+    {t:"say", narr:true, opening:true, textByFlag:[
+      {requiresFlags:["noticed_step"], text:"A thud from the yard. Marg has fallen on the brick step you asked about. “I’m fine. Don’t fuss.”"},
+      {excludesFlags:["noticed_step"], text:"A thud from the yard. Marg has tripped on the broken brick step. “I’m fine. Don’t fuss.”"}
+    ]},
+    {t:"choice", prompt:"What do you do first?", timeoutFx:impact(0,0,0,-1), timeoutNote:"Marg tries to get up alone, and winces.", options:[
+      {text:"Help her straight up onto her feet.", fx:impact(0,-1,0,-1), tag:"fall_lifted", reply:"Marg winces. You stop and ask where it hurts."},
+      {text:"Keep her still, and check her head.", fx:impact(0,1,0,1), tag:"fall_checked", reply:"Her hip hurts. You call for medical advice."},
+      {text:"Call 000 and stay beside her.", fx:impact(0,0,1,1), tag:"fall_called", reply:"The call-taker asks about her head. You don’t move her."},
+      {text:"Take her word for it, and leave.", fx:impact(-1,0,0,-1), tag:"fall_dismissed", reply:"When you look back, she’s still on the ground."}
+    ]}
+   ]},
+
+  /* ---------------- Day 8 — BIG MOMENT: the emergency ---------------- */
+  {n:14, show:8, title:"The emergency", time:"6:40 am", zone:"kitchen", light:"night", kind:"landmark", contentNote:"a medical emergency",
+   scene:{marg:{pose:"floor", x:352, y:376, s:1.55}, fallen:true, lamp:true, chair:false},
+   steps:[
+    {t:"say", narr:true, opening:true, text:"Early morning. A crash from the kitchen. Marg is on the floor, breathing but groggy, and not responding clearly."},
+    {t:"choice", prompt:"What do you do first?", timeoutFx:impact(0,0,0,-2), timeoutTag:"emergency_froze", timeoutNote:"You freeze. A neighbour hears the crash and rings 000.", options:[
+      {text:"Call 000 on speaker, and stay with her.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called",
+       reply:"The call-taker guides you until the paramedics arrive.",
+       replyByFlag:{flag:"learned_meds_folder", text:"The call-taker guides you. You hand the paramedics her folder."}},
+      {text:"Shake her, and call her son, David.", fx:impact(0,-1,0,-2), tag:"emergency_delayed", reply:"David doesn’t answer. Minutes pass before you ring 000."},
+      {text:"Run next door for help.", fx:impact(0,0,0,-1), tag:"emergency_delayed", reply:"The neighbour rings 000 while you go back to Marg."},
+      {text:"Give her water, and help her sit up.", fx:impact(0,-1,0,-2), tag:"emergency_water", reply:"Paramedics say not to move her or give her anything."}
+    ]}
+   ]}
+];
+/* How it ends, shown with Marg's reaction on Day 8. */
+var EPILOGUE = {
+  warm:"At the hospital, Marg is stable. She takes your hand: “Thank you for staying.”",
+  steady:"At the hospital, Marg is stable. She thanks you, a little surprised.",
+  distant:"At the hospital, Marg is stable. She thanks you, and asks whether the coordinator should check in."
+};
+
+/* The lowest moment, in words staff can scan. Choices not listed here use their own text. */
+var LOW_NOTES = {
+  arrival_alone:"Went straight to unpack on arrival", dinner_avoided:"Chose to eat in their room",
+  grief_dismissed:"Said Dorothy was in a better place", friction_defensive:"Defensive about the late-night noise",
+  boundary_laughed:"Laughed along with the remark", boundary_avoided:"Let the remark pass",
+  fall_lifted:"Lifted Marg straight after the fall", fall_dismissed:"Walked away after the fall",
+  emergency_delayed:"Delayed calling 000 in the emergency", emergency_water:"Gave Marg water and moved her in the emergency"
+};
+</script>
+<script>
+"use strict";
+/* ============================================================
+   ENGINE
+   ============================================================ */
+var app = document.getElementById("app");
+var VERSION = "demo-1.0";
+var START_METER = 5;
+var SAVE_KEY = "pepaws-porch-demo-v1";
+var METERS = ["connection", "respect", "reliability", "awareness"];
+
+var S = null;
+function freshState(){
+  return {
+    view: "title", pid: null, name: "", email: "", studyArea: "health",
+    consentAt: null, startedAt: null, gameEndedAt: null, submittedAt: null,
+    di: 0, si: 0, phase: "step",
+    meters: {connection: START_METER, respect: START_METER, reliability: START_METER, awareness: START_METER},
+    flags: {}, tags: {}, pathByDay: {},
+    motivation: "", choices: [], concerns: [], pending: null, stepEnteredAt: null,
+    q: {}, qPage: 0, qPrefilled: false, synced: false
+  };
+}
+
+/* ---------- utilities ---------- */
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function el(sel){ return app.querySelector(sel); }
+function nowISO(){ return new Date().toISOString(); }
+function secsSince(t){ return t ? Math.round((Date.now() - t) / 100) / 10 : 0; }
+
+/* Progress is kept in this browser so a refresh doesn't lose your place.
+   It is cleared once the profile reaches the placement record. */
+function save(){
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* private mode, blocked storage */ }
+}
+function loadSaved(){
+  try {
+    var raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    var v = JSON.parse(raw);
+    if (!v || !v.pid || !v.view) return null;
+    var base = freshState();
+    Object.keys(base).forEach(function(key){ if (v[key] == null) v[key] = base[key]; });
+    METERS.forEach(function(key){ if (v.meters[key] == null) v.meters[key] = START_METER; });
+    if (!DISCIPLINES[v.studyArea]) v.studyArea = "other";
+    return v;
+  } catch (e) { return null; }
+}
+function clearSaved(){ try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
+
+function makePid(){
+  return "DEMO-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+}
+
+/* ---------- timer (single active) ---------- */
+var timerHandle = null, tickHandle = null;
+function clearTimer(){
+  if (timerHandle) { clearTimeout(timerHandle); timerHandle = null; }
+  if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+  if (S) S.timerDeadline = null;
+}
+function runTimer(seconds, onExpire){
+  clearTimer();
+  var bar = el("#tbar"), label = el("#tlabel");
+  var endAt = Date.now() + seconds * 1000;
+  if (bar){
+    bar.style.width = "100%";
+    bar.style.transition = "width " + seconds + "s linear";
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ bar.style.width = "0%"; }); });
+  }
+  if (label){
+    var tick = function(){ label.textContent = Math.max(0, Math.ceil((endAt - Date.now()) / 1000)) + "s"; };
+    tick();
+    tickHandle = setInterval(tick, 250);
+  }
+  timerHandle = setTimeout(function(){ clearTimer(); onExpire(); }, seconds * 1000);
+  S.timerDeadline = endAt;
+}
+
+/* ---------- effects ---------- */
+function applyFx(f){
+  if (!f) return;
+  METERS.forEach(function(key){
+    if (f[key] !== undefined) S.meters[key] = Math.max(0, Math.min(10, S.meters[key] + f[key]));
+  });
+}
+function choiceScore(c){ return (c.connection || 0) + (c.respect || 0) + (c.reliability || 0) + (c.awareness || 0); }
+
+/* ---------- path tiers: recalculated each morning ---------- */
+function pathTier(){
+  var m = S.meters;
+  if (m.connection >= 7 && m.respect >= 7) return "warm";
+  if (m.connection <= 3 || m.respect <= 3) return "distant";
+  return "steady";
+}
+function pathTierForDay(n){ return S.pathByDay[String(n)] || pathTier(); }
+
+/* ---------- the lowest moment, for staff ---------- */
+function findLowestMoment(){
+  var low = null;
+  S.choices.forEach(function(c){
+    var score = choiceScore(c);
+    if (score < 0 && (!low || score < low.score))
+      low = {day: c.day, score: score, note: c.timedOut ? "No answer in time (" + c.title + ")" : LOW_NOTES[c.tag] || c.chosen.replace(/\.$/, "")};
+  });
+  return low;
+}
+
+/* ---------- days, openings and step availability ---------- */
+function hasAll(list, set){ return (list || []).every(function(k){ return !!set[k]; }); }
+function hasAny(list, set){ return !list || !list.length || list.some(function(k){ return !!set[k]; }); }
+function hasNone(list, set){ return !(list || []).some(function(k){ return !!set[k]; }); }
+
+function dayForIndex(index){
+  var day = DAYS[index], key = String(day.n);
+  if (!S.pathByDay[key]){ S.pathByDay[key] = pathTier(); save(); }
+  return day;
+}
+function stepIsAvailable(step){
+  return hasAll(step.requiresTags, S.tags) && hasAny(step.requiresAnyTags, S.tags)
+    && hasAll(step.requiresFlags, S.flags) && hasNone(step.excludesFlags, S.flags);
+}
+function enterStep(){
+  S.phase = "step";
+  S.stepEnteredAt = Date.now();
+  save();
+  render();
+}
+function nextStep(){
+  clearTimer();
+  var day = dayForIndex(S.di);
+  var next = S.si + 1;
+  while (next < day.steps.length && !stepIsAvailable(day.steps[next])) next++;
+  if (next < day.steps.length){ S.si = next; enterStep(); return; }
+  if (S.di + 1 < DAYS.length){
+    S.di++; S.si = 0;
+    day = dayForIndex(S.di);
+    while (S.si < day.steps.length && !stepIsAvailable(day.steps[S.si])) S.si++;
+    enterStep(); return;
+  }
+  endGame();
+}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+function render(){
+  clearTimer();
+  app.className = "";
+  if (S.view === "paused") return renderPaused();
+  if (S.view === "play") return renderPlay();
+  if (S.view === "questionnaire") return renderQuestionnaire();
+  if (S.view === "results") return renderResults();
+  if (S.view === "staff") return renderStaff();
+  renderTitle();
+}
+
+function pauseRun(){
+  if (S.view !== "play") return;
+  S.pausedFrom = S.view;
+  S.pauseStartedAt = Date.now();
+  if (S.timerDeadline){
+    S.timerRemaining = Math.max(1, Math.ceil((S.timerDeadline - Date.now()) / 1000));
+    S.timerDeadline = null;
+  }
+  clearTimer();
+  S.view = "paused";
+  save();
+  render();
+}
+function resumeRun(){
+  if (S.stepEnteredAt && S.pauseStartedAt) S.stepEnteredAt += Date.now() - S.pauseStartedAt;
+  S.view = S.pausedFrom || "play";
+  S.pausedFrom = null; S.pauseStartedAt = null;
+  save(); render();
+}
+function bindPause(){
+  var button = el("#pause");
+  if (button) button.onclick = pauseRun;
+}
+function renderPaused(){
+  app.innerHTML = '<div class="scroll"><div class="pad">'
+    + '<div><div class="kicker">Progress saved</div><h1 style="font-size:29px;margin-top:6px">Paused</h1></div>'
+    + '<p class="sub">Your place, and any timer that was running, are saved. Resume whenever you’re ready.</p>'
+    + '<button class="cont primary" id="resume-run">Resume</button></div></div>';
+  el("#resume-run").onclick = resumeRun;
+}
+
+/* ---------- title / consent ---------- */
+function renderTitle(){
+  var saved = loadSaved();
+  var resumable = saved && !saved.submittedAt && ["play","paused","questionnaire"].indexOf(saved.view) !== -1;
+  var where = resumable ? (saved.view === "questionnaire" ? "the matching questions" : "day " + DAYS[saved.di].show + " of 8") : "";
+  var unsent = saved && saved.submittedAt && !saved.synced;
+  app.innerHTML =
+    '<div class="stage">' + scenePorch(LIGHT.gold, {marg: {pose: "stand", x: 470, y: 301, s: 0.84}}) + '</div>'
+    + '<div class="scroll"><div class="pad title">'
+    + '<div><div class="kicker">Homeshare screening · quick demo</div><h1>Pepaws Porch</h1></div>'
+    + '<p class="sub">Spend eight days sharing a home with Marg, 78. Every question is multiple choice, with 25 seconds to answer. There are no right or wrong answers. Two short pages of questions at the end build your matching profile.</p>'
+    + (resumable
+        ? '<div class="notice"><b>You have a run in progress</b>, up to ' + esc(where) + '.'
+          + '<div class="btnrow" style="margin-top:10px">'
+          + '<button class="cont primary" id="resume">Resume</button>'
+          + '<button class="cont ghost" id="restart">Start again</button></div></div>'
+        : '')
+    + (unsent
+        ? '<div class="notice"><b>Your finished profile hasn’t reached the placement service yet.</b>'
+          + '<div class="btnrow" style="margin-top:10px"><button class="cont primary" id="resend">Send it now</button></div></div>'
+        : '')
+    + '<div style="display:flex;flex-direction:column;gap:12px">'
+    + '<label>Your full name<input type="text" id="fname" autocomplete="name" maxlength="120" value="' + esc(S.name) + '"></label>'
+    + '<label>University email<input type="email" id="femail" autocomplete="email" maxlength="160" value="' + esc(S.email) + '"></label>'
+    + '<label>Area of study<select id="study-area">'
+    + Object.keys(DISCIPLINES).map(function(k){
+        return '<option value="' + k + '"' + (S.studyArea === k ? " selected" : "") + '>' + esc(DISCIPLINES[k].label) + '</option>';
+      }).join("")
+    + '</select></label></div>'
+    + '<div class="notice"><b>Content note.</b> The eight days include a bereavement, a biased remark, a fall and a medical emergency. Each of those days carries its own note. You can pause at any time, and the timer pauses with you.</div>'
+    + '<label class="check"><input type="checkbox" id="c1"><span>I understand my choices, my answers to the matching questions and how long I took are recorded, read by staff at the placement service, and used to build my matching profile.</span></label>'
+    + '<label class="check"><input type="checkbox" id="c2"><span>I have read the content note and I’m ready to continue.</span></label>'
+    + '<div id="terr"></div>'
+    + '<button class="cont primary" id="begin">Begin day 1</button>'
+    + '<p class="sub" style="font-size:12.5px">About 3–4 minutes, including two short pages of questions.</p>'
+    + '</div></div>';
+
+  if (resumable){
+    el("#resume").onclick = function(){
+      S = saved;
+      if (S.view === "paused") { resumeRun(); return; }
+      if (S.view === "play") enterStep(); else render();
+    };
+    el("#restart").onclick = function(){ clearSaved(); S = freshState(); render(); };
+  }
+  if (unsent) el("#resend").onclick = function(){ S = saved; S.view = "results"; render(); deliverProfile(); };
+  el("#begin").onclick = function(){
+    var name = el("#fname").value.trim(), email = el("#femail").value.trim();
+    var errs = [];
+    if (name.length < 2) errs.push("Enter your full name.");
+    /* Australian university or educational addresses only (any *.edu.au, plus monash.edu). */
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.push("Enter a valid email address.");
+    else if (!/(^|\.)(edu\.au|monash\.edu)$/i.test(email.split("@").pop())) errs.push("Use your Australian university or educational email address.");
+    if (!el("#c1").checked || !el("#c2").checked) errs.push("Tick both boxes to start.");
+    if (errs.length){ el("#terr").innerHTML = '<p class="err">' + esc(errs.join(" ")) + '</p>'; return; }
+    S = freshState();
+    S.name = name; S.email = email; S.pid = makePid();
+    S.studyArea = el("#study-area").value;
+    S.consentAt = nowISO(); S.startedAt = nowISO();
+    S.view = "play";
+    enterStep();
+    /* Ask for record-store access now, on the applicant's own click, so the
+       save at the end of the demo doesn't meet a consent prompt they
+       might miss. Never blocks the game. */
+    getCap("permissions").then(function(p){ if (p) p.request(["db", "user"]).then(null, function(){}); });
+  };
+}
+
+/* ---------- play ---------- */
+function sceneFor(day){
+  return (SCENES[day.zone] || scenePorch)(LIGHT[day.light] || LIGHT.day, day.scene || {});
+}
+function topbarHTML(day){
+  return '<div class="topbar"><div class="toprow">'
+    + '<span class="daylabel">Day ' + day.show + ' of 8 · ' + esc(day.title) + '</span>'
+    + '<span class="clock">' + esc(day.time) + '</span><button class="pause" id="pause">Pause</button></div></div>';
+}
+
+function renderPlay(){
+  var day = dayForIndex(S.di);
+  var step = day.steps[S.si];
+  if (!step || !stepIsAvailable(step)){ nextStep(); return; }
+  var timed = S.phase === "step" && step.t === "choice"; /* every question is timed */
+  app.innerHTML = topbarHTML(day)
+    + '<div class="stage">' + sceneFor(day) + '<div class="stagenote">' + esc(ZONE_LABEL[day.zone] || "") + '</div></div>'
+    + (timed ? '<div class="timer"><i id="tbar"></i></div>' : '')
+    + '<div class="panel" id="panel"></div>';
+  if (S.phase === "reply") renderReply();
+  else if (step.t === "say") renderSay(day, step);
+  else if (step.t === "choice") renderChoice(day, step);
+  bindPause();
+}
+
+function flaggedStepText(step){
+  var v = step.textByFlag.filter(function(x){ return hasAll(x.requiresFlags, S.flags) && hasNone(x.excludesFlags, S.flags); })[0];
+  return v ? v.text : (step.text || "");
+}
+function renderSay(day, step){
+  var text = step.textByFlag ? flaggedStepText(step) : step.pathText && step.pathText[pathTierForDay(day.n)] || step.text;
+  el("#panel").innerHTML =
+    (step.opening && day.contentNote ? '<div class="notice"><b>Content note:</b> ' + esc(day.contentNote) + '.</div>' : '')
+    + '<p class="line">' + esc(text) + '</p>'
+    + '<button class="cont" id="next">Continue</button>';
+  el("#next").onclick = nextStep;
+}
+
+function renderChoice(day, step){
+  var p = el("#panel");
+  var seconds = step.timer || QUESTION_SECONDS;
+  var html = '<div class="prompt">' + esc(step.prompt) + '</div>'
+    + '<div class="timerlabel" id="tlabel">' + seconds + 's</div>';
+  html += '<div class="opts">' + step.options.map(function(o, i){
+    return '<button class="opt" data-i="' + i + '">' + esc(o.text) + '</button>';
+  }).join("") + '</div>';
+  p.innerHTML = html;
+  Array.prototype.forEach.call(p.querySelectorAll(".opt"), function(b){
+    b.onclick = function(){ choose(day, step, parseInt(b.getAttribute("data-i"), 10), false); };
+  });
+  var duration = S.timerRemaining || seconds;
+  S.timerRemaining = null;
+  runTimer(duration, function(){ choose(day, step, -1, true); });
+}
+
+function recordChoice(day, step, option, f, timedOut, seconds){
+  S.choices.push({
+    day: day.n, title: day.title, prompt: step.prompt,
+    chosen: timedOut ? "(no response — timed out)" : option.text,
+    tag: timedOut ? "timeout" : (option.tag || ""),
+    connection: f.connection || 0, respect: f.respect || 0, reliability: f.reliability || 0, awareness: f.awareness || 0,
+    timedOut: !!timedOut, seconds: seconds
+  });
+}
+function applyOption(option){
+  if (option.flag) S.flags[option.flag] = true;
+  if (option.tag) S.tags[option.tag] = true;
+  (option.setFlags || []).forEach(function(flag){ S.flags[flag] = true; });
+}
+
+function choose(day, step, idx, timedOut){
+  clearTimer();
+  var seconds = secsSince(S.stepEnteredAt);
+  var chosen = timedOut ? null : step.options[idx];
+  var f = (timedOut ? step.timeoutFx || DEFAULT_TIMEOUT_FX : chosen.fx) || {};
+  applyFx(f);
+  if (!timedOut){
+    applyOption(chosen);
+    if (chosen.tag && chosen.tag.indexOf("motivation_") === 0) S.motivation = chosen.tag;
+  }
+  recordChoice(day, step, chosen, f, timedOut, seconds);
+  if (step.noReply){ save(); nextStep(); return; }
+  S.pending = {
+    heading: timedOut ? "No answer in time" : "",
+    reply: timedOut ? (step.timeoutNote || "The moment passes without an answer.")
+      : chosen.replyByFlag && S.flags[chosen.replyByFlag.flag] ? chosen.replyByFlag.text : chosen.reply || ""
+  };
+  S.phase = "reply";
+  save(); render();
+}
+
+function renderReply(){
+  var p = S.pending || {}, day = DAYS[S.di];
+  var moreToday = day.steps.slice(S.si + 1).some(stepIsAvailable), last = !moreToday && S.di === DAYS.length - 1;
+  el("#panel").innerHTML =
+    (p.heading ? '<div class="who narr">' + esc(p.heading) + '</div>' : "")
+    + (p.reply ? '<p class="line">' + esc(p.reply) + '</p>' : "")
+    + (last ? '<p class="line">' + esc(EPILOGUE[pathTier()]) + '</p>' : "")
+    + '<button class="cont primary" id="next">' + (moreToday ? "Continue" : last ? "Finish" : "Next day") + '</button>';
+  el("#next").onclick = function(){ S.pending = null; nextStep(); };
+}
+
+/* ---------- automatic checks on everything the applicant writes ----------
+   Plain word lists, so staff can see exactly why something was flagged. A hit
+   quotes the words for staff; threats and drug references also lower the
+   meters and keep the profile out of automatic matching. A negation just
+   before a match ("I would never hurt her") doesn't count. */
+var CONCERNS = [
+  {id:"threatening_language", serious:true, label:"Threatening or hostile language",
+   re:/\b(or else|bad day for you|you'?ll regret|watch (your|ur) back|(hurt|hit|kill|smack|bash|punch) (you|her|marg)|hurry up and die|(cark|cack)(ing)? it|kick the bucket|(this|it'?s|this is) my (house|home)( now)?|kick (you|her) out|you'?re (useless|a burden))\b/i},
+  {id:"drug_references", serious:true, label:"References to illegal drugs",
+   re:/\b(meth|methamphetamine|heroin|cocaine|crack ?(pipe|cocaine|head)|(smoke|smoking|do|doing|sell|selling|deal|dealing) (crack|ice|meth|drugs|weed|coke)|on (crack|meth)|^crack$)\b/i},
+  {id:"welfare_concern", label:"Possible welfare concern",
+   re:/\b(want(ed)? to die|wanna die|kill myself|suicid\w*|end (it all|my life)|self[- ]harm|^(to )?die$)/i},
+  {id:"demeaning_language", label:"Demeaning, ageist or crude language",
+   re:/\b((?<!my )granny(?! flat)|old (hag|bag|bat|biddy|cow|chook)|boomer|senile|geezer|wrinkl(y|ies)|crone|you old|elderly energy|f+u+c+k\w*|shit|bitch|cunt|stfu|shut up)\b/i}
+];
+var NEG_BEFORE = /(?:\b(?:not|never|no|nor|without|wouldn'?t|won'?t|don'?t|didn'?t|can'?t|couldn'?t|shouldn'?t)\b|\w+n['’]t\b)[^.!?;]{0,26}$/i;
+function firstUnnegated(re, text){
+  var g = new RegExp(re.source, re.flags + "g"), m;
+  while ((m = g.exec(text)) !== null){
+    if (!NEG_BEFORE.test(text.slice(Math.max(0, m.index - 30), m.index))){
+      var from = Math.max(0, m.index - 28), to = Math.min(text.length, m.index + m[0].length + 28);
+      var cut = text.slice(from, to);
+      if (from > 0) cut = cut.replace(/^\S*\s/, "…");
+      if (to < text.length) cut = cut.replace(/\s\S*$/, "…");
+      return cut.replace(/\s+/g, " ").trim();
+    }
+    if (g.lastIndex === m.index) g.lastIndex++;
+  }
+  return null;
+}
+function scanText(source, text, fromQuestions){
+  var hits = [];
+  CONCERNS.forEach(function(k){
+    var excerpt = firstUnnegated(k.re, String(text || "").replace(/[‘’]/g, "'"));
+    if (excerpt){ hits.push(k); S.concerns.push({id: k.id, source: source, excerpt: excerpt, q: !!fromQuestions}); }
+  });
+  return hits;
+}
+function hasSeriousConcern(){ return S.concerns.some(function(c){ return CONCERNS.filter(function(k){ return k.id === c.id; })[0].serious; }); }
+</script>
+<script>
+"use strict";
+/* ============================================================
+   MATCHING QUESTIONS — two short pages of the key matching
+   fields the demo can't tell us: the hard filters and the main
+   scoring points. Each field writes to one path in the GenStay
+   profile contract (genstay-profile-fields.md).
+   ============================================================ */
+var YES_NO = [[true, "Yes"], [false, "No"]];
+var Q_PAGES = [
+  {title:"Your placement", intro:"Two short pages of the details we match on. Most answers are a tap.", fields:[
+    {id:"age", path:"student.age", type:"num", label:"Age", req:true, min:18, max:99, hint:"You need to be 18 or over to join a homeshare."},
+    {id:"gender", path:"student.gender", type:"select", label:"Gender", req:true, opts:["Female","Male","Non-binary","Another identity","Prefer not to say"]},
+    {id:"campus", path:"placement.campus", type:"text", label:"Campus you attend most", req:true, full:true, ph:"e.g. UTS City campus, Ultimo"},
+    {id:"moveInDate", path:"placement.moveInDate", type:"date", label:"Earliest move-in date", req:true},
+    {id:"stayMonths", path:"placement.stayMonths", type:"select", label:"How long you’d like to stay", req:true, num:true, opts:[["3","3 months"],["6","6 months"],["9","9 months"],["12","12 months"],["18","18 months"],["24","2 years"]]},
+    {id:"rentBudgetWeekly", path:"support.rentBudgetWeekly", type:"num", label:"Most you can pay in rent each week (AUD)", req:true, min:0, max:2000, full:true},
+    {id:"homeownerGender", path:"household.homeownerGender", type:"select", label:"I’d be comfortable living with a homeowner who is", req:true, full:true, opts:[["female","A woman"],["male","A man"],["any","Either is fine"]]}
+  ]},
+  {title:"Home life and helping out", fields:[
+    {id:"smoker", path:"household.smoker", type:"yesno", label:"Do you smoke or vape?", req:true},
+    {id:"needsSmokeFree", path:"household.needsSmokeFree", type:"yesno", label:"Do you need a smoke-free home?", req:true},
+    {id:"okWithPets", path:"household.okWithPets", type:"yesno", label:"Happy to live with pets?", req:true},
+    {id:"petAllergy", path:"household.petAllergy", type:"yesno", label:"Any pet allergies?", req:true},
+    {id:"otherLodgers", path:"household.otherLodgers", type:"select", label:"Other students in the home", req:true, full:true, opts:[["none","I’d rather be the only student"],["open","Open to another student"],["prefer","I’d like another student there"]]},
+    {id:"hoursPerWeek", path:"support.hoursPerWeek", type:"range", label:"Hours a week you can give to shared household life", req:true, full:true, opts:[["6-8","6–8 hours"],["8-10","8–10 hours"],["10-12","10–12 hours"],["12-15","12–15 hours"]]},
+    {id:"helpTypes", path:"support.helpTypes", type:"chips", label:"Happy to help with", req:true, full:true, opts:["Company and conversation","Cooking shared meals","Tech and phone help","Gardening","Bins and light chores","Shopping and errands","Lifts in the homeowner’s car","Pet care"]},
+    {id:"notOffered", path:"support.notOffered", type:"chips", label:"Not comfortable offering", full:true, opts:["Personal care","Managing medication","Overnight care","Heavy lifting","Cleaning the whole house"]},
+    {id:"hobbies", path:"interests.hobbies", type:"chips", label:"Hobbies and interests", full:true, opts:["Gardening","Cooking and baking","Reading","Music","Sport and fitness","Walking","Crafts","Board games and puzzles","Films and TV","Art"]}
+  ]}
+];
+var Q_FIELDS = [];
+Q_PAGES.forEach(function(page){ page.fields.forEach(function(f){ if (f.id) Q_FIELDS.push(f); }); });
+var WEEK = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+function optPairs(f){ return f.opts.map(function(o){ return Array.isArray(o) ? o : [o, o]; }); }
+function isBlank(v){ return v == null || v === "" || (Array.isArray(v) && !v.length); }
+function splitList(text){ return String(text || "").split(/[,\n]/).map(function(x){ return x.trim(); }).filter(Boolean); }
+
+/* Raw answer -> the value the profile contract expects. */
+function qValue(f){
+  var v = S.q[f.id];
+  if (f.type === "chips"){
+    var list = (v || []).concat(f.other ? splitList(S.q[f.id + "__other"]) : []);
+    return list.length ? list : undefined;
+  }
+  if (isBlank(v)) return undefined;
+  if (f.type === "num" || f.type === "scale" || f.num) return Number(v);
+  if (f.type === "list") { var l = splitList(v); return l.length ? l : undefined; }
+  if (f.type === "range"){
+    var m = String(v).split("-").map(Number);
+    return m.length === 2 ? {min: m[0], max: m[1]} : m[0];
+  }
+  if (typeof v === "string") return v.trim();
+  return v;
+}
+function qInvalid(f){
+  var v = S.q[f.id];
+  if (f.type === "chips") return f.req && !qValue(f);
+  if (isBlank(v)) return !!f.req;
+  if (f.type === "num"){ var n = Number(v); return !isFinite(n) || n < f.min || n > f.max; }
+  if (f.type === "tel") return String(v).replace(/\D/g, "").length < 8;
+  return false;
+}
+
+/* What the eight days already showed, offered as a starting point. */
+function prefillFromGame(){
+  if (S.qPrefilled) return;
+  var help = [];
+  if (S.tags.arrival_connected || S.tags.motivation_company) help.push("Company and conversation");
+  if (S.tags.shared_cooking) help.push("Cooking shared meals");
+  if (S.tags.scam_taught || S.tags.scam_escalated) help.push("Tech and phone help");
+  if (help.length) S.q.helpTypes = help;
+  S.qPrefilled = true;
+}
+
+function qFieldHTML(f){
+  if (f.type === "section") return '<div class="qsec full">' + esc(f.label) + '</div>';
+  var v = S.q[f.id], id = "q-" + f.id, ctrl;
+  var label = '<label class="qlabel" for="' + id + '">' + esc(f.label) + (f.req ? '' : ' <span class="opt-tag">(optional)</span>') + '</label>';
+  if (f.type === "select" || f.type === "range"){
+    ctrl = '<select id="' + id + '" data-q="' + f.id + '"><option value="">Choose…</option>'
+      + optPairs(f).map(function(o){ return '<option value="' + esc(o[0]) + '"' + (String(v) === String(o[0]) ? " selected" : "") + '>' + esc(o[1]) + '</option>'; }).join("")
+      + '</select>';
+  } else if (f.type === "chips" || f.type === "days"){
+    var on = v || [];
+    ctrl = '<div class="chips" id="' + id + '" role="group">' + (f.type === "days" ? WEEK : f.opts).map(function(o){
+        return '<button type="button" class="chip" data-multi="' + f.id + '" data-v="' + esc(o) + '" aria-pressed="' + (on.indexOf(o) !== -1) + '">' + esc(o) + '</button>';
+      }).join("") + '</div>'
+      + (f.other ? '<input type="text" data-q="' + f.id + '__other" maxlength="200" placeholder="Anything else? Separate with commas" value="' + esc(S.q[f.id + "__other"] || "") + '" aria-label="' + esc(f.label) + ': other">' : '');
+  } else if (f.type === "yesno" || f.type === "scale"){
+    var pairs = f.type === "yesno" ? YES_NO : [1,2,3,4,5].map(function(n){ return [n, String(n)]; });
+    ctrl = '<div class="chips" id="' + id + '" role="group">' + pairs.map(function(o){
+        return '<button type="button" class="chip" data-one="' + f.id + '" data-v="' + o[0] + '" aria-pressed="' + (v === o[0]) + '">' + o[1] + '</button>';
+      }).join("") + '</div>'
+      + (f.ends ? '<span class="qhint">1 = ' + esc(f.ends[0]) + ' · 5 = ' + esc(f.ends[1]) + '</span>' : '');
+  } else {
+    var type = {num:"number", tel:"tel", date:"date", time:"time"}[f.type] || "text";
+    ctrl = '<input type="' + type + '" id="' + id + '" data-q="' + f.id + '"' + (f.type === "num" ? ' inputmode="numeric" min="' + f.min + '" max="' + f.max + '"' : ' maxlength="200"')
+      + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + ' value="' + esc(v == null ? "" : v) + '">';
+  }
+  return '<div class="qfield' + (f.full ? ' full' : '') + '" id="qf-' + f.id + '">' + label + ctrl
+    + (f.hint ? '<span class="qhint">' + esc(f.hint) + '</span>' : '') + '</div>';
+}
+
+function renderQuestionnaire(){
+  prefillFromGame();
+  var page = Q_PAGES[S.qPage], last = S.qPage === Q_PAGES.length - 1;
+  app.innerHTML = '<div class="topbar"><div class="toprow"><span class="daylabel">Matching questions · ' + (S.qPage + 1) + ' of ' + Q_PAGES.length + '</span>'
+    + '<span class="clock">About 1 min</span></div></div>'
+    + '<div class="scroll" id="qscroll"><div class="pad">'
+    + '<div class="qhead"><div class="qprog">' + Q_PAGES.map(function(_, i){ return '<i class="' + (i <= S.qPage ? "on" : "") + '"></i>'; }).join("") + '</div>'
+    + '<h2 style="font-size:25px;margin-top:8px">' + esc(page.title) + '</h2>'
+    + (S.qPage === 0 ? '<p class="sub">Your eight days with Marg are done. ' + esc(page.intro) + '</p>' : '')
+    + '</div>'
+    + '<div class="qgrid">' + page.fields.map(qFieldHTML).join("") + '</div>'
+    + '<div id="qerr"></div>'
+    + '<div class="btnrow">' + (S.qPage > 0 ? '<button class="cont ghost" id="qback">Back</button>' : '')
+    + '<button class="cont primary" id="qnext">' + (last ? "Submit my profile" : "Next") + '</button></div>'
+    + '</div></div>';
+
+  /* A field flagged by Next stops being flagged as soon as its answer is fine. */
+  var recheck = function(id){
+    var f = Q_FIELDS.filter(function(x){ return x.id === id; })[0], box = el("#qf-" + id);
+    if (f && box && box.classList.contains("bad") && !qInvalid(f)) box.classList.remove("bad");
+    if (!app.querySelector(".qfield.bad")) el("#qerr").innerHTML = "";
+  };
+  Array.prototype.forEach.call(app.querySelectorAll("[data-q]"), function(input){
+    input.addEventListener("input", function(){ S.q[input.getAttribute("data-q")] = input.value; save(); recheck(input.getAttribute("data-q").split("__")[0]); });
+  });
+  Array.prototype.forEach.call(app.querySelectorAll("[data-multi]"), function(b){
+    b.onclick = function(){
+      var id = b.getAttribute("data-multi"), val = b.getAttribute("data-v"), list = (S.q[id] || []).slice();
+      var at = list.indexOf(val);
+      if (at === -1) list.push(val); else list.splice(at, 1);
+      if (id === "campusDays") list.sort(function(a, c){ return WEEK.indexOf(a) - WEEK.indexOf(c); });
+      S.q[id] = list; b.setAttribute("aria-pressed", String(at === -1)); save(); recheck(id);
+    };
+  });
+  Array.prototype.forEach.call(app.querySelectorAll("[data-one]"), function(b){
+    b.onclick = function(){
+      var id = b.getAttribute("data-one"), raw = b.getAttribute("data-v");
+      S.q[id] = raw === "true" ? true : raw === "false" ? false : Number(raw);
+      Array.prototype.forEach.call(b.parentNode.children, function(x){ x.setAttribute("aria-pressed", String(x === b)); });
+      save(); recheck(id);
+    };
+  });
+  if (el("#qback")) el("#qback").onclick = function(){ S.qPage--; save(); render(); };
+  el("#qnext").onclick = function(){
+    var bad = page.fields.filter(function(f){ return f.id && qInvalid(f); });
+    page.fields.forEach(function(f){ if (f.id) el("#qf-" + f.id).classList.toggle("bad", bad.indexOf(f) !== -1); });
+    if (bad.length){
+      el("#qerr").innerHTML = '<p class="err">' + (bad.length === 1 ? "One answer needs" : bad.length + " answers need") + ' a look: ' + esc(bad.map(function(f){ return f.label; }).join(", ")) + '.</p>';
+      el("#qf-" + bad[0].id).scrollIntoView({block: "center"});
+      return;
+    }
+    if (!last){ S.qPage++; save(); render(); el("#qscroll").scrollTop = 0; return; }
+    scanQuestionnaire();
+    S.submittedAt = nowISO();
+    S.view = "results";
+    save(); render();
+    deliverProfile();
+  };
+}
+
+/* ============================================================
+   PROFILE — builds the GenStay matching profile (contract v1.0)
+   from the eight days and the matching questions.
+   ============================================================ */
+var PROFILE_TYPES = {
+  connector:             {title:"The Connector",             colour:"var(--good)",  text:"You tended to build connection while keeping respect and boundaries in view."},
+  considerate_companion: {title:"The Considerate Companion", colour:"var(--sage)",  text:"Your choices showed consideration, with room for the relationship to grow at its own pace."},
+  independent_tenant:    {title:"The Independent Tenant",    colour:"var(--slate)", text:"You tended to be dependable while keeping the relationship more independent."},
+  transactional_guest:   {title:"The Transactional Guest",   colour:"var(--clay)",  text:"Your choices leaned towards keeping the arrangement practical and distant. That helps us work out what kind of homeshare would suit you."}
+};
+var MOTIVATION_CODES = {motivation_study:"quiet_space", motivation_saving:"saving_money", motivation_company:"company", motivation_learning:"learning"};
+/* Typed answers in the matching questions get the same checks as the full game’s. */
+function scanQuestionnaire(){
+  S.concerns = S.concerns.filter(function(c){ return !c.q; });
+  Q_FIELDS.forEach(function(f){
+    var where = "Matching questions, " + f.label.toLowerCase();
+    if (f.type === "text") scanText(where, S.q[f.id], true);
+    if (f.type === "list") splitList(S.q[f.id]).forEach(function(item){ scanText(where, item, true); });
+    if (f.other) splitList(S.q[f.id + "__other"]).forEach(function(item){ scanText(where, item, true); });
+  });
+}
+/* Answers that contradict each other or can't be right, for staff to ask about. */
+function answerChecks(){
+  var q = S.q, out = [];
+  if (q.smoker === true && q.needsSmokeFree === true) out.push("smokes or vapes, but needs a smoke-free home");
+  if (q.okWithPets === true && q.petAllergy === true) out.push("happy to live with pets, but has a pet allergy");
+  if (q.bedtime && q.wakeTime){
+    var mins = function(t){ var m = String(t).split(":"); return Number(m[0]) * 60 + Number(m[1]); };
+    var sleep = (mins(q.wakeTime) - mins(q.bedtime) + 1440) % 1440;
+    if (sleep < 240) out.push("bedtime " + q.bedtime + " and wake-up " + q.wakeTime + " leave under four hours’ sleep");
+  }
+  var work = Number(q.workHours);
+  if (q.studentType === "international" && work > 24) out.push("international student working " + work + " hours a week (check visa work limits)");
+  else if (work > 40) out.push("works " + work + " hours a week alongside study");
+  if (!isBlank(q.rentBudgetWeekly) && Number(q.rentBudgetWeekly) < 20) out.push("rent budget of $" + Number(q.rentBudgetWeekly) + " a week");
+  return out;
+}
+/* A plain-English summary for the staff watch-point. Staff can rewrite it. */
+function autoWatchPoint(){
+  var parts = ["Quick demo: eight days of 25-second multiple choice and no written answers, so treat the screening result as a first impression."];
+  var missed = S.choices.filter(function(c){ return c.timedOut; });
+  if (missed.length) parts.push("Ran out of time on " + missed.length + " of " + S.choices.length + " questions ("
+    + missed.map(function(c){ return c.title; }).join(", ") + ").");
+  CONCERNS.forEach(function(k){
+    var found = S.concerns.filter(function(c){ return c.id === k.id; });
+    if (!found.length) return;
+    parts.push(k.label + ": " + found.slice(0, 3).map(function(c){ return c.source + " (“" + c.excerpt + "”)"; }).join("; ")
+      + (found.length > 3 ? ", and " + (found.length - 3) + " more" : "") + ".");
+  });
+  if (S.meters.awareness <= 3){
+    var lows = S.choices.filter(function(c){ return c.awareness < 0; }).map(function(c){ return "Day " + c.day + ": " + c.chosen.replace(/\.$/, ""); });
+    parts.push("Low safety awareness (" + S.meters.awareness + "/10)" + (lows.length ? ": " + lows.slice(0, 3).join("; ") : "") + ".");
+  }
+  var checks = answerChecks();
+  if (checks.length) parts.push("Answers to check: " + checks.join("; ") + ".");
+  return parts.join(" ");
+}
+
+function profileType(){
+  if (hasSeriousConcern()) return "transactional_guest"; /* excluded from automatic matching; staff read why */
+  var m = S.meters;
+  if (m.connection <= 3 && m.respect <= 3) return "transactional_guest";
+  if (m.connection >= 7 && m.respect >= 7) return "connector";
+  if (m.reliability >= 7 && m.connection <= 5) return "independent_tenant";
+  return "considerate_companion";
+}
+function setPath(obj, path, value){
+  var keys = path.split("."), o = obj;
+  for (var i = 0; i < keys.length - 1; i++){ o[keys[i]] = o[keys[i]] || {}; o = o[keys[i]]; }
+  o[keys[keys.length - 1]] = value;
+}
+/* Days keep their full-fortnight numbers (see DAYS), so the template's
+   landmark rows and path grid line up. */
+function screeningPart(){
+  var low = findLowestMoment();
+  var after = low ? S.choices.filter(function(c){ return c.day > low.day; }).reduce(function(n, c){ return n + choiceScore(c); }, 0) : 0;
+  return {
+    profile: profileType(),
+    meters: {connection: S.meters.connection, respect: S.meters.respect, reliability: S.meters.reliability, awareness: S.meters.awareness},
+    motivation: MOTIVATION_CODES[S.motivation] || null,
+    finalPath: pathTier(),
+    pathByDay: DAYS.map(function(d){ return {day: d.n, path: S.pathByDay[String(d.n)] || null}; }),
+    recovered: low ? after > 0 : null,
+    lowestMoment: low ? {day: low.day, note: low.note} : null,
+    flags: ["quick_demo"].concat(Object.keys(S.flags).filter(function(k){ return S.flags[k]; }))
+      .concat(CONCERNS.filter(function(k){ return S.concerns.some(function(c){ return c.id === k.id; }); }).map(function(k){ return k.id; }))
+      .concat(S.meters.awareness <= 3 ? ["low_safety_awareness"] : [])
+      .concat(answerChecks().length ? ["answers_to_check"] : [])
+      .concat(S.choices.some(function(c){ return c.timedOut; }) ? ["missed_timer"] : []),
+    watchPoint: autoWatchPoint(),
+    landmarks: [6, 9, 11, 14].map(function(day){
+      return {day: day, response: S.choices.filter(function(c){ return c.day === day; }).map(function(c){ return c.chosen; }).join(" · ")};
+    }).filter(function(x){ return x.response; })
+  };
+}
+function buildProfile(){
+  var names = S.name.trim().split(/\s+/);
+  var p = {
+    meta: {profileId: S.pid, updatedAt: (S.submittedAt || S.gameEndedAt || nowISO()).slice(0, 10),
+           stages: {preGame: true, game: !!S.gameEndedAt, postGame: !!S.submittedAt}},
+    student: {firstName: names[0], lastName: names.slice(1).join(" ") || null, email: S.email, discipline: S.studyArea}
+  };
+  Q_FIELDS.forEach(function(f){ var v = qValue(f); if (v !== undefined) setPath(p, f.path, v); });
+  if (S.studyArea !== "other") setPath(p, "interests.homeownerBackground", "Retired " + discipline().career.replace(/^an? /, ""));
+  if (S.gameEndedAt) p.screening = screeningPart();
+  return p;
+}
+
+/* ---------- storage: the artifact's record store, behind access rules ----------
+   profiles/<applicant id>             latest profile + a list of runs (staff read all; each applicant writes only their own)
+   profiles/<applicant id>/runs/<run>  every run, kept so staff can compare replays
+   reviews/<applicant id>              staff-only: pairing status, homeowner, checks, watch-point */
+function getCap(name){
+  try {
+    if (!window.claude || typeof window.claude.use !== "function") return Promise.resolve(null);
+    return window.claude.use(name).then(function(v){ return v || null; }, function(){ return null; });
+  } catch (e) { return Promise.resolve(null); }
+}
+function setStatus(id, cls, text){
+  var n = document.getElementById(id);
+  if (n) n.innerHTML = '<span class="dotled ' + cls + '"></span><span>' + esc(text) + '</span>';
+}
+var ATTENTION_FLAGS = ["threatening_language", "drug_references", "welfare_concern", "low_safety_awareness"];
+function indexFields(profile, extra){
+  var sc = profile.screening || {}, st = profile.student || {};
+  return Object.assign({
+    name: [st.firstName, st.lastName].filter(Boolean).join(" "), email: st.email || "", discipline: st.discipline || "",
+    pid: (profile.meta || {}).profileId || "", screeningProfile: sc.profile || null,
+    complete: !!((profile.meta || {}).stages || {}).postGame, profile: profile,
+    attention: (sc.flags || []).filter(function(f){ return ATTENTION_FLAGS.indexOf(f) !== -1; }).length
+  }, extra);
+}
+
+var syncChain = Promise.resolve();
+function syncProfile(){
+  var snap = {pid: S.pid, at: nowISO(), profile: buildProfile()};
+  var attempt = function(){
+    return writeProfile(snap).then(function(r){
+      if (r.ok || (r.code !== "unavailable" && r.code !== "resource_exhausted")) return r;
+      return new Promise(function(done){ setTimeout(done, 1200 + Math.random() * 1200); }).then(function(){ return writeProfile(snap); });
+    });
+  };
+  syncChain = syncChain.then(attempt, attempt);
+  return syncChain;
+}
+/* Resolves {ok} or {ok:false, reason, code}; never rejects. */
+function writeProfile(snap){
+  return Promise.all([getCap("db"), getCap("user")]).then(function(caps){
+    var db = caps[0], user = caps[1];
+    if (!db || !user) return {ok: false, reason: "no_store"};
+    return user.id().then(function(uid){
+      if (!uid) return {ok: false, reason: "no_store"};
+      var parent = db.doc("profiles/" + uid);
+      var complete = !!snap.profile.meta.stages.postGame;
+      return parent.collection("runs").doc(snap.pid).set({pid: snap.pid, savedAt: snap.at, complete: complete, profile: snap.profile})
+        .then(function(){ return parent.get(); })
+        .then(function(doc){
+          var runs = (doc.exists && doc.data().runs || []).filter(function(r){ return r.pid !== snap.pid; });
+          runs.push({pid: snap.pid, savedAt: snap.at, complete: complete, screeningProfile: snap.profile.screening ? snap.profile.screening.profile : null});
+          return parent.set(indexFields(snap.profile, {updatedAt: snap.at, runs: runs}));
+        })
+        .then(function(){ return {ok: true}; });
+    });
+  }).then(null, function(err){ return {ok: false, reason: "error", code: (err && err.code) || "unavailable"}; });
+}
+/* What went wrong, in words the applicant can act on. */
+function saveProblem(r, dbState){
+  if (dbState === "denied" || r.code === "not_granted" || r.code === "revoked")
+    return {text: "Saving to the placement service is switched off for this page. Press Permissions, turn it on, then press Try again.", perms: true};
+  if (r.reason === "no_store")
+    return {text: "This view can’t reach the placement service. Open the link at claude.ai in your web browser, signed in to your organisation, then press Try again. Or send your profile another way below."};
+  if (r.code === "quota_exceeded") return {text: "The placement record is full, so your profile couldn’t be saved. Send it another way below."};
+  if (r.code === "invalid_argument")
+    return {text: "The placement service refused the save. Your account may only have permission to view this page: ask the service for Contributor access, or send your profile another way below."};
+  return {text: "Your profile couldn’t be sent (" + (r.code || "unknown error") + "). Wait a moment and press Try again, or send it another way below."};
+}
+
+/* onFail runs when no file could be saved (not when the viewer cancels). */
+function offerDownload(filename, text, statusId, onFail){
+  getCap("downloads").then(function(d){
+    if (!d && !window.claude){ browserDownload(filename, text); setStatus(statusId, "ok", "Saved " + filename + ". Check your downloads folder."); return; }
+    if (!d){ setStatus(statusId, "no", "Downloads aren’t available in this view."); if (onFail) onFail(); return; }
+    setStatus(statusId, "wait", "Confirm the download to save the file…");
+    d.save({filename: filename, data: text}).then(function(){
+      setStatus(statusId, "ok", "Saved " + filename + ". Check your downloads folder.");
+    }, function(err){
+      var code = (err && err.code) || "unavailable";
+      if (code === "declined") { setStatus(statusId, "wait", "Download cancelled. Nothing was saved."); return; }
+      setStatus(statusId, "no", "The download didn’t work (" + code + ").");
+      if (onFail) onFail();
+    });
+  });
+}
+/* Outside claude.ai (a local copy of the page) the browser can download directly. */
+function browserDownload(filename, data){
+  var type = /\.pdf$/.test(filename) ? "application/pdf" : "application/json";
+  var url = URL.createObjectURL(new Blob([data], {type: type}));
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+}
+function copyText(text, statusId, onFail){
+  var fail = function(){ setStatus(statusId, "no", "Copying isn’t allowed in this view."); if (onFail) onFail(); };
+  try {
+    navigator.clipboard.writeText(text).then(function(){ setStatus(statusId, "ok", "Copied. Paste it into an email to the placement service."); }, fail);
+  } catch (e) { fail(); }
+}
+
+/* ============================================================
+   END OF THE EIGHT DAYS, RESULTS
+   ============================================================ */
+function endGame(){
+  clearTimer();
+  S.gameEndedAt = nowISO();
+  S.view = "questionnaire"; S.qPage = 0;
+  save(); render();
+  syncProfile(); /* the game result reaches staff even if the questions are left unfinished */
+}
+
+function deliverProfile(){
+  setStatus("savestat", "wait", "Sending your profile to the placement service…");
+  syncProfile().then(function(r){
+    if (r.ok){
+      S.synced = true;
+      clearSaved(); /* nothing personal stays in this browser once staff have it */
+      setStatus("savestat", "ok", "Your profile has reached the placement service. You can close this page.");
+      if (el("#fallback")) el("#fallback").hidden = true;
+    } else {
+      save();
+      getCap("permissions").then(function(p){ return p ? p.state("db").then(null, function(){ return ""; }) : ""; }).then(function(dbState){
+        var problem = saveProblem(r, dbState);
+        setStatus("savestat", "no", problem.text);
+        if (el("#fallback")) el("#fallback").hidden = false;
+        if (el("#perms")) el("#perms").hidden = !problem.perms;
+      });
+    }
+  });
+}
+function showProfileText(note){
+  var ta = el("#ptext"); if (!ta) return;
+  ta.value = JSON.stringify(buildProfile(), null, 2);
+  ta.hidden = false;
+  try { ta.focus(); ta.select(); } catch (e) {}
+  if (note) setStatus("dlstat", "wait", note);
+}
+
+function renderResults(){
+  var type = PROFILE_TYPES[profileType()];
+  var moments = DAYS.filter(function(d){ return d.kind === "landmark"; }).map(function(d){
+    var c = S.choices.filter(function(x){ return x.day === d.n; })[0];
+    return c ? '<div class="row"><div><b>Day ' + d.show + ' · ' + esc(d.title) + '</b><div class="sub" style="font-size:13px">' + esc(c.chosen) + '</div></div></div>' : "";
+  }).join("");
+  var file = "genstay-profile-" + S.pid + ".json";
+
+  app.innerHTML =
+    '<div class="stage">' + scenePorch(LIGHT.dusk, {marg: {pose: "stand", x: 470, y: 301, s: 0.84}}) + '</div>'
+    + '<div class="scroll"><div class="pad">'
+    + '<div><div class="kicker">Quick demo · complete</div>'
+    + '<h1 style="font-size:29px;margin-top:6px">' + esc(S.name.split(" ")[0] || "You") + ' and Marg: eight days</h1></div>'
+    + '<div><span class="band" style="background:' + type.colour + '">' + esc(type.title) + '</span></div>'
+    + '<p class="line">' + esc(type.text) + '</p>'
+    + '<div class="notice">This is a reflection on the path you took, not a pass-or-fail result. It comes from the quick demo; the full screening is fourteen days with written answers. A person at the placement service makes any placement decision.</div>'
+    + (moments ? '<div><div class="who narr" style="margin-bottom:8px">The big moments</div><div class="rows">' + moments + '</div></div>' : '')
+    + (S.concerns.some(function(c){ return c.id === "welfare_concern"; })
+        ? '<div class="notice"><b>If things feel hard right now,</b> you can talk to someone any time. Lifeline: <span class="mono">13 11 14</span>. Beyond Blue: <span class="mono">1300 22 4636</span>.</div>'
+        : '')
+    + '<div class="status" id="savestat"><span class="dotled wait"></span><span>Sending your profile to the placement service…</span></div>'
+    + '<div id="fallback" class="notice" hidden><b>Send it another way.</b> Copy your profile, or save it as a file, and email it to the placement service. Staff add it to the review queue.'
+    + '<div class="btnrow" style="margin-top:10px"><button class="cont primary small" id="retry">Try again</button>'
+    + '<button class="cont small" id="perms" hidden>Permissions</button>'
+    + '<button class="cont small" id="dl" hidden>Download profile file</button><button class="cont ghost small" id="copy">Copy profile</button>'
+    + '<button class="cont ghost small" id="showtext">Show profile text</button></div>'
+    + '<div class="status" id="dlstat" style="margin-top:8px"></div>'
+    + '<textarea id="ptext" readonly hidden aria-label="Your profile, to copy into an email" style="margin-top:8px;min-height:160px;font:400 12px/1.4 var(--mono)"></textarea></div>'
+    + '<button class="cont ghost" id="done">Finish</button>'
+    + '<p class="sub" style="font-size:12.5px">Reference <span class="mono">' + esc(S.pid) + '</span></p>'
+    + '</div></div>';
+
+  var manual = function(){ showProfileText("Your profile is shown below, selected. Copy it (Ctrl+C or ⌘C) and paste it into an email to the placement service."); };
+  el("#retry").onclick = deliverProfile;
+  el("#perms").onclick = function(){
+    getCap("permissions").then(function(p){
+      if (!p) return setStatus("savestat", "no", "Open this artifact’s Permissions menu and switch saving on, then press Try again.");
+      p.manage().then(function(){ deliverProfile(); }, function(){ setStatus("savestat", "no", "Open this artifact’s Permissions menu and switch saving on, then press Try again."); });
+    });
+  };
+  getCap("downloads").then(function(d){ if ((d || !window.claude) && el("#dl")) el("#dl").hidden = false; });
+  el("#dl").onclick = function(){ offerDownload(file, JSON.stringify(buildProfile(), null, 2), "dlstat", manual); };
+  el("#copy").onclick = function(){ copyText(JSON.stringify(buildProfile(), null, 2), "dlstat", manual); };
+  el("#showtext").onclick = function(){ showProfileText(); };
+  el("#done").onclick = function(){ if (S.synced) clearSaved(); S = freshState(); render(); };
+  if (S.synced) setStatus("savestat", "ok", "Your profile has reached the placement service. You can close this page.");
+}
+</script>
+<script>
+"use strict";
+/* ============================================================
+   STAFF REVIEW DESK  (open the artifact link with #staff)
+   A queue of every applicant's matching profile, newest first.
+   Each one opens in the GenStay profile template, published
+   alongside this page, and staff step through them in order.
+   Access is enforced by the record store's rules, not by this
+   page: only Editors and the owner can read profiles or reviews.
+   ============================================================ */
+var TEMPLATE_URL = "genstay-profile-template.html";
+var PAIRING = [["new","New applicant"],["screening","In screening"],["shortlisted","Shortlisted"],["intro_booked","Intro call booked"],
+               ["matched","Matched"],["on_hold","On hold"],["not_suitable","Not suitable"]];
+var CHECKS = [["identity","ID"],["policeCheck","Police check"],["references","References"],["firstAid","First aid"]];
+var CHECK_STATES = [["","—"],["not_started","Not started"],["pending","Pending"],["booked","Booked"],["cleared","Cleared"],["not_required","Not required"]];
+
+var desk = null;
+function label(pairs, v){ var m = pairs.filter(function(p){ return p[0] === v; })[0]; return m ? m[1] : v; }
+function cleanId(s){ return String(s || "").replace(/[^A-Za-z0-9_.~:@+-]/g, "-").slice(0, 120) || ("x" + Date.now()); }
+function deepMerge(target, src){
+  Object.keys(src || {}).forEach(function(k){
+    var v = src[k];
+    if (v === undefined || v === null || v === "") return;
+    if (v && typeof v === "object" && !Array.isArray(v) && target[k] && typeof target[k] === "object" && !Array.isArray(target[k])) deepMerge(target[k], v);
+    else target[k] = v;
+  });
+  return target;
+}
+/* Staff fields: the saved review, else what the profile itself carries (an imported file may already have them). */
+function reviewFor(item){
+  var r = desk.reviews[item.id] || {}, p = item.profile || {}, meta = p.meta || {};
+  return {pairingStatus: r.pairingStatus || meta.pairingStatus || "new", suggestedFor: r.suggestedFor || meta.suggestedFor || "",
+          checks: r.checks || p.checks || {}, watchPoint: r.watchPoint || (p.screening || {}).watchPoint || "", reviewedAt: r.reviewedAt};
+}
+/* staff fields live in reviews/<id> and are laid over the applicant's profile */
+function mergedProfile(item, profile){
+  var r = reviewFor(item);
+  return deepMerge(JSON.parse(JSON.stringify(profile || item.profile || {})), {
+    meta: {pairingStatus: r.pairingStatus, suggestedFor: r.suggestedFor, updatedAt: (r.reviewedAt || item.updatedAt || "").slice(0, 10)},
+    checks: r.checks,
+    screening: {watchPoint: r.watchPoint}
+  });
+}
+
+function renderStaff(){
+  app.className = "wide";
+  desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, run: null, frame: null, ready: false, pending: null};
+  app.innerHTML =
+    '<div class="topbar"><div class="toprow"><span class="daylabel">Pepaws Porch demo · staff review</span>'
+    + '<span class="clock" id="acount">loading…</span></div></div>'
+    + '<div class="desk">'
+    + '<div class="queue"><div class="qtools">'
+    + '<input type="text" id="qsearch" placeholder="Search by name or email" aria-label="Search applicants">'
+    + '<select id="qfilter" aria-label="Filter by pairing status"><option value="all">All applicants</option><option value="attention">Needs attention</option>'
+    + PAIRING.map(function(p){ return '<option value="' + p[0] + '">' + p[1] + '</option>'; }).join("") + '</select>'
+    + '<div class="btnrow"><button class="cont small" id="refresh">Refresh</button>'
+    + '<label class="cont ghost small" style="display:inline-flex;flex-direction:row;cursor:pointer">Add profile files<input type="file" id="importer" accept=".json,application/json" multiple hidden></label>'
+    + '<button class="cont ghost small" id="pastebtn">Paste a profile</button>'
+    + '<button class="cont ghost small" id="pdfall">Download all (PDF)</button>'
+    + '<button class="cont ghost small" id="expall">Download all (JSON)</button></div>'
+    + '<div id="pastebox" hidden style="display:flex;flex-direction:column;gap:6px"><textarea id="pastein" aria-label="Paste a profile" placeholder="Paste the profile text an applicant emailed you" style="min-height:110px;font:400 12px/1.4 var(--mono)"></textarea>'
+    + '<div class="btnrow"><button class="cont primary small" id="pasteadd">Add to queue</button><button class="cont ghost small" id="pastecancel">Cancel</button></div></div>'
+    + '<div class="status" id="astat"><span class="dotled wait"></span><span>Reading the placement record…</span></div>'
+    + '</div><ul class="qlist" id="qlist"></ul></div>'
+    + '<div class="viewer"><div class="vbar">'
+    + '<button class="cont small" id="prev" aria-label="Previous applicant">‹ Prev</button><button class="cont small" id="next" aria-label="Next applicant">Next ›</button>'
+    + '<b class="grow" id="vname">No profile open</b>'
+    + '<select id="vrun" hidden aria-label="Choose a run"></select>'
+    + '<button class="cont small" id="pdfone" disabled>Download PDF</button>'
+    + '<button class="cont ghost small" id="dlone" disabled>Download JSON</button>'
+    + '<span class="status" id="fstat"></span></div>'
+    + '<div class="vbody"><iframe id="pframe" title="GenStay matching profile" src="' + TEMPLATE_URL + '?embed"></iframe>'
+    + '<aside class="review" id="review"><div class="empty-state">Pick an applicant from the queue to review their profile.</div></aside></div>'
+    + '</div></div>';
+
+  desk.frame = el("#pframe");
+  setTimeout(function(){ if (desk && !desk.ready) frameFallback(); }, 5000);
+  el("#refresh").onclick = function(){ loadQueue(); };
+  el("#qsearch").oninput = function(){ desk.search = this.value.trim().toLowerCase(); drawQueue(); };
+  el("#qfilter").onchange = function(){ desk.filter = this.value; drawQueue(); };
+  el("#prev").onclick = function(){ step(-1); };
+  el("#next").onclick = function(){ step(1); };
+  el("#importer").onchange = function(){ importFiles(this.files); this.value = ""; };
+  el("#pastebtn").onclick = function(){ el("#pastebox").hidden = false; el("#pastein").focus(); };
+  el("#pastecancel").onclick = function(){ el("#pastebox").hidden = true; el("#pastein").value = ""; };
+  el("#pasteadd").onclick = function(){
+    var text = el("#pastein").value.trim(); if (!text) return;
+    importTexts([text]); el("#pastein").value = ""; el("#pastebox").hidden = true;
+  };
+  el("#expall").onclick = function(){
+    if (!desk.items.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
+    offerDownload("genstay-profiles-" + nowISO().slice(0, 10) + ".json",
+      JSON.stringify(desk.items.map(function(it){ return mergedProfile(it); }), null, 2), "astat");
+  };
+  el("#pdfone").onclick = function(){
+    var it = currentItem(); if (!it) return;
+    makePdfFile([mergedProfile(it, desk.run && desk.run.profile)], "genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".pdf", "fstat");
+  };
+  el("#pdfall").onclick = function(){
+    var list = visibleItems();
+    if (!list.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
+    makePdfFile(list.map(function(it){ return mergedProfile(it); }), "genstay-profiles-" + nowISO().slice(0, 10) + ".pdf", "astat");
+  };
+  el("#dlone").onclick = function(){
+    var it = currentItem(); if (!it) return;
+    var p = mergedProfile(it, desk.run && desk.run.profile);
+    offerDownload("genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".json", JSON.stringify(p, null, 2), "fstat");
+  };
+  el("#vrun").onchange = function(){ openRun(this.value); };
+  Promise.all([getCap("db"), getCap("user")]).then(function(caps){
+    desk.db = caps[0]; desk.user = caps[1];
+    if (!desk.user) return loadQueue();
+    return Promise.all([desk.user.canEdit(), desk.user.id()]).then(function(r){
+      desk.uid = r[1];
+      if (!r[0]){
+        desk.db = null;
+        setStatus("astat", "no", "This page is for placement staff. Ask the owner of this artifact to give you Editor access.");
+        el("#acount").textContent = "staff only";
+        return;
+      }
+      loadQueue();
+    });
+  });
+}
+
+/* ---------- the profile template, embedded ---------- */
+window.addEventListener("message", function(e){
+  if (!desk) return;
+  var m = e.data || {};
+  if (desk.xframe && e.source === desk.xframe.contentWindow){
+    var job = pdfJobs[m.id];
+    if (m.type === "genstay:ready" && desk.xresolve) desk.xresolve(desk.xframe);
+    else if (m.type === "genstay:pdf:progress" && job) job.progress(m.done, m.total);
+    else if (m.type === "genstay:pdf:done" && job){ delete pdfJobs[m.id]; if (m.ok) job.resolve(m.data); else job.reject(new Error(m.error)); }
+    return;
+  }
+  if (!desk.frame || e.source !== desk.frame.contentWindow) return;
+  if (m.type === "genstay:ready"){ desk.ready = true; if (desk.pending) sendToFrame(desk.pending); }
+  else if (m.type === "genstay:ack" && m.status) setStatus("fstat", "ok", m.status.filled + " of " + m.status.total + " fields filled");
+});
+function frameTarget(){ return location.origin && location.origin !== "null" ? location.origin : "*"; }
+function sendToFrame(profile){
+  desk.pending = profile;
+  if (!desk.ready || !desk.frame.contentWindow) return;
+  desk.frame.contentWindow.postMessage({type: "genstay:profile", mode: "load", data: profile}, frameTarget());
+}
+/* If the frame can't load the template by address, load its text instead. */
+function frameFallback(){
+  fetch(TEMPLATE_URL).then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); }).then(function(html){
+    if (!desk) return;
+    desk.frame.removeAttribute("src");
+    desk.srcdoc = html.replace("<script>", "<script>window.GENSTAY_CONFIG={embedded:true};<\/script><script>");
+    desk.frame.srcdoc = desk.srcdoc;
+  }).catch(function(){ setStatus("fstat", "no", "The profile template didn’t load. It must be published next to this page."); });
+}
+
+/* ---------- PDFs ----------
+   The template makes them (it knows its own layout and where pages can
+   break), in a hidden copy of the frame so the profile on screen stays put. */
+var pdfJobs = {};
+function exportFrame(){
+  if (desk.xready) return desk.xready;
+  desk.xready = new Promise(function(resolve, reject){
+    var f = document.createElement("iframe");
+    f.title = "PDF export"; f.tabIndex = -1; f.setAttribute("aria-hidden", "true");
+    f.style.cssText = "position:fixed;left:-12000px;top:0;width:900px;height:1400px;border:0;pointer-events:none";
+    desk.xframe = f; desk.xresolve = resolve;
+    if (desk.srcdoc) f.srcdoc = desk.srcdoc; else f.src = TEMPLATE_URL + "?embed";
+    app.appendChild(f);
+    setTimeout(function(){ reject(new Error("The profile template didn’t load, so the PDF couldn’t be made.")); }, 15000);
+  });
+  desk.xready.then(null, function(){ if (desk.xframe) desk.xframe.remove(); desk.xframe = null; desk.xready = null; });
+  return desk.xready;
+}
+function frameView(){
+  try { return desk.frame.contentDocument.body.getAttribute("data-view") || "staff"; } catch (e) { return "staff"; }
+}
+function requestPdf(profiles, view, onProgress){
+  return exportFrame().then(function(f){
+    return new Promise(function(resolve, reject){
+      var id = "pdf-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      pdfJobs[id] = {resolve: resolve, reject: reject, progress: onProgress || function(){}};
+      f.contentWindow.postMessage({type: "genstay:pdf", id: id, profiles: profiles, view: view}, frameTarget());
+    });
+  });
+}
+function makePdfFile(profiles, filename, statusId){
+  var buttons = [el("#pdfone"), el("#pdfall")];
+  desk.pdfBusy = true;
+  buttons.forEach(function(b){ if (b) b.disabled = true; });
+  setStatus(statusId, "wait", "Making the PDF…");
+  requestPdf(profiles, frameView(), function(done, total){
+    if (total > 1) setStatus(statusId, "wait", "Making the PDF: " + done + " of " + total + " profiles…");
+  }).then(function(buf){ offerDownload(filename, buf, statusId); }, function(err){
+    /* Usually no internet for the PDF tools. Outside claude.ai the browser can still print the open profile to PDF. */
+    if (!window.claude && desk.frame && desk.frame.contentWindow){
+      try {
+        desk.frame.contentWindow.print();
+        setStatus(statusId, "wait", "The PDF tools didn’t load, so the print dialog opened instead. Choose Save as PDF. It saves the profile on screen.");
+        return;
+      } catch (e) { /* fall through to the message */ }
+    }
+    setStatus(statusId, "no", err.message || "The PDF couldn’t be made.");
+  }).then(function(){
+    if (!desk) return;
+    desk.pdfBusy = false;
+    if (el("#pdfall")) el("#pdfall").disabled = false;
+    if (el("#pdfone")) el("#pdfone").disabled = !currentItem();
+  });
+}
+
+/* ---------- queue ---------- */
+function loadQueue(openId){
+  if (!desk.db){
+    setStatus("astat", "wait", "The placement record isn’t available in this view. Profile files you add are shown here but not saved.");
+    el("#acount").textContent = desk.items.length + " in queue";
+    drawQueue();
+    if (openId) openItem(openId);
+    return Promise.resolve();
+  }
+  setStatus("astat", "wait", "Reading the placement record…");
+  return Promise.all([
+    desk.db.collection("profiles").orderBy("updatedAt", "desc").limit(1000).get(),
+    desk.db.collection("reviews").limit(1000).get()
+  ]).then(function(res){
+    desk.items = res[0].docs.map(function(d){ return Object.assign({id: d.id}, d.data()); }).filter(function(it){ return it.profile; });
+    desk.reviews = {};
+    res[1].docs.forEach(function(d){ desk.reviews[d.id] = d.data(); });
+    setStatus("astat", "ok", "Read " + desk.items.length + " profile" + (desk.items.length === 1 ? "" : "s") + ".");
+    drawQueue();
+    var target = openId || (!desk.current && visibleItems().length ? visibleItems()[0].id : null);
+    if (target) openItem(target);
+  }, function(err){
+    setStatus("astat", "no", "Couldn’t read the placement record (" + ((err && err.code) || "unavailable") + "). Try Refresh.");
+  });
+}
+function visibleItems(){
+  return desk.items.filter(function(it){
+    var status = reviewFor(it).pairingStatus;
+    if (desk.filter === "attention") { if (!it.attention) return false; }
+    else if (desk.filter !== "all" && status !== desk.filter) return false;
+    return !desk.search || ((it.name || "") + " " + (it.email || "")).toLowerCase().indexOf(desk.search) !== -1;
+  });
+}
+function currentItem(){ return desk.items.filter(function(it){ return it.id === desk.current; })[0] || null; }
+function drawQueue(){
+  var list = visibleItems();
+  el("#acount").textContent = list.length + " of " + desk.items.length + " in queue";
+  el("#qlist").innerHTML = list.length ? list.map(function(it){
+    var r = reviewFor(it), type = PROFILE_TYPES[it.screeningProfile];
+    return '<li><button class="qitem" data-id="' + esc(it.id) + '" aria-current="' + (it.id === desk.current) + '">'
+      + '<span class="nm">' + esc(it.name || "Unnamed applicant") + '</span>'
+      + '<span class="when">' + esc((it.updatedAt || "").slice(0, 10)) + '</span>'
+      + '<span class="meta">'
+      + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '<span class="pill">No game result</span>')
+      + (it.attention ? '<span class="pill dark" style="background:var(--bad)">Needs attention</span>' : '')
+      + '<span class="pill">' + esc(label(PAIRING, r.pairingStatus)) + '</span>'
+      + (it.complete ? '' : '<span class="pill">Questions unfinished</span>')
+      + ((it.runs || []).length > 1 ? '<span class="pill">' + it.runs.length + ' runs</span>' : '')
+      + (it.imported ? '<span class="pill">From file</span>' : '')
+      + (/^DEMO-/.test(it.pid || "") ? '<span class="pill">Quick demo</span>' : '')
+      + '</span></button></li>';
+  }).join("") : '<li class="empty-state">' + (desk.items.length ? "No applicants match this filter." : "No profiles yet. They appear here when applicants finish the demo, or when you add profile files.") + '</li>';
+  Array.prototype.forEach.call(app.querySelectorAll(".qitem"), function(b){ b.onclick = function(){ openItem(b.getAttribute("data-id")); }; });
+}
+function step(dir){
+  var list = visibleItems();
+  if (!list.length) return;
+  var at = list.map(function(it){ return it.id; }).indexOf(desk.current);
+  openItem(list[(at + dir + list.length) % list.length].id);
+}
+
+/* ---------- one applicant ---------- */
+function openItem(id){
+  desk.current = id; desk.run = null;
+  var it = currentItem(); if (!it) return;
+  drawQueue();
+  el("#vname").textContent = it.name || "Unnamed applicant";
+  el("#dlone").disabled = false;
+  el("#pdfone").disabled = !!desk.pdfBusy;
+  var runs = (it.runs || []).slice().sort(function(a, b){ return String(b.savedAt).localeCompare(String(a.savedAt)); });
+  var sel = el("#vrun");
+  sel.hidden = runs.length < 2;
+  sel.innerHTML = runs.map(function(r, i){
+    var t = PROFILE_TYPES[r.screeningProfile];
+    return '<option value="' + esc(r.pid) + '">' + (i === 0 ? "Latest run" : "Run of " + esc(String(r.savedAt).slice(0, 10))) + (t ? " · " + esc(t.title.replace(/^The /, "")) : "") + '</option>';
+  }).join("");
+  setStatus("fstat", "wait", "Opening profile…");
+  sendToFrame(mergedProfile(it));
+  drawReview(it);
+}
+function openRun(pid){
+  var it = currentItem(); if (!it || !desk.db) return;
+  if (pid === it.pid){ desk.run = null; sendToFrame(mergedProfile(it)); return; }
+  setStatus("fstat", "wait", "Opening earlier run…");
+  desk.db.doc("profiles/" + it.id + "/runs/" + pid).get().then(function(doc){
+    if (!doc.exists){ setStatus("fstat", "no", "That run isn’t in the record."); return; }
+    desk.run = doc.data();
+    sendToFrame(mergedProfile(it, desk.run.profile));
+  });
+}
+function drawReview(it){
+  var r = reviewFor(it), checks = r.checks;
+  var opts = function(pairs, v){ return pairs.map(function(p){ return '<option value="' + p[0] + '"' + (p[0] === (v || "") ? " selected" : "") + '>' + p[1] + '</option>'; }).join(""); };
+  el("#review").innerHTML = '<h3>Staff review</h3>'
+    + '<p class="sub" style="font-size:12.5px">Saved separately from the applicant’s answers, and shown in the profile.</p>'
+    + '<label>Pairing status<select id="rv-status">' + opts(PAIRING, r.pairingStatus) + '</select></label>'
+    + '<label>Suggested homeowner<input type="text" id="rv-for" maxlength="120" value="' + esc(r.suggestedFor) + '" placeholder="e.g. Margaret Hollis"></label>'
+    + CHECKS.map(function(c){ return '<label>' + c[1] + '<select id="rv-' + c[0] + '">' + opts(CHECK_STATES, checks[c[0]]) + '</select></label>'; }).join("")
+    + '<label>Watch-point<textarea id="rv-watch" maxlength="2000" placeholder="e.g. Reliability is the lowest meter. Agree a weekly help schedule at the intro call.">' + esc(r.watchPoint) + '</textarea></label>'
+    + '<button class="cont primary small" id="rv-save">Save review</button>'
+    + '<div class="status" id="rvstat"></div>';
+  el("#rv-save").onclick = function(){ saveReview(it); };
+}
+function saveReview(it){
+  var review = {pairingStatus: el("#rv-status").value, suggestedFor: el("#rv-for").value.trim(), watchPoint: el("#rv-watch").value.trim(),
+                checks: {}, reviewedAt: nowISO(), reviewedBy: desk.uid || null};
+  CHECKS.forEach(function(c){ var v = el("#rv-" + c[0]).value; if (v) review.checks[c[0]] = v; });
+  var done = function(){
+    desk.reviews[it.id] = review;
+    drawQueue();
+    sendToFrame(mergedProfile(it, desk.run && desk.run.profile));
+  };
+  if (!desk.db){ done(); setStatus("rvstat", "wait", "Shown here only. The placement record isn’t available in this view."); return; }
+  setStatus("rvstat", "wait", "Saving…");
+  desk.db.doc("reviews/" + it.id).set(review).then(function(){ done(); setStatus("rvstat", "ok", "Saved."); },
+    function(err){ setStatus("rvstat", "no", "Couldn’t save (" + ((err && err.code) || "unavailable") + ")."); });
+}
+
+/* ---------- profile files emailed in by applicants who couldn't save ---------- */
+function importFiles(files){
+  var list = Array.prototype.slice.call(files || []);
+  if (!list.length) return;
+  Promise.all(list.map(function(f){ return f.text().then(null, function(){ return ""; }); })).then(importTexts);
+}
+function importTexts(texts){
+  var profiles = [];
+  texts.forEach(function(t){
+    try {
+      var v = JSON.parse(t);
+      (Array.isArray(v) ? v : [v]).forEach(function(x){
+        var p = x && x.profile ? x.profile : x;
+        if (p && typeof p === "object" && (p.student || p.screening)) profiles.push(p);
+      });
+    } catch (e) { /* not JSON; reported below if nothing usable was found */ }
+  });
+  if (!profiles.length){ setStatus("astat", "no", "No profile found. Paste or add the whole profile text, starting with { and ending with }."); return; }
+  var at = nowISO();
+  var items = profiles.map(function(p){
+    var pid = (p.meta && p.meta.profileId) || ("import-" + Date.now().toString(36));
+    return indexFields(p, {id: "import-" + cleanId(pid), updatedAt: at, imported: true,
+      runs: [{pid: pid, savedAt: at, complete: !!(p.meta && p.meta.stages && p.meta.stages.postGame), screeningProfile: p.screening ? p.screening.profile : null}]});
+  });
+  if (!desk.db){
+    items.forEach(function(it){ desk.items = desk.items.filter(function(x){ return x.id !== it.id; }); desk.items.unshift(it); });
+    loadQueue(items[0].id);
+    return;
+  }
+  setStatus("astat", "wait", "Adding " + items.length + " profile" + (items.length === 1 ? "" : "s") + "…");
+  items.reduce(function(chain, it){
+    return chain.then(function(){ var body = Object.assign({}, it); delete body.id; return desk.db.doc("profiles/" + it.id).set(body); });
+  }, Promise.resolve()).then(function(){ loadQueue(items[0].id); },
+    function(err){ setStatus("astat", "no", "Couldn’t add the profiles (" + ((err && err.code) || "unavailable") + ")."); });
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function hashIsStaff(){ return /^#(staff|assessor)$/i.test(location.hash || ""); }
+function boot(){
+  S = freshState();
+  if (hashIsStaff()) S.view = "staff";
+  render();
+}
+/* The hash can be typed into a tab that already has the game open. A run in
+   progress is already saved, and the title screen offers to resume it. */
+window.addEventListener("hashchange", function(){
+  clearTimer();
+  if (hashIsStaff()){
+    if (S && S.view === "staff") return;
+    if (S && S.pid && !S.submittedAt) save();
+    S = freshState(); S.view = "staff"; render();
+  } else if (S && S.view === "staff"){
+    desk = null; S = freshState(); render();
+  }
+});
+boot();
+</script>
