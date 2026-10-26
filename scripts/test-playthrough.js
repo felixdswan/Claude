@@ -12,7 +12,7 @@
      - screenshots every day's scene, the questionnaire, results and the desk
 
    Usage: node scripts/test-playthrough.js [outdir]   (default: /tmp/pepaws-out) */
-const { chromium, serve, newPageFactory } = require("./browser-harness");
+const { chromium, serve, newPageFactory, storyDataProblems } = require("./browser-harness");
 const fs = require("fs");
 const path = require("path");
 
@@ -125,6 +125,7 @@ async function checkContract(browser, base, profile, label) {
   /* scenes */
   {
     const { ctx, page } = await newPage(browser, base);
+    (await storyDataProblems(page)).forEach((p) => errors.push("story: " + p));
     await page.screenshot({ path: path.join(OUT, "title.png") });
     for (let i = 0; i < 14; i++) {
       await page.evaluate((i) => {

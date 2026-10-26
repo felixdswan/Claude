@@ -752,7 +752,7 @@ var DAYS = [
       {text:"Ask what time suits for dinner, and offer to cook one night a week.", fx:impact(1,1,1,0), tag:"shared_cooking", reply:"Marg suggests Thursdays. You agree to plan the menu together."},
       {text:"Say you’ll do your own thing most nights, but you’ll let Marg know when plans change.", fx:impact(0,1,1,0), tag:"courteous_independence", reply:"Marg nods. Clear plans suit you both."},
       {text:"Say nothing about dinner and plan to eat in your room.", fx:impact(-1,0,-1,0), tag:"dinner_avoided", reply:"The invitation stays open, but Marg doesn’t ask again tonight."},
-      {text:"Ask what’s wrong with the step, and whether Marg would like it looked at.", fx:impact(0,1,1,1), tag:"noticed_step", flag:"noticed_step", reply:"Marg brushes it off: “It’s been like that for years. I know where to put my feet.” You make a mental note to raise it again."}
+      {text:"Ask what’s wrong with the brick step, and whether Marg would like it looked at.", fx:impact(0,1,1,1), tag:"noticed_step", flag:"noticed_step", reply:"Marg brushes it off: “It’s been like that for years. I know where to put my feet.” You make a mental note to raise it again."}
     ]},
     {t:"choice", prompt:"On the tour you noticed a labelled folder on the fridge. What do you do?", requiresTags:["arrival_tour"], options:[
       {text:"Ask what the folder is for, and where to find it in an emergency.", fx:impact(0,1,1,1), flag:"learned_meds_folder", reply:"It holds Marg’s GP details, medication list and emergency contacts. She shows you where it lives."},
@@ -794,8 +794,8 @@ var DAYS = [
       {text:"Assume it’s fine and let Marg decide.", fx:impact(0,1,0,-1), tag:"scam_ignored", reply:"The link opens a convincing sign-in page. Marg hesitates before typing anything."}
     ]},
     {t:"choice", prompt:"Anything else you notice around the house?", excludesFlags:["noticed_step"], options:[
-      {text:"Mention the back step, and ask whether Marg would like help getting it fixed.", fx:impact(0,1,1,1), flag:"noticed_step", tag:"noticed_step", reply:"Marg says it’s been like that for ages. You offer to help her find someone to fix it, rather than trying a repair yourself."},
-      {text:"Leave it for now.", fx:impact(0,0,0,-1), tag:"step_deferred", reply:"The uneven step is still there."}
+      {text:"Mention the brick step to the granny flat, and ask whether Marg would like help getting it fixed.", fx:impact(0,1,1,1), flag:"noticed_step", tag:"noticed_step", reply:"Marg says it’s been like that for ages. You offer to help her find someone to fix it, rather than trying a repair yourself."},
+      {text:"Leave it for now.", fx:impact(0,0,0,-1), tag:"step_deferred", reply:"The uneven brick step is still there."}
     ]},
     {t:"choice", prompt:"Afterwards, Marg points out a folder on the fridge. What do you do?", requiresAnyTags:["scam_taught","scam_escalated"], excludesFlags:["learned_meds_folder"], options:[
       {text:"Ask what the folder is for, and where to find it in an emergency.", fx:impact(0,1,1,1), flag:"learned_meds_folder", reply:"It lists her GP, medications and emergency contacts. Marg shows you where it lives."},
@@ -926,7 +926,7 @@ var DAYS = [
    scene:{marg:{pose:"floor", x:640, y:338, s:0.8}, stepLoose:true, basket:true, basketX:500, basketY:350, spilled:true},
    steps:[
     {t:"say", narr:true, requiresFlags:["noticed_step"], text:"Late afternoon. Marg is carrying a basket of washing out to the granny flat when you hear a thud and a cry. It’s the brick step you raised earlier. She is on the ground beside it."},
-    {t:"say", narr:true, excludesFlags:["noticed_step"], text:"Late afternoon. Marg is carrying a basket of washing out to the granny flat when you hear a thud and a cry. She has caught her foot on the broken brick step and is on the ground."},
+    {t:"say", narr:true, excludesFlags:["noticed_step"], text:"Late afternoon. Marg is carrying a basket of washing out to the granny flat when you hear a thud and a cry. She has caught her foot on the uneven brick step and is on the ground."},
     {t:"say", who:"Marg", text:"I’m fine. Don’t fuss. I just need a minute."},
     {t:"choice", prompt:"What do you do first?", options:[
       {text:"Reach down and lift her to her feet straight away.", fx:impact(0,-1,0,-1), tag:"fall_lifted", reply:"Marg winces. You stop and ask where it hurts."},
@@ -942,9 +942,9 @@ var DAYS = [
       {text:"Call David behind her back.", fx:impact(0,-1,-1,0), tag:"fall_told_behind_back", reply:"David knows now, but Marg finds out you called without asking her."},
       {text:"Offer to get her to a doctor, and let her decide whether and how to tell David.", fx:impact(1,1,1,1), tag:"fall_supported", flag:"told_David", reply:"You make a plan together. Marg decides to ring David after the GP."}
     ]},
-    {t:"choice", prompt:"Once Marg is safe, what do you do about the step?", options:[
+    {t:"choice", prompt:"Once Marg is safe, what do you do about the brick step?", options:[
       {text:"Ignore it. The emergency is over.", fx:impact(0,0,0,-1), tag:"step_ignored", reply:"The step stays as it is."},
-      {text:"Block the step off for now, and ask Marg’s permission to find a handyman.", fx:impact(0,1,1,1), tag:"step_reported", flag:"step_reported", reply:"You put a chair across the broken step. Marg agrees it’s time to get it fixed."},
+      {text:"Block the brick step off for now, and ask Marg’s permission to find a handyman.", fx:impact(0,1,1,1), tag:"step_reported", flag:"step_reported", reply:"You put a chair across the step. Marg agrees it’s time to get it fixed."},
       {text:"Try to fix the brick yourself, without asking or knowing how.", fx:impact(0,-1,-1,-1), tag:"step_diy", reply:"The brick wobbles worse than before. Marg is not impressed."},
       {text:"Suggest she contact the council or a trades service, and offer to help organise it.", fx:impact(0,1,1,1), tag:"step_plan", flag:"step_reported", reply:"Marg agrees to make a repair plan with you."}
     ]},
@@ -997,7 +997,7 @@ var DAYS = [
     {t:"choice", timer:15, prompt:"What next?", sub:"You can still change what happens.", requiresAnyTags:["emergency_froze","emergency_delayed","timeout_emergency"],
      timeoutNote:"A neighbour hears you call out and rings 000. You stay with Marg.", options:[
       {text:"Call 000 and put the phone on speaker.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called", reply:"The call-taker is with you now."},
-      {text:"Ask the neighbour to call 000 while you stay beside Marg.", fx:impact(0,1,1,1), tag:"emergency_called", flag:"emergency_called", reply:"The neighbour calls 000, and you stay with Marg."}
+      {text:"Call out to a neighbour to ring 000 while you stay beside Marg.", fx:impact(0,1,1,1), tag:"emergency_called", flag:"emergency_called", reply:"A neighbour rings 000, and you stay with Marg."}
     ]},
     {t:"say", narr:true, text:"The call-taker tells you to check her breathing, keep her warm and comfortable, and give her nothing to eat or drink. You speak calmly to Marg and protect her privacy while help is on the way."},
     {t:"choice", prompt:"While the ambulance is on its way, what do you do?", options:[
@@ -1008,7 +1008,7 @@ var DAYS = [
     {t:"say", narr:true, requiresFlags:["learned_meds_folder"], text:"The paramedics arrive and ask about Marg’s medications, allergies and GP. You go straight to the folder on the fridge and hand it over."},
     {t:"choice", prompt:"The paramedics ask about Marg’s medications, allergies and GP. What do you do?", excludesFlags:["learned_meds_folder"], options:[
       {text:"Ask Marg if she can answer, then look for anything labelled with her medical details.", fx:impact(0,1,1,1), tag:"folder_found", reply:"You spot the folder on the fridge marked MEDICAL and pass it to the paramedics."},
-      {text:"Ask the neighbour to help look while you stay with Marg.", fx:impact(0,1,1,1), tag:"folder_found", reply:"The neighbour finds the folder on the fridge and brings it to the paramedics."}
+      {text:"Call out to a neighbour to help look while you stay with Marg.", fx:impact(0,1,1,1), tag:"folder_found", reply:"A neighbour finds the folder on the fridge and brings it to the paramedics."}
     ]},
     {t:"say", narr:true, textByFlag:[
       {requiresFlags:["told_David"], text:"They ask when the symptoms started and what you saw. You have David’s number, and share it for Marg’s care."},
@@ -1078,7 +1078,7 @@ var REDEMPTION_STORIES = {
   boundary_sharp:"The conversation from the other night is still unfinished. Marg asks whether you want to talk about how it ended.",
   boundary_lecture:"Marg remembers the other night, and asks if you can explain your view without it turning into an argument.",
   fall_dismissed:"Marg is still sore from the fall. She asks whether you’d help her make a plan in case it happens again.",
-  step_ignored:"The back step still hasn’t been fixed. You have another chance to raise it and agree on what happens next.",
+  step_ignored:"The brick step still hasn’t been fixed. You have another chance to raise it and agree on what happens next.",
   fall_lifted:"Marg’s hip is still sore from the fall. She asks for a hand getting something down from a high shelf, and how you help this time is up to you.",
   fall_told_behind_back:"Marg brings up the call you made to David behind her back. She isn’t angry, but she wants to talk about it.",
   step_diy:"The brick you tried to fix has come loose again. Marg asks what you think should happen now.",
@@ -1090,7 +1090,7 @@ var REDEMPTION_NOTES = {
   repair_withdrawn:"Avoided the repair conversation", skipped_funeral:"Missed the funeral without offering support",
   friction_defensive:"Defensive about the late-night noise", boundary_avoided:"Avoided the boundary after the remark",
   boundary_laughed:"Laughed along with the remark", boundary_sharp:"Escalated sharply after the remark",
-  boundary_lecture:"Lectured Marg about the remark", fall_dismissed:"Walked away after the fall", step_ignored:"Ignored the broken step",
+  boundary_lecture:"Lectured Marg about the remark", fall_dismissed:"Walked away after the fall", step_ignored:"Ignored the uneven brick step",
   fall_lifted:"Lifted Marg straight after the fall", fall_told_behind_back:"Called David behind Marg’s back",
   step_diy:"Tried to repair the step without asking", david_deflected:"Deflected David’s questions"
 };

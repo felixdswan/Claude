@@ -17,7 +17,7 @@
 
    Usage: node scripts/test-demo.js [outdir]   (default: /tmp/pepaws-demo-out)
    Set PDF_LIBS as for test-playthrough.js where cdnjs is blocked. */
-const { chromium, serve, newPageFactory } = require("./browser-harness");
+const { chromium, serve, newPageFactory, storyDataProblems } = require("./browser-harness");
 const fs = require("fs");
 const path = require("path");
 
@@ -270,6 +270,15 @@ async function pdfFrom(page, nameFragment) {
   const base = "http://127.0.0.1:" + srv.address().port;
   const browser = await chromium.launch();
   const report = {};
+
+  /* the story data: one name for the step, and each choice that mentions it names it */
+  {
+    const { ctx, page } = await newPage(browser, base);
+    (await storyDataProblems(page)).forEach((p) => errors.push("story: " + p));
+    const day2 = await page.evaluate(() => DAYS[1].steps.filter((s) => s.t === "choice")[0].options.map((o) => o.text));
+    if (!day2.some((t) => /loose brick step/.test(t))) errors.push("story: Day 2's step option doesn't describe the step: " + day2.join(" | "));
+    await ctx.close();
+  }
 
   /* best and worst runs, then the staff desk on the worst run's record store */
   for (const mode of ["best", "worst"]) {
