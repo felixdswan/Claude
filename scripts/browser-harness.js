@@ -18,7 +18,8 @@ function serve() {
     const srv = http.createServer((req, res) => {
       const file = path.join(ROOT, decodeURIComponent(req.url.split("?")[0].split("#")[0]));
       if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); return res.end(); }
-      res.writeHead(200, { "content-type": file.endsWith(".html") ? "text/html; charset=utf-8" : "application/octet-stream" });
+      const type = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json" }[path.extname(file)];
+      res.writeHead(200, { "content-type": type || "application/octet-stream" });
       fs.createReadStream(file).pipe(res);
     });
     srv.listen(0, () => resolve(srv));

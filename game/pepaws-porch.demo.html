@@ -152,6 +152,45 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 .review textarea{min-height:76px}
 .empty-state{padding:28px 20px;display:flex;flex-direction:column;gap:8px;color:var(--ink-2);font-size:14px}
 .cont.small{padding:7px 12px;font-size:13px}
+/* hosts and matches */
+.tabs{display:flex;gap:6px;margin-top:9px}
+.tab{background:transparent;border:1px solid var(--line-2);border-radius:8px;padding:6px 12px;font:600 13px/1.2 var(--body);color:var(--ink-2)}
+.tab:hover{background:var(--field)}
+.tab[aria-selected="true"]{background:var(--slate);border-color:var(--slate);color:var(--on-dark)}
+.matchbody{flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.secthead{font:600 11px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-top:4px}
+.mcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 13px;display:flex;flex-direction:column;gap:9px}
+.mhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.mhead b{font-size:15px}
+.mhead .amp{font-size:13px;color:var(--ink-3)}
+.mhead .grow{flex:1}
+.mhead label{flex-direction:row;align-items:center;gap:6px;font-size:12px}
+.mhead select{width:auto;padding:6px 8px;font-size:13px}
+.score{font:700 13px/1 var(--mono);min-width:36px;text-align:center;padding:7px 6px;border-radius:8px;color:var(--on-dark);background:var(--slate)}
+.mparts{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px 12px}
+.mpart{font:500 11px/1.3 var(--mono);color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
+.mpart i{display:block;height:4px;border-radius:2px;background:var(--sunk);overflow:hidden}
+.mpart i b{display:block;height:100%;background:var(--sage)}
+.why{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13.5px;line-height:1.4;color:var(--ink)}
+.why li{padding-left:19px;position:relative}
+.why li::before{position:absolute;left:2px;top:0;font-weight:700}
+.why .ok::before{content:"✓";color:var(--good)}
+.why .warn::before{content:"!";color:var(--warn)}
+.why .no::before{content:"✕";color:var(--bad)}
+.mcard details summary,details.out summary{cursor:pointer;font-size:13px;color:var(--ink-2)}
+.mcard details .why{margin-top:6px}
+details.out{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 13px}
+details.out .why{margin-top:8px}
+.hfacts{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px 16px;font-size:13.5px;line-height:1.4}
+.hfacts div{display:flex;flex-direction:column;gap:1px}
+.hfacts span{font:600 10.5px/1.4 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.linkbtn{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--slate);text-decoration:underline;cursor:pointer}
+.bestfor{display:flex;flex-direction:column;gap:7px}
+.bestfor:empty{display:none}
+.bestfor .hrow{display:flex;align-items:center;gap:8px;font-size:13px;line-height:1.3}
+.bestfor .hrow .grow{flex:1;min-width:0;display:flex;flex-direction:column}
+.bestfor .hrow small{color:var(--ink-3);font-size:11.5px}
+.bestfor .score{min-width:32px;padding:6px 4px;font-size:12px}
 @media (max-width:900px){
   #app.wide{height:auto;min-height:94vh}
   .desk{grid-template-columns:1fr}
@@ -646,17 +685,19 @@ var ZONE_LABEL = {porch: "Front verandah", lounge: "Lounge room", kitchen: "Kitc
 <script>
 "use strict";
 /* ============================================================
-   CONTENT — the quick demo: eight days with Margaret "Marg" Hollis, 78.
-   Four big moments (loss, a biased remark, a fall, an emergency) and four
+   CONTENT — the quick demo: nine days with Margaret "Marg" Hollis, 78.
+   Four big moments (loss, a biased remark, a fall, an emergency) and five
    everyday days. Every question is multiple choice with a 25-second timer,
    so the words on each screen are kept short enough to read in time.
    Each day keeps its number from the full fortnight (n) so the profile's
    landmark rows (Days 6, 9, 11 and 14) line up in the GenStay template;
-   `show` is the day the applicant sees (1 to 8).
+   `show` is the day the applicant sees (1 to 9). Anything a later day
+   mentions (the step, the dinner invitation, the community garden, the
+   medical folder) is set up on an earlier day that every applicant sees.
    ============================================================ */
 
-/* Area of study picks Marg's old career, which the profile offers as the
-   best homeowner background. */
+/* Area of study picks Marg's old career: Day 3 is built around it, and the
+   profile offers it as the best homeowner background. */
 var DISCIPLINES = {
   health:        {label:"Health (nursing, medicine)",                   career:"a nurse"},
   carework:      {label:"Carework (aged care, disability support)",     career:"a community carer"},
@@ -667,6 +708,7 @@ var DISCIPLINES = {
   other:         {label:"Other",                                        career:"a nurse"}
 };
 function discipline(){ return DISCIPLINES[S.studyArea] || DISCIPLINES.other; }
+function storyText(value){ return String(value || "").replace(/\{\{career\}\}/g, discipline().career); }
 function impact(connection, respect, reliability, awareness){
   return {connection:connection, respect:respect, reliability:reliability, awareness:awareness};
 }
@@ -682,7 +724,7 @@ var DAYS = [
     {t:"say", narr:true, opening:true, text:"Marg Hollis, 78, welcomes you into the Hollis family home. The kettle’s on, and a cake is set on the table."},
     {t:"choice", prompt:"What do you do first?", timeoutFx:impact(-1,0,0,0), timeoutNote:"Marg waits, then pours the tea anyway.", options:[
       {text:"Have a tea and ask about some photographs.", fx:impact(1,1,0,0), tag:"arrival_connected", reply:"Marg tells you who’s in each photo."},
-      {text:"Have a tea and ask about the house routines.", fx:impact(0,1,1,0), tag:"arrival_tour", flag:"learned_meds_folder", reply:"Marg shows you the routines, and her medical folder."},
+      {text:"Have a tea and ask for a quick tour.", fx:impact(0,1,1,0), tag:"arrival_tour", flag:"learned_meds_folder", reply:"Marg shows you around, including the medical folder on the fridge."},
       {text:"Say you’re tired, and go and unpack.", fx:impact(-1,0,0,0), tag:"arrival_alone", reply:"Marg says the tea will keep."},
       {text:"Ask for the Wi-Fi password first.", fx:impact(-1,0,1,0), tag:"arrival_practical", reply:"Marg points to the card by the phone."}
     ]},
@@ -694,21 +736,36 @@ var DAYS = [
     ]}
    ]},
 
-  /* ---------------- Day 2 — house rhythms; plants the step ---------------- */
+  /* ---------------- Day 2 — house rhythms; plants the dinner invitation and the step ---------------- */
   {n:2, show:2, title:"House rhythms", time:"10:15 am", zone:"lounge", light:"day",
    scene:{marg:{pose:"sit", x:606, y:300, s:0.78}, radio:true},
    steps:[
-    {t:"say", narr:true, opening:true, text:"Marg explains the routines: bins on Tuesday, the radio at half past four, dinner at six. “And mind the brick step.”"},
-    {t:"choice", prompt:"How do you fit in?", timeoutNote:"Marg moves on to the bins.", options:[
+    {t:"say", narr:true, opening:true, text:"Marg runs through the routines: bins on Tuesday, the radio at half past four, and dinner at six, which you’re welcome to join. “And mind the brick step out to the granny flat. It’s loose.”"},
+    {t:"choice", prompt:"How do you respond?", timeoutNote:"Marg moves on to the bins.", options:[
       {text:"Offer to cook dinner one night a week.", fx:impact(1,1,1,0), tag:"shared_cooking", reply:"Marg suggests Thursdays."},
       {text:"Say you’ll mostly do your own thing.", fx:impact(0,1,1,0), tag:"courteous_independence", reply:"Marg nods. Clear plans suit you both."},
-      {text:"Plan to eat in your room.", fx:impact(-1,0,-1,0), tag:"dinner_avoided", reply:"The invitation stays open, but Marg stops asking."},
-      {text:"Ask whether the step should be fixed.", fx:impact(0,1,1,1), tag:"noticed_step", flag:"noticed_step", reply:"Marg brushes it off: “I know where to step.”"}
+      {text:"Say nothing, and plan to eat in your room.", fx:impact(-1,0,-1,0), tag:"dinner_avoided", reply:"The invitation stays open, but Marg stops asking."},
+      {text:"Ask whether she’d like the step fixed.", fx:impact(0,1,1,1), tag:"noticed_step", flag:"noticed_step", reply:"Marg brushes it off: “I know where to step.”"}
     ]}
    ]},
 
-  /* ---------------- Day 3 — the bank text ---------------- */
-  {n:4, show:3, title:"Generational gap", time:"6:20 pm", zone:"yard", light:"dusk",
+  /* ---------------- Day 3 — shared ground; plants the community garden ----------------
+     What the applicant picks becomes a starting point for the matching questions
+     (hobbies, help, things to learn, and a homeowner from their own field). */
+  {n:3, show:3, title:"Shared ground", time:"11:00 am", zone:"porch", light:"day",
+   scene:{marg:{pose:"stand", x:470, y:301, s:0.84, outfit:"garden", hold:"trug"}},
+   steps:[
+    {t:"say", narr:true, opening:true, text:"Marg asks about your course, and her face lights up. She spent thirty-five years as {{career}}. This afternoon, she’s off to the community garden."},
+    {t:"choice", prompt:"What could you two do together this week?", timeoutFx:impact(0,0,0,0), timeoutNote:"Marg says you can decide another time.", options:[
+      {text:"Hear about her years as {{career}}.", fx:impact(1,1,0,0), tag:"career_chat", reply:"Marg fetches a box of old papers, and the stories start."},
+      {text:"Help out at the community garden.", fx:impact(1,0,0,0), tag:"together_garden", reply:"Marg grins: “Bring a hat.”"},
+      {text:"Bake something from her recipe book.", fx:impact(1,0,0,0), tag:"together_baking", reply:"Marg finds her scone recipe, splattered from years of use."},
+      {text:"Keep the week for study, and catch up at dinner.", fx:impact(0,0,0,0), tag:"together_later", reply:"Marg says the garden will keep."}
+    ]}
+   ]},
+
+  /* ---------------- Day 4 — the bank text ---------------- */
+  {n:4, show:4, title:"Generational gap", time:"6:20 pm", zone:"yard", light:"dusk",
    scene:{marg:{pose:"stand", x:250, y:320, s:0.8, hold:"phone", mood:"neutral"}, stepLoose:true},
    steps:[
     {t:"say", narr:true, opening:true, text:"Marg is looking at her phone when she receives a text from her bank. It says to reset her password now. She’s about to tap the link."},
@@ -720,8 +777,8 @@ var DAYS = [
     ]}
    ]},
 
-  /* ---------------- Day 4 — BIG MOMENT: loss ---------------- */
-  {n:6, show:4, title:"Loss", time:"8:10 am", zone:"kitchen", light:"grey", kind:"landmark", contentNote:"bereavement",
+  /* ---------------- Day 5 — BIG MOMENT: loss ---------------- */
+  {n:6, show:5, title:"Loss", time:"8:10 am", zone:"kitchen", light:"grey", kind:"landmark", contentNote:"bereavement",
    scene:{marg:{pose:"sit", x:440, y:306, s:0.78, mood:"sad"}, breakfast:true},
    steps:[
     {t:"say", narr:true, opening:true, pathText:{
@@ -737,8 +794,8 @@ var DAYS = [
     ]}
    ]},
 
-  /* ---------------- Day 5 — everyday friction ---------------- */
-  {n:8, show:5, title:"Everyday friction", time:"8:00 am", zone:"kitchen", light:"day",
+  /* ---------------- Day 6 — everyday friction ---------------- */
+  {n:8, show:6, title:"Everyday friction", time:"8:00 am", zone:"kitchen", light:"day",
    scene:{marg:{pose:"sit", x:440, y:306, s:0.78, mood:"neutral"}, chipped:true, note:true, milk:true},
    steps:[
     {t:"say", narr:true, opening:true, text:"Your friend stayed later than you told Marg, and the music was loud. Now there’s a note about a chipped mug."},
@@ -750,12 +807,12 @@ var DAYS = [
     ]}
    ]},
 
-  /* ---------------- Day 6 — BIG MOMENT: boundaries ---------------- */
-  {n:9, show:6, title:"Boundaries", time:"6:30 pm", zone:"lounge", light:"gold", kind:"landmark", contentNote:"a biased remark",
+  /* ---------------- Day 7 — BIG MOMENT: boundaries ---------------- */
+  {n:9, show:7, title:"Boundaries", time:"6:30 pm", zone:"lounge", light:"gold", kind:"landmark", contentNote:"a biased remark",
    scene:{marg:{pose:"sit", x:606, y:300, s:0.78, mood:"neutral"}, tvOn:true, dinner:true},
    steps:[
     {t:"say", narr:true, opening:true, text:"Over dinner, Marg says, “That new neighbour at the community garden is so well-spoken. You’d never guess she wasn’t born here.”"},
-    {t:"choice", prompt:"What do you do?", timeoutFx:impact(0,-1,0,0), timeoutTag:"boundary_avoided", timeoutNote:"Marg moves on to the weather.", options:[
+    {t:"choice", prompt:"What do you do?", timeoutFx:impact(0,-1,0,0), timeoutNote:"Marg moves on to the weather.", options:[
       {text:"Laugh awkwardly and change the subject.", fx:impact(0,-1,0,0), tag:"boundary_laughed", reply:"Marg takes the laugh as agreement."},
       {text:"Say nothing, and go to your room.", fx:impact(-1,0,0,0), tag:"boundary_avoided", flag:"avoided_boundary", reply:"The moment passes, but it stays with you."},
       {text:"Calmly ask what she means, and share your view.", fx:impact(1,1,0,0), tag:"boundary_calm", flag:"brought_up_remark", reply:"Marg is defensive at first, then listens."},
@@ -763,13 +820,13 @@ var DAYS = [
     ]}
    ]},
 
-  /* ---------------- Day 7 — BIG MOMENT: the fall ---------------- */
-  {n:11, show:7, title:"Safety", time:"5:20 pm", zone:"yard", light:"gold", kind:"landmark", contentNote:"a fall",
+  /* ---------------- Day 8 — BIG MOMENT: the fall ---------------- */
+  {n:11, show:8, title:"Safety", time:"5:20 pm", zone:"yard", light:"gold", kind:"landmark", contentNote:"a fall",
    scene:{marg:{pose:"floor", x:640, y:338, s:0.8}, stepLoose:true, basket:true, basketX:500, basketY:350, spilled:true},
    steps:[
     {t:"say", narr:true, opening:true, textByFlag:[
       {requiresFlags:["noticed_step"], text:"A thud from the yard. Marg has fallen on the brick step you asked about. “I’m fine. Don’t fuss.”"},
-      {excludesFlags:["noticed_step"], text:"A thud from the yard. Marg has tripped on the broken brick step. “I’m fine. Don’t fuss.”"}
+      {excludesFlags:["noticed_step"], text:"A thud from the yard. Marg has tripped on the loose brick step to the granny flat. “I’m fine. Don’t fuss.”"}
     ]},
     {t:"choice", prompt:"What do you do first?", timeoutFx:impact(0,0,0,-1), timeoutNote:"Marg tries to get up alone, and winces.", options:[
       {text:"Help her straight up onto her feet.", fx:impact(0,-1,0,-1), tag:"fall_lifted", reply:"Marg winces. You stop and ask where it hurts."},
@@ -779,26 +836,26 @@ var DAYS = [
     ]}
    ]},
 
-  /* ---------------- Day 8 — BIG MOMENT: the emergency ---------------- */
-  {n:14, show:8, title:"The emergency", time:"6:40 am", zone:"kitchen", light:"night", kind:"landmark", contentNote:"a medical emergency",
+  /* ---------------- Day 9 — BIG MOMENT: the emergency ---------------- */
+  {n:14, show:9, title:"The emergency", time:"6:40 am", zone:"kitchen", light:"night", kind:"landmark", contentNote:"a medical emergency",
    scene:{marg:{pose:"floor", x:352, y:376, s:1.55}, fallen:true, lamp:true, chair:false},
    steps:[
     {t:"say", narr:true, opening:true, text:"Early morning. A crash from the kitchen. Marg is on the floor, breathing but groggy, and not responding clearly."},
-    {t:"choice", prompt:"What do you do first?", timeoutFx:impact(0,0,0,-2), timeoutTag:"emergency_froze", timeoutNote:"You freeze. A neighbour hears the crash and rings 000.", options:[
+    {t:"choice", prompt:"What do you do first?", timeoutFx:impact(0,0,0,-2), timeoutNote:"You freeze. A neighbour hears the crash and rings 000.", options:[
       {text:"Call 000 on speaker, and stay with her.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called",
        reply:"The call-taker guides you until the paramedics arrive.",
-       replyByFlag:{flag:"learned_meds_folder", text:"The call-taker guides you. You hand the paramedics her folder."}},
+       replyByFlag:{flag:"learned_meds_folder", text:"The call-taker guides you. You hand the paramedics her medical folder."}},
       {text:"Shake her, and call her son, David.", fx:impact(0,-1,0,-2), tag:"emergency_delayed", reply:"David doesn’t answer. Minutes pass before you ring 000."},
       {text:"Run next door for help.", fx:impact(0,0,0,-1), tag:"emergency_delayed", reply:"The neighbour rings 000 while you go back to Marg."},
       {text:"Give her water, and help her sit up.", fx:impact(0,-1,0,-2), tag:"emergency_water", reply:"Paramedics say not to move her or give her anything."}
     ]}
    ]}
 ];
-/* How it ends, shown with Marg's reaction on Day 8. */
+/* How it ends, shown with Marg's reaction on the last day. */
 var EPILOGUE = {
   warm:"At the hospital, Marg is stable. She takes your hand: “Thank you for staying.”",
   steady:"At the hospital, Marg is stable. She thanks you, a little surprised.",
-  distant:"At the hospital, Marg is stable. She thanks you, and asks whether the coordinator should check in."
+  distant:"At the hospital, Marg is stable. She thanks you, and wonders whether the placement service should check in on you both."
 };
 
 /* The lowest moment, in words staff can scan. Choices not listed here use their own text. */
@@ -816,7 +873,7 @@ var LOW_NOTES = {
    ENGINE
    ============================================================ */
 var app = document.getElementById("app");
-var VERSION = "demo-1.0";
+var VERSION = "demo-1.1";
 var START_METER = 5;
 var SAVE_KEY = "pepaws-porch-demo-v1";
 var METERS = ["connection", "respect", "reliability", "awareness"];
@@ -824,7 +881,7 @@ var METERS = ["connection", "respect", "reliability", "awareness"];
 var S = null;
 function freshState(){
   return {
-    view: "title", pid: null, name: "", email: "", studyArea: "health",
+    view: "title", version: VERSION, pid: null, name: "", email: "", studyArea: "health",
     consentAt: null, startedAt: null, gameEndedAt: null, submittedAt: null,
     di: 0, si: 0, phase: "step",
     meters: {connection: START_METER, respect: START_METER, reliability: START_METER, awareness: START_METER},
@@ -854,6 +911,8 @@ function loadSaved(){
     if (!raw) return null;
     var v = JSON.parse(raw);
     if (!v || !v.pid || !v.view) return null;
+    /* A run part-way through an older version can't resume: the days have changed since. */
+    if (v.version !== VERSION && ["play", "paused"].indexOf(v.view) !== -1) return null;
     var base = freshState();
     Object.keys(base).forEach(function(key){ if (v[key] == null) v[key] = base[key]; });
     METERS.forEach(function(key){ if (v.meters[key] == null) v.meters[key] = START_METER; });
@@ -862,6 +921,11 @@ function loadSaved(){
   } catch (e) { return null; }
 }
 function clearSaved(){ try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
+
+/* "nine", for sentences that count the days. */
+function daysInWords(){
+  return ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"][DAYS.length] || String(DAYS.length);
+}
 
 function makePid(){
   return "DEMO-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
@@ -1005,13 +1069,13 @@ function renderPaused(){
 function renderTitle(){
   var saved = loadSaved();
   var resumable = saved && !saved.submittedAt && ["play","paused","questionnaire"].indexOf(saved.view) !== -1;
-  var where = resumable ? (saved.view === "questionnaire" ? "the matching questions" : "day " + DAYS[saved.di].show + " of 8") : "";
+  var where = resumable ? (saved.view === "questionnaire" ? "the matching questions" : "day " + DAYS[saved.di].show + " of " + DAYS.length) : "";
   var unsent = saved && saved.submittedAt && !saved.synced;
   app.innerHTML =
     '<div class="stage">' + scenePorch(LIGHT.gold, {marg: {pose: "stand", x: 470, y: 301, s: 0.84}}) + '</div>'
     + '<div class="scroll"><div class="pad title">'
     + '<div><div class="kicker">Homeshare screening · quick demo</div><h1>Pepaws Porch</h1></div>'
-    + '<p class="sub">Spend eight days sharing a home with Marg, 78. Every question is multiple choice, with 25 seconds to answer. There are no right or wrong answers. Two short pages of questions at the end build your matching profile.</p>'
+    + '<p class="sub">Spend ' + daysInWords() + ' days sharing a home with Marg, 78. Every question is multiple choice, with 25 seconds to answer. There are no right or wrong answers. Two short pages of questions at the end build your matching profile.</p>'
     + (resumable
         ? '<div class="notice"><b>You have a run in progress</b>, up to ' + esc(where) + '.'
           + '<div class="btnrow" style="margin-top:10px">'
@@ -1030,12 +1094,12 @@ function renderTitle(){
         return '<option value="' + k + '"' + (S.studyArea === k ? " selected" : "") + '>' + esc(DISCIPLINES[k].label) + '</option>';
       }).join("")
     + '</select></label></div>'
-    + '<div class="notice"><b>Content note.</b> The eight days include a bereavement, a biased remark, a fall and a medical emergency. Each of those days carries its own note. You can pause at any time, and the timer pauses with you.</div>'
+    + '<div class="notice"><b>Content note.</b> The ' + daysInWords() + ' days include a bereavement, a biased remark, a fall and a medical emergency. Each of those days carries its own note. You can pause at any time, and the timer pauses with you.</div>'
     + '<label class="check"><input type="checkbox" id="c1"><span>I understand my choices, my answers to the matching questions and how long I took are recorded, read by staff at the placement service, and used to build my matching profile.</span></label>'
     + '<label class="check"><input type="checkbox" id="c2"><span>I have read the content note and I’m ready to continue.</span></label>'
     + '<div id="terr"></div>'
     + '<button class="cont primary" id="begin">Begin day 1</button>'
-    + '<p class="sub" style="font-size:12.5px">About 3–4 minutes, including two short pages of questions.</p>'
+    + '<p class="sub" style="font-size:12.5px">About 4–5 minutes, including two short pages of questions.</p>'
     + '</div></div>';
 
   if (resumable){
@@ -1075,7 +1139,7 @@ function sceneFor(day){
 }
 function topbarHTML(day){
   return '<div class="topbar"><div class="toprow">'
-    + '<span class="daylabel">Day ' + day.show + ' of 8 · ' + esc(day.title) + '</span>'
+    + '<span class="daylabel">Day ' + day.show + ' of ' + DAYS.length + ' · ' + esc(day.title) + '</span>'
     + '<span class="clock">' + esc(day.time) + '</span><button class="pause" id="pause">Pause</button></div></div>';
 }
 
@@ -1102,7 +1166,7 @@ function renderSay(day, step){
   var text = step.textByFlag ? flaggedStepText(step) : step.pathText && step.pathText[pathTierForDay(day.n)] || step.text;
   el("#panel").innerHTML =
     (step.opening && day.contentNote ? '<div class="notice"><b>Content note:</b> ' + esc(day.contentNote) + '.</div>' : '')
-    + '<p class="line">' + esc(text) + '</p>'
+    + '<p class="line">' + esc(storyText(text)) + '</p>'
     + '<button class="cont" id="next">Continue</button>';
   el("#next").onclick = nextStep;
 }
@@ -1110,10 +1174,10 @@ function renderSay(day, step){
 function renderChoice(day, step){
   var p = el("#panel");
   var seconds = step.timer || QUESTION_SECONDS;
-  var html = '<div class="prompt">' + esc(step.prompt) + '</div>'
+  var html = '<div class="prompt">' + esc(storyText(step.prompt)) + '</div>'
     + '<div class="timerlabel" id="tlabel">' + seconds + 's</div>';
   html += '<div class="opts">' + step.options.map(function(o, i){
-    return '<button class="opt" data-i="' + i + '">' + esc(o.text) + '</button>';
+    return '<button class="opt" data-i="' + i + '">' + esc(storyText(o.text)) + '</button>';
   }).join("") + '</div>';
   p.innerHTML = html;
   Array.prototype.forEach.call(p.querySelectorAll(".opt"), function(b){
@@ -1126,8 +1190,8 @@ function renderChoice(day, step){
 
 function recordChoice(day, step, option, f, timedOut, seconds){
   S.choices.push({
-    day: day.n, title: day.title, prompt: step.prompt,
-    chosen: timedOut ? "(no response — timed out)" : option.text,
+    day: day.n, title: day.title, prompt: storyText(step.prompt),
+    chosen: timedOut ? "(no response — timed out)" : storyText(option.text),
     tag: timedOut ? "timeout" : (option.tag || ""),
     connection: f.connection || 0, respect: f.respect || 0, reliability: f.reliability || 0, awareness: f.awareness || 0,
     timedOut: !!timedOut, seconds: seconds
@@ -1165,7 +1229,7 @@ function renderReply(){
   var moreToday = day.steps.slice(S.si + 1).some(stepIsAvailable), last = !moreToday && S.di === DAYS.length - 1;
   el("#panel").innerHTML =
     (p.heading ? '<div class="who narr">' + esc(p.heading) + '</div>' : "")
-    + (p.reply ? '<p class="line">' + esc(p.reply) + '</p>' : "")
+    + (p.reply ? '<p class="line">' + esc(storyText(p.reply)) + '</p>' : "")
     + (last ? '<p class="line">' + esc(EPILOGUE[pathTier()]) + '</p>' : "")
     + '<button class="cont primary" id="next">' + (moreToday ? "Continue" : last ? "Finish" : "Next day") + '</button>';
   el("#next").onclick = function(){ S.pending = null; nextStep(); };
@@ -1215,38 +1279,62 @@ function hasSeriousConcern(){ return S.concerns.some(function(c){ return CONCERN
 "use strict";
 /* ============================================================
    MATCHING QUESTIONS — two short pages of the key matching
-   fields the demo can't tell us: the hard filters and the main
-   scoring points. Each field writes to one path in the GenStay
-   profile contract (genstay-profile-fields.md).
+   fields the demo can't tell us: first the hard filters, then the
+   scoring points (career, shared interests, time together and
+   help). Each field writes to one path in the GenStay profile
+   contract (genstay-profile-fields.md), and the option lists match
+   the host profiles' (genstay-host-fields.md) so the matching on
+   the staff desk can compare them.
    ============================================================ */
 var YES_NO = [[true, "Yes"], [false, "No"]];
+/* The work each area of study leads to. */
+var CAREER_GOALS = {
+  health:        ["Nursing", "Midwifery", "Medicine", "Paramedicine", "Pharmacy"],
+  carework:      ["Aged care", "Disability support", "Community care"],
+  allied_health: ["Physiotherapy", "Occupational therapy", "Speech pathology", "Dietetics", "Exercise physiology"],
+  social_work:   ["Social work", "Community services", "Youth work"],
+  psychology:    ["Psychology", "Counselling"],
+  education:     ["Early childhood teaching", "Primary teaching", "Secondary teaching", "Special education"],
+  other:         ["Business", "Engineering or IT", "Law", "Science", "Creative arts", "Something else"]
+};
 var Q_PAGES = [
-  {title:"Your placement", intro:"Two short pages of the details we match on. Most answers are a tap.", fields:[
+  {title:"Your placement and home", intro:"Two short pages of the details we match on. Most answers are a tap.", fields:[
     {id:"age", path:"student.age", type:"num", label:"Age", req:true, min:18, max:99, hint:"You need to be 18 or over to join a homeshare."},
     {id:"gender", path:"student.gender", type:"select", label:"Gender", req:true, opts:["Female","Male","Non-binary","Another identity","Prefer not to say"]},
     {id:"campus", path:"placement.campus", type:"text", label:"Campus you attend most", req:true, full:true, ph:"e.g. UTS City campus, Ultimo"},
     {id:"moveInDate", path:"placement.moveInDate", type:"date", label:"Earliest move-in date", req:true},
     {id:"stayMonths", path:"placement.stayMonths", type:"select", label:"How long you’d like to stay", req:true, num:true, opts:[["3","3 months"],["6","6 months"],["9","9 months"],["12","12 months"],["18","18 months"],["24","2 years"]]},
     {id:"rentBudgetWeekly", path:"support.rentBudgetWeekly", type:"num", label:"Most you can pay in rent each week (AUD)", req:true, min:0, max:2000, full:true},
-    {id:"homeownerGender", path:"household.homeownerGender", type:"select", label:"I’d be comfortable living with a homeowner who is", req:true, full:true, opts:[["female","A woman"],["male","A man"],["any","Either is fine"]]}
-  ]},
-  {title:"Home life and helping out", fields:[
-    {id:"smoker", path:"household.smoker", type:"yesno", label:"Do you smoke or vape?", req:true},
-    {id:"needsSmokeFree", path:"household.needsSmokeFree", type:"yesno", label:"Do you need a smoke-free home?", req:true},
-    {id:"okWithPets", path:"household.okWithPets", type:"yesno", label:"Happy to live with pets?", req:true},
-    {id:"petAllergy", path:"household.petAllergy", type:"yesno", label:"Any pet allergies?", req:true},
+    {id:"homeownerGender", path:"household.homeownerGender", type:"select", label:"I’d be comfortable living with a homeowner who is", req:true, full:true, opts:[["female","A woman"],["male","A man"],["any","Either is fine"]]},
     {id:"otherLodgers", path:"household.otherLodgers", type:"select", label:"Other students in the home", req:true, full:true, opts:[["none","I’d rather be the only student"],["open","Open to another student"],["prefer","I’d like another student there"]]},
+    /* one tap each, filling two profile fields (and no contradictory pairs) */
+    {id:"smoking", type:"pick", label:"Smoking and vaping", req:true, full:true,
+     opts:[["smoker","I smoke or vape"],["needs_free","I don’t, and I need a smoke-free home"],["either","I don’t, and I don’t mind"]],
+     sets:{smoker:{"household.smoker":true, "household.needsSmokeFree":false}, needs_free:{"household.smoker":false, "household.needsSmokeFree":true},
+           either:{"household.smoker":false, "household.needsSmokeFree":false}}},
+    {id:"pets", type:"pick", label:"Pets", req:true, full:true,
+     opts:[["happy","Happy to live with pets"],["rather_not","I’d rather not"],["allergic","I’m allergic to pets"]],
+     sets:{happy:{"household.okWithPets":true, "household.petAllergy":false}, rather_not:{"household.okWithPets":false, "household.petAllergy":false},
+           allergic:{"household.okWithPets":false, "household.petAllergy":true}}}
+  ]},
+  {title:"Interests and helping out", fields:[
+    {id:"careerGoal", path:"interests.careerGoal", type:"select", label:"The work you’re heading for", req:true, full:true,
+     opts:function(){ return (CAREER_GOALS[S.studyArea] || CAREER_GOALS.other).concat(["Not sure yet"]); }},
+    {id:"fieldMentor", path:"interests.fieldMentor", type:"select", label:"Would you like a homeowner who worked in your field?", req:true, full:true, opts:[["keen","Yes, I’d love that"],["open","It would be nice"],["no","It doesn’t matter to me"]]},
+    {id:"socialLevel", path:"lifestyle.socialLevel", type:"scale", label:"How much time would you like to spend with your homeowner?", req:true, full:true, ends:["Mostly independent","Lots of time together"]},
+    {id:"languages", path:"student.languages", type:"chips", label:"Languages you speak", full:true, other:true, opts:["English","Mandarin","Cantonese","Vietnamese","Arabic","Greek","Italian","Hindi","Spanish","Korean"]},
+    {id:"hobbies", path:"interests.hobbies", type:"chips", label:"Hobbies and interests", full:true, opts:["Gardening","Cooking and baking","Reading","Music","Sport and fitness","Walking","Crafts","Board games and puzzles","Films and TV","Art"]},
+    {id:"wantsToLearn", path:"interests.wantsToLearn", type:"chips", label:"Something you’d like to learn", full:true, opts:["Gardening","Family recipes","Local history","Life advice","Crafts","Card games"]},
     {id:"hoursPerWeek", path:"support.hoursPerWeek", type:"range", label:"Hours a week you can give to shared household life", req:true, full:true, opts:[["6-8","6–8 hours"],["8-10","8–10 hours"],["10-12","10–12 hours"],["12-15","12–15 hours"]]},
     {id:"helpTypes", path:"support.helpTypes", type:"chips", label:"Happy to help with", req:true, full:true, opts:["Company and conversation","Cooking shared meals","Tech and phone help","Gardening","Bins and light chores","Shopping and errands","Lifts in the homeowner’s car","Pet care"]},
-    {id:"notOffered", path:"support.notOffered", type:"chips", label:"Not comfortable offering", full:true, opts:["Personal care","Managing medication","Overnight care","Heavy lifting","Cleaning the whole house"]},
-    {id:"hobbies", path:"interests.hobbies", type:"chips", label:"Hobbies and interests", full:true, opts:["Gardening","Cooking and baking","Reading","Music","Sport and fitness","Walking","Crafts","Board games and puzzles","Films and TV","Art"]}
+    {id:"notOffered", path:"support.notOffered", type:"chips", label:"Not comfortable offering", full:true, opts:["Personal care","Managing medication","Overnight care","Heavy lifting","Cleaning the whole house"]}
   ]}
 ];
 var Q_FIELDS = [];
 Q_PAGES.forEach(function(page){ page.fields.forEach(function(f){ if (f.id) Q_FIELDS.push(f); }); });
 var WEEK = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
-function optPairs(f){ return f.opts.map(function(o){ return Array.isArray(o) ? o : [o, o]; }); }
+function optPairs(f){ return (typeof f.opts === "function" ? f.opts() : f.opts).map(function(o){ return Array.isArray(o) ? o : [o, o]; }); }
 function isBlank(v){ return v == null || v === "" || (Array.isArray(v) && !v.length); }
 function splitList(text){ return String(text || "").split(/[,\n]/).map(function(x){ return x.trim(); }).filter(Boolean); }
 
@@ -1276,14 +1364,20 @@ function qInvalid(f){
   return false;
 }
 
-/* What the eight days already showed, offered as a starting point. */
+/* What the days already showed, offered as a starting point. */
 function prefillFromGame(){
   if (S.qPrefilled) return;
-  var help = [];
-  if (S.tags.arrival_connected || S.tags.motivation_company) help.push("Company and conversation");
-  if (S.tags.shared_cooking) help.push("Cooking shared meals");
-  if (S.tags.scam_taught || S.tags.scam_escalated) help.push("Tech and phone help");
+  var t = S.tags, help = [], hobbies = [], learn = [];
+  if (t.arrival_connected || t.motivation_company) help.push("Company and conversation");
+  if (t.shared_cooking) help.push("Cooking shared meals");
+  if (t.scam_taught || t.scam_escalated) help.push("Tech and phone help");
+  if (t.together_garden){ help.push("Gardening"); hobbies.push("Gardening"); }
+  if (t.together_baking){ hobbies.push("Cooking and baking"); learn.push("Family recipes"); }
   if (help.length) S.q.helpTypes = help;
+  if (hobbies.length) S.q.hobbies = hobbies;
+  if (learn.length) S.q.wantsToLearn = learn;
+  if (t.career_chat) S.q.fieldMentor = "keen";
+  S.q.languages = ["English"];
   S.qPrefilled = true;
 }
 
@@ -1301,8 +1395,8 @@ function qFieldHTML(f){
         return '<button type="button" class="chip" data-multi="' + f.id + '" data-v="' + esc(o) + '" aria-pressed="' + (on.indexOf(o) !== -1) + '">' + esc(o) + '</button>';
       }).join("") + '</div>'
       + (f.other ? '<input type="text" data-q="' + f.id + '__other" maxlength="200" placeholder="Anything else? Separate with commas" value="' + esc(S.q[f.id + "__other"] || "") + '" aria-label="' + esc(f.label) + ': other">' : '');
-  } else if (f.type === "yesno" || f.type === "scale"){
-    var pairs = f.type === "yesno" ? YES_NO : [1,2,3,4,5].map(function(n){ return [n, String(n)]; });
+  } else if (f.type === "yesno" || f.type === "scale" || f.type === "pick"){
+    var pairs = f.type === "yesno" ? YES_NO : f.type === "pick" ? f.opts : [1,2,3,4,5].map(function(n){ return [n, String(n)]; });
     ctrl = '<div class="chips" id="' + id + '" role="group">' + pairs.map(function(o){
         return '<button type="button" class="chip" data-one="' + f.id + '" data-v="' + o[0] + '" aria-pressed="' + (v === o[0]) + '">' + o[1] + '</button>';
       }).join("") + '</div>'
@@ -1320,11 +1414,11 @@ function renderQuestionnaire(){
   prefillFromGame();
   var page = Q_PAGES[S.qPage], last = S.qPage === Q_PAGES.length - 1;
   app.innerHTML = '<div class="topbar"><div class="toprow"><span class="daylabel">Matching questions · ' + (S.qPage + 1) + ' of ' + Q_PAGES.length + '</span>'
-    + '<span class="clock">About 1 min</span></div></div>'
+    + '<span class="clock">About a minute</span></div></div>'
     + '<div class="scroll" id="qscroll"><div class="pad">'
     + '<div class="qhead"><div class="qprog">' + Q_PAGES.map(function(_, i){ return '<i class="' + (i <= S.qPage ? "on" : "") + '"></i>'; }).join("") + '</div>'
     + '<h2 style="font-size:25px;margin-top:8px">' + esc(page.title) + '</h2>'
-    + (S.qPage === 0 ? '<p class="sub">Your eight days with Marg are done. ' + esc(page.intro) + '</p>' : '')
+    + (S.qPage === 0 ? '<p class="sub">Your ' + daysInWords() + ' days with Marg are done. ' + esc(page.intro) + '</p>' : '')
     + '</div>'
     + '<div class="qgrid">' + page.fields.map(qFieldHTML).join("") + '</div>'
     + '<div id="qerr"></div>'
@@ -1353,7 +1447,7 @@ function renderQuestionnaire(){
   Array.prototype.forEach.call(app.querySelectorAll("[data-one]"), function(b){
     b.onclick = function(){
       var id = b.getAttribute("data-one"), raw = b.getAttribute("data-v");
-      S.q[id] = raw === "true" ? true : raw === "false" ? false : Number(raw);
+      S.q[id] = raw === "true" ? true : raw === "false" ? false : /^\d+$/.test(raw) ? Number(raw) : raw;
       Array.prototype.forEach.call(b.parentNode.children, function(x){ x.setAttribute("aria-pressed", String(x === b)); });
       save(); recheck(id);
     };
@@ -1378,7 +1472,7 @@ function renderQuestionnaire(){
 
 /* ============================================================
    PROFILE — builds the GenStay matching profile (contract v1.0)
-   from the eight days and the matching questions.
+   from the days with Marg and the matching questions.
    ============================================================ */
 var PROFILE_TYPES = {
   connector:             {title:"The Connector",             colour:"var(--good)",  text:"You tended to build connection while keeping respect and boundaries in view."},
@@ -1397,25 +1491,16 @@ function scanQuestionnaire(){
     if (f.other) splitList(S.q[f.id + "__other"]).forEach(function(item){ scanText(where, item, true); });
   });
 }
-/* Answers that contradict each other or can't be right, for staff to ask about. */
+/* Answers that can't be right, for staff to ask about. (The one-tap smoking
+   and pets questions can't contradict themselves.) */
 function answerChecks(){
   var q = S.q, out = [];
-  if (q.smoker === true && q.needsSmokeFree === true) out.push("smokes or vapes, but needs a smoke-free home");
-  if (q.okWithPets === true && q.petAllergy === true) out.push("happy to live with pets, but has a pet allergy");
-  if (q.bedtime && q.wakeTime){
-    var mins = function(t){ var m = String(t).split(":"); return Number(m[0]) * 60 + Number(m[1]); };
-    var sleep = (mins(q.wakeTime) - mins(q.bedtime) + 1440) % 1440;
-    if (sleep < 240) out.push("bedtime " + q.bedtime + " and wake-up " + q.wakeTime + " leave under four hours’ sleep");
-  }
-  var work = Number(q.workHours);
-  if (q.studentType === "international" && work > 24) out.push("international student working " + work + " hours a week (check visa work limits)");
-  else if (work > 40) out.push("works " + work + " hours a week alongside study");
   if (!isBlank(q.rentBudgetWeekly) && Number(q.rentBudgetWeekly) < 20) out.push("rent budget of $" + Number(q.rentBudgetWeekly) + " a week");
   return out;
 }
 /* A plain-English summary for the staff watch-point. Staff can rewrite it. */
 function autoWatchPoint(){
-  var parts = ["Quick demo: eight days of 25-second multiple choice and no written answers, so treat the screening result as a first impression."];
+  var parts = ["Quick demo: " + daysInWords() + " days of 25-second multiple choice and no written answers, so treat the screening result as a first impression."];
   var missed = S.choices.filter(function(c){ return c.timedOut; });
   if (missed.length) parts.push("Ran out of time on " + missed.length + " of " + S.choices.length + " questions ("
     + missed.map(function(c){ return c.title; }).join(", ") + ").");
@@ -1478,8 +1563,13 @@ function buildProfile(){
            stages: {preGame: true, game: !!S.gameEndedAt, postGame: !!S.submittedAt}},
     student: {firstName: names[0], lastName: names.slice(1).join(" ") || null, email: S.email, discipline: S.studyArea}
   };
-  Q_FIELDS.forEach(function(f){ var v = qValue(f); if (v !== undefined) setPath(p, f.path, v); });
-  if (S.studyArea !== "other") setPath(p, "interests.homeownerBackground", "Retired " + discipline().career.replace(/^an? /, ""));
+  Q_FIELDS.forEach(function(f){
+    var v = qValue(f);
+    if (v === undefined) return;
+    if (f.sets) Object.keys(f.sets[v] || {}).forEach(function(path){ setPath(p, path, f.sets[v][path]); });
+    else setPath(p, f.path, v);
+  });
+  if (S.studyArea !== "other" && S.q.fieldMentor !== "no") setPath(p, "interests.homeownerBackground", "Retired " + discipline().career.replace(/^an? /, ""));
   if (S.gameEndedAt) p.screening = screeningPart();
   return p;
 }
@@ -1571,7 +1661,7 @@ function offerDownload(filename, text, statusId, onFail){
 }
 /* Outside claude.ai (a local copy of the page) the browser can download directly. */
 function browserDownload(filename, data){
-  var type = /\.pdf$/.test(filename) ? "application/pdf" : "application/json";
+  var type = /\.pdf$/.test(filename) ? "application/pdf" : /\.csv$/.test(filename) ? "text/csv" : "application/json";
   var url = URL.createObjectURL(new Blob([data], {type: type}));
   var a = document.createElement("a");
   a.href = url; a.download = filename;
@@ -1586,7 +1676,7 @@ function copyText(text, statusId, onFail){
 }
 
 /* ============================================================
-   END OF THE EIGHT DAYS, RESULTS
+   END OF THE DAYS, RESULTS
    ============================================================ */
 function endGame(){
   clearTimer();
@@ -1635,7 +1725,7 @@ function renderResults(){
     '<div class="stage">' + scenePorch(LIGHT.dusk, {marg: {pose: "stand", x: 470, y: 301, s: 0.84}}) + '</div>'
     + '<div class="scroll"><div class="pad">'
     + '<div><div class="kicker">Quick demo · complete</div>'
-    + '<h1 style="font-size:29px;margin-top:6px">' + esc(S.name.split(" ")[0] || "You") + ' and Marg: eight days</h1></div>'
+    + '<h1 style="font-size:29px;margin-top:6px">' + esc(S.name.split(" ")[0] || "You") + ' and Marg: ' + daysInWords() + ' days</h1></div>'
     + '<div><span class="band" style="background:' + type.colour + '">' + esc(type.title) + '</span></div>'
     + '<p class="line">' + esc(type.text) + '</p>'
     + '<div class="notice">This is a reflection on the path you took, not a pass-or-fail result. It comes from the quick demo; the full screening is fourteen days with written answers. A person at the placement service makes any placement decision.</div>'
@@ -1717,11 +1807,12 @@ function mergedProfile(item, profile){
 
 function renderStaff(){
   app.className = "wide";
-  desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, run: null, frame: null, ready: false, pending: null};
+  desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, run: null, frame: null, ready: false, pending: null,
+          hosts: [], match: null, hostSel: null, tab: "app"};
   app.innerHTML =
     '<div class="topbar"><div class="toprow"><span class="daylabel">Pepaws Porch demo · staff review</span>'
-    + '<span class="clock" id="acount">loading…</span></div></div>'
-    + '<div class="desk">'
+    + '<span class="clock" id="acount">loading…</span></div>' + tabsHTML() + '</div>'
+    + '<div class="desk" id="deskapp" role="tabpanel" aria-labelledby="tab-app">'
     + '<div class="queue"><div class="qtools">'
     + '<input type="text" id="qsearch" placeholder="Search by name or email" aria-label="Search applicants">'
     + '<select id="qfilter" aria-label="Filter by pairing status"><option value="all">All applicants</option><option value="attention">Needs attention</option>'
@@ -1744,11 +1835,11 @@ function renderStaff(){
     + '<span class="status" id="fstat"></span></div>'
     + '<div class="vbody"><iframe id="pframe" title="GenStay matching profile" src="' + TEMPLATE_URL + '?embed"></iframe>'
     + '<aside class="review" id="review"><div class="empty-state">Pick an applicant from the queue to review their profile.</div></aside></div>'
-    + '</div></div>';
+    + '</div></div>' + hostDeskHTML();
 
   desk.frame = el("#pframe");
   setTimeout(function(){ if (desk && !desk.ready) frameFallback(); }, 5000);
-  el("#refresh").onclick = function(){ loadQueue(); };
+  el("#refresh").onclick = function(){ loadQueue(); loadHosts(); };
   el("#qsearch").oninput = function(){ desk.search = this.value.trim().toLowerCase(); drawQueue(); };
   el("#qfilter").onchange = function(){ desk.filter = this.value; drawQueue(); };
   el("#prev").onclick = function(){ step(-1); };
@@ -1780,18 +1871,21 @@ function renderStaff(){
     offerDownload("genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".json", JSON.stringify(p, null, 2), "fstat");
   };
   el("#vrun").onchange = function(){ openRun(this.value); };
+  bindHostDesk();
   Promise.all([getCap("db"), getCap("user")]).then(function(caps){
     desk.db = caps[0]; desk.user = caps[1];
-    if (!desk.user) return loadQueue();
+    if (!desk.user){ loadHosts(); return loadQueue(); }
     return Promise.all([desk.user.canEdit(), desk.user.id()]).then(function(r){
       desk.uid = r[1];
       if (!r[0]){
         desk.db = null;
         setStatus("astat", "no", "This page is for placement staff. Ask the owner of this artifact to give you Editor access.");
+        setStatus("hstat", "no", "Host profiles are for placement staff only.");
         el("#acount").textContent = "staff only";
         return;
       }
       loadQueue();
+      loadHosts();
     });
   });
 }
@@ -1888,6 +1982,7 @@ function loadQueue(openId){
     setStatus("astat", "wait", "The placement record isn’t available in this view. Profile files you add are shown here but not saved.");
     el("#acount").textContent = desk.items.length + " in queue";
     drawQueue();
+    refreshMatches();
     if (openId) openItem(openId);
     return Promise.resolve();
   }
@@ -1901,6 +1996,7 @@ function loadQueue(openId){
     res[1].docs.forEach(function(d){ desk.reviews[d.id] = d.data(); });
     setStatus("astat", "ok", "Read " + desk.items.length + " profile" + (desk.items.length === 1 ? "" : "s") + ".");
     drawQueue();
+    refreshMatches();
     var target = openId || (!desk.current && visibleItems().length ? visibleItems()[0].id : null);
     if (target) openItem(target);
   }, function(err){
@@ -1979,19 +2075,23 @@ function drawReview(it){
     + '<p class="sub" style="font-size:12.5px">Saved separately from the applicant’s answers, and shown in the profile.</p>'
     + '<label>Pairing status<select id="rv-status">' + opts(PAIRING, r.pairingStatus) + '</select></label>'
     + '<label>Suggested homeowner<input type="text" id="rv-for" maxlength="120" value="' + esc(r.suggestedFor) + '" placeholder="e.g. Margaret Hollis"></label>'
+    + '<div class="bestfor" id="rv-best"></div>'
     + CHECKS.map(function(c){ return '<label>' + c[1] + '<select id="rv-' + c[0] + '">' + opts(CHECK_STATES, checks[c[0]]) + '</select></label>'; }).join("")
     + '<label>Watch-point<textarea id="rv-watch" maxlength="2000" placeholder="e.g. Reliability is the lowest meter. Agree a weekly help schedule at the intro call.">' + esc(r.watchPoint) + '</textarea></label>'
     + '<button class="cont primary small" id="rv-save">Save review</button>'
     + '<div class="status" id="rvstat"></div>';
   el("#rv-save").onclick = function(){ saveReview(it); };
+  drawBestHosts(it);
 }
 function saveReview(it){
   var review = {pairingStatus: el("#rv-status").value, suggestedFor: el("#rv-for").value.trim(), watchPoint: el("#rv-watch").value.trim(),
                 checks: {}, reviewedAt: nowISO(), reviewedBy: desk.uid || null};
   CHECKS.forEach(function(c){ var v = el("#rv-" + c[0]).value; if (v) review.checks[c[0]] = v; });
+  review.suggestedHostId = hostIdFor(review.suggestedFor, it);
   var done = function(){
     desk.reviews[it.id] = review;
     drawQueue();
+    refreshMatches();
     sendToFrame(mergedProfile(it, desk.run && desk.run.profile));
   };
   if (!desk.db){ done(); setStatus("rvstat", "wait", "Shown here only. The placement record isn’t available in this view."); return; }
@@ -2035,7 +2135,382 @@ function importTexts(texts){
   }, Promise.resolve()).then(function(){ loadQueue(items[0].id); },
     function(err){ setStatus("astat", "no", "Couldn’t add the profiles (" + ((err && err.code) || "unavailable") + ")."); });
 }
+</script>
+<script>
+"use strict";
+/* ============================================================
+   HOSTS AND MATCHES  (the staff desk's second tab)
+   Host profiles, for the older people offering a room, come from the
+   host spreadsheet (a saved CSV, or rows pasted from it) or JSON files.
+   They're kept in hosts/<host id>, which only Editors and the owner can
+   read. genstay-matching.js, published beside this page, compares every
+   host with every applicant whenever either side changes and suggests
+   the best pairings, with its reasons. Suggesting a pairing shortlists
+   the applicant for that homeowner in their review, so it shows in
+   their profile. Nobody is contacted.
+   This block is the same in pepaws-porch.html and pepaws-porch.demo.html.
+   ============================================================ */
+var MATCHER_URL = "genstay-matching.js";
+var MATCHER_MISSING = "The matching script (genstay-matching.js) didn’t load. It must be published next to this page.";
+var BAND = {strong: ["Strong match", "var(--good)"], good: ["Good match", "var(--sage)"], possible: ["Possible match", "var(--warn)"], weak: ["Weak match", "var(--clay)"]};
+var STAFF_PAIRED = ["shortlisted", "intro_booked", "matched"];
+var matcherLoading = null;
+function loadMatcher(){
+  if (window.GenStayMatch) return Promise.resolve(window.GenStayMatch);
+  if (!matcherLoading) matcherLoading = new Promise(function(resolve){
+    var s = document.createElement("script");
+    s.src = MATCHER_URL;
+    s.onload = function(){ resolve(window.GenStayMatch || null); };
+    s.onerror = function(){ matcherLoading = null; s.remove(); resolve(null); };
+    document.head.appendChild(s);
+  });
+  return matcherLoading;
+}
 
+function tabsHTML(){
+  return '<div class="tabs" role="tablist" aria-label="Staff desk">'
+    + '<button class="tab" role="tab" id="tab-app" aria-controls="deskapp" aria-selected="true">Applicants</button>'
+    + '<button class="tab" role="tab" id="tab-hosts" aria-controls="deskhosts" aria-selected="false">Hosts and matches</button></div>';
+}
+function hostDeskHTML(){
+  return '<div class="desk" id="deskhosts" role="tabpanel" aria-labelledby="tab-hosts" hidden>'
+    + '<div class="queue"><div class="qtools">'
+    + '<div class="btnrow"><label class="cont small" style="display:inline-flex;flex-direction:row;cursor:pointer">Add host files<input type="file" id="hostimporter" accept=".csv,.tsv,.txt,.json,text/csv,text/plain,application/json" multiple hidden></label>'
+    + '<button class="cont ghost small" id="hostpastebtn">Paste hosts</button>'
+    + '<button class="cont ghost small" id="hrefresh">Refresh</button></div>'
+    + '<div class="btnrow"><button class="cont ghost small" id="hosttemplate">Host template (CSV)</button>'
+    + '<button class="cont ghost small" id="hostexport">Download hosts (CSV)</button></div>'
+    + '<div id="hostpastebox" hidden style="display:flex;flex-direction:column;gap:6px"><textarea id="hostpastein" aria-label="Paste hosts" placeholder="Paste rows copied from the host spreadsheet, heading row first, or host profile JSON" style="min-height:110px;font:400 12px/1.4 var(--mono)"></textarea>'
+    + '<div class="btnrow"><button class="cont primary small" id="hostpasteadd">Add hosts</button><button class="cont ghost small" id="hostpastecancel">Cancel</button></div></div>'
+    + '<div class="status" id="hstat"><span class="dotled wait"></span><span>Reading host profiles…</span></div>'
+    + '</div><ul class="qlist" id="hlist"></ul></div>'
+    + '<div class="viewer"><div class="vbar"><b class="grow" id="hname">Suggested pairings</b>'
+    + '<button class="cont small" id="hoverview" hidden>All pairings</button><span class="status" id="mstat"></span></div>'
+    + '<div class="matchbody" id="mbody"></div></div></div>';
+}
+
+function bindHostDesk(){
+  el("#tab-app").onclick = function(){ showTab("app"); };
+  el("#tab-hosts").onclick = function(){ showTab("hosts"); };
+  el("#hostimporter").onchange = function(){ importHostFiles(this.files); this.value = ""; };
+  el("#hostpastebtn").onclick = function(){ el("#hostpastebox").hidden = false; el("#hostpastein").focus(); };
+  el("#hostpastecancel").onclick = function(){ el("#hostpastebox").hidden = true; el("#hostpastein").value = ""; };
+  el("#hostpasteadd").onclick = function(){
+    var text = el("#hostpastein").value.trim(); if (!text) return;
+    importHostTexts([text]); el("#hostpastein").value = ""; el("#hostpastebox").hidden = true;
+  };
+  el("#hrefresh").onclick = function(){ loadQueue(); loadHosts(); };
+  /* CSVs start with a byte-order mark so Excel reads the curly apostrophes as UTF-8. */
+  el("#hosttemplate").onclick = function(){
+    loadMatcher().then(function(M){
+      if (!M){ setStatus("hstat", "no", MATCHER_MISSING); return; }
+      offerDownload("genstay-host-template.csv", "﻿" + M.hostCsvTemplate(), "hstat");
+    });
+  };
+  el("#hostexport").onclick = function(){
+    if (!desk.hosts.length || !window.GenStayMatch){ setStatus("hstat", "wait", "No host profiles to download yet."); return; }
+    offerDownload("genstay-hosts-" + nowISO().slice(0, 10) + ".csv", "﻿" + GenStayMatch.hostsToCsv(desk.hosts), "hstat");
+  };
+  el("#hoverview").onclick = function(){ desk.hostSel = null; drawHosts(); };
+  el("#hlist").addEventListener("click", matchClick);
+  el("#mbody").addEventListener("click", matchClick);
+  el("#mbody").addEventListener("change", function(e){ if (e.target.id === "hst-status") setHostStatus(desk.hostSel, e.target.value); });
+}
+function matchClick(e){
+  var b = e.target.closest && e.target.closest("button");
+  if (!b || b.disabled) return;
+  if (b.hasAttribute("data-suggest")) suggestPairing(b.getAttribute("data-suggest"), b.getAttribute("data-for"), b);
+  else if (b.hasAttribute("data-open")){ showTab("app"); openItem(b.getAttribute("data-open")); }
+  else if (b.hasAttribute("data-host")){ desk.hostSel = b.getAttribute("data-host"); drawHosts(); el("#mbody").scrollTop = 0; }
+  else if (b.id === "hremove") removeHost(b);
+}
+function showTab(name){
+  desk.tab = name;
+  el("#deskapp").hidden = name !== "app";
+  el("#deskhosts").hidden = name !== "hosts";
+  el("#tab-app").setAttribute("aria-selected", String(name === "app"));
+  el("#tab-hosts").setAttribute("aria-selected", String(name === "hosts"));
+  if (name === "hosts") drawHosts();
+}
+
+/* ---------- reading, saving and removing hosts ---------- */
+function loadHosts(){
+  return loadMatcher().then(function(M){
+    if (!desk) return;
+    if (!M){ setStatus("hstat", "no", MATCHER_MISSING); drawHosts(); return; }
+    if (!desk.db){
+      setStatus("hstat", "wait", "The placement record isn’t available in this view. Host profiles you add are shown here but not saved.");
+      refreshMatches();
+      return;
+    }
+    setStatus("hstat", "wait", "Reading host profiles…");
+    return desk.db.collection("hosts").limit(1000).get().then(function(res){
+      desk.hosts = res.docs.map(function(d){ return d.data(); }).filter(function(h){ return h && h.meta && h.meta.hostId; });
+      setStatus("hstat", "ok", "Read " + count(desk.hosts.length, "host profile") + ".");
+      refreshMatches();
+    }, function(err){
+      setStatus("hstat", "no", "Couldn’t read the host profiles (" + ((err && err.code) || "unavailable") + "). Try Refresh.");
+    });
+  });
+}
+function importHostFiles(files){
+  var list = Array.prototype.slice.call(files || []);
+  if (!list.length) return;
+  Promise.all(list.map(function(f){ return f.text().then(null, function(){ return ""; }); })).then(importHostTexts);
+}
+function importHostTexts(texts){
+  loadMatcher().then(function(M){
+    if (!M){ setStatus("hstat", "no", MATCHER_MISSING); return; }
+    var found = [], notes = [];
+    texts.forEach(function(t){ var r = M.parseHosts(t); found = found.concat(r.hosts); notes = notes.concat(r.problems); });
+    if (!found.length){ setStatus("hstat", "no", notes[0] || "No host profiles found."); return; }
+    var today = nowISO().slice(0, 10);
+    found.forEach(function(h){ if (!h.meta.updatedAt) h.meta.updatedAt = today; });
+    desk.hostSel = found.length === 1 ? found[0].meta.hostId : null;
+    showTab("hosts");
+    saveHosts(found, "hstat", "Added " + count(found.length, "host profile") + "." + (notes.length ? " Note: " + notes.slice(0, 2).join(" ") : ""));
+  });
+}
+/* Saves hosts (a new one, or a changed one replacing the old), then rematches. */
+function saveHosts(list, statusId, okText){
+  var done = function(){
+    list.forEach(function(h){
+      desk.hosts = desk.hosts.filter(function(x){ return x.meta.hostId !== h.meta.hostId; });
+      desk.hosts.push(h);
+    });
+    refreshMatches();
+    drawHosts();
+    if (desk.db) setStatus(statusId, "ok", okText);
+    else setStatus(statusId, "wait", okText + " Shown here only: the placement record isn’t available in this view.");
+  };
+  if (!desk.db){ done(); return Promise.resolve(); }
+  setStatus(statusId, "wait", "Saving…");
+  return list.reduce(function(chain, h){
+    return chain.then(function(){ return desk.db.doc("hosts/" + cleanId(h.meta.hostId)).set(h); });
+  }, Promise.resolve()).then(done, function(err){
+    setStatus(statusId, "no", "Couldn’t save (" + ((err && err.code) || "unavailable") + ").");
+  });
+}
+function setHostStatus(id, status){
+  var h = hostById(id); if (!h) return;
+  var copy = JSON.parse(JSON.stringify(h));
+  copy.meta.status = status; copy.meta.updatedAt = nowISO().slice(0, 10);
+  saveHosts([copy], "mstat", hostLabel(h) + ": " + GenStayMatch.HOST_STATUS[status].toLowerCase() + ".");
+}
+/* Two clicks, because the viewer blocks confirm(). */
+function removeHost(b){
+  var h = hostById(desk.hostSel); if (!h) return;
+  if (!b.getAttribute("data-armed")){
+    b.setAttribute("data-armed", "1"); b.textContent = "Click again to remove";
+    setTimeout(function(){ if (b.isConnected){ b.removeAttribute("data-armed"); b.textContent = "Remove host"; } }, 4000);
+    return;
+  }
+  var id = h.meta.hostId;
+  var done = function(){
+    desk.hosts = desk.hosts.filter(function(x){ return x.meta.hostId !== id; });
+    desk.hostSel = null;
+    refreshMatches(); drawHosts();
+    setStatus("mstat", "ok", "Removed " + hostLabel(h) + ".");
+  };
+  if (!desk.db){ done(); return; }
+  desk.db.doc("hosts/" + cleanId(id)).delete().then(done, function(err){
+    setStatus("mstat", "no", "Couldn’t remove (" + ((err && err.code) || "unavailable") + ").");
+  });
+}
+
+/* ---------- matching ---------- */
+function refreshMatches(){
+  if (!desk || !window.GenStayMatch) return;
+  desk.match = GenStayMatch.matchAll(desk.items.map(function(it){
+    return {id: it.id, name: it.name || "Unnamed applicant", profile: mergedProfile(it), suggestedHostId: (desk.reviews[it.id] || {}).suggestedHostId || ""};
+  }), desk.hosts);
+  if (desk.tab === "hosts") drawHosts();
+  var it = currentItem();
+  if (it) drawBestHosts(it);
+}
+function hostById(id){ return desk.hosts.filter(function(h){ return h.meta.hostId === id; })[0] || null; }
+function itemById(id){ return desk.items.filter(function(it){ return it.id === id; })[0] || null; }
+function hostLabel(h){ return window.GenStayMatch ? GenStayMatch.hostName(h) : (h.meta && h.meta.hostId) || "Host"; }
+function resultFor(hostId, studentId){
+  var r = desk.match && desk.match.hosts[hostId];
+  return r ? r.ranked.concat(r.ruledOut).filter(function(x){ return x.studentId === studentId; })[0] || null : null;
+}
+/* Applicants staff have already paired with this host. */
+function linkedNames(hostId){
+  var r = desk.match && desk.match.hosts[hostId];
+  return r ? r.ranked.concat(r.ruledOut).filter(function(x){
+    var it = itemById(x.studentId);
+    return x.linked && it && STAFF_PAIRED.indexOf(reviewFor(it).pairingStatus) !== -1;
+  }).map(function(x){ return x.studentName; }) : [];
+}
+function count(n, word){ return n + " " + word + (n === 1 ? "" : "s"); }
+function emptyHTML(text){ return '<div class="empty-state">' + esc(text) + '</div>'; }
+
+/* The applicant's review: shortlisted (unless already further along) for this homeowner. */
+function suggestPairing(studentId, hostId, b){
+  var it = itemById(studentId), h = hostById(hostId);
+  if (!it || !h || !window.GenStayMatch) return;
+  var cur = reviewFor(it);
+  var review = {pairingStatus: ["new", "screening"].indexOf(cur.pairingStatus) !== -1 ? "shortlisted" : cur.pairingStatus,
+                suggestedFor: GenStayMatch.hostFullName(h), suggestedHostId: hostId, watchPoint: cur.watchPoint, checks: cur.checks,
+                reviewedAt: nowISO(), reviewedBy: desk.uid || null};
+  var done = function(){
+    desk.reviews[it.id] = review;
+    drawQueue();
+    refreshMatches();
+    if (desk.current === it.id){ drawReview(it); sendToFrame(mergedProfile(it, desk.run && desk.run.profile)); }
+    setStatus("mstat", desk.db ? "ok" : "wait", (it.name || "The applicant") + " is " + label(PAIRING, review.pairingStatus).toLowerCase()
+      + " for " + hostLabel(h) + "." + (desk.db ? "" : " Shown here only: the placement record isn’t available in this view."));
+  };
+  if (b) b.disabled = true;
+  if (!desk.db){ done(); return; }
+  desk.db.doc("reviews/" + it.id).set(review).then(done, function(err){
+    if (b) b.disabled = false;
+    setStatus("mstat", "no", "Couldn’t save (" + ((err && err.code) || "unavailable") + ").");
+  });
+}
+/* The host a typed homeowner name refers to, so a pairing made by hand counts in the matching too. */
+function hostIdFor(name, it){
+  var n = String(name || "").trim().toLowerCase();
+  if (!n || !window.GenStayMatch) return null;
+  var h = desk.hosts.filter(function(x){ return GenStayMatch.hostFullName(x).toLowerCase() === n || GenStayMatch.hostName(x).toLowerCase() === n; })[0];
+  if (h) return h.meta.hostId;
+  var before = desk.reviews[it.id] || {};
+  return before.suggestedFor && before.suggestedFor.trim().toLowerCase() === n ? before.suggestedHostId || null : null;
+}
+
+/* ---------- drawing ---------- */
+function drawHosts(){
+  if (!desk || !el("#hlist")) return;
+  var M = window.GenStayMatch, mt = desk.match;
+  if (desk.hostSel && !hostById(desk.hostSel)) desk.hostSel = null;
+  var hosts = desk.hosts.slice().sort(function(a, b){ return hostLabel(a).localeCompare(hostLabel(b)); });
+  el("#hlist").innerHTML = hosts.length ? hosts.map(function(h){
+    var id = h.meta.hostId, r = mt && mt.hosts[id], best = r && r.ranked[0], linked = linkedNames(id), x = h.host || {};
+    return '<li><button class="qitem" data-host="' + esc(id) + '" aria-current="' + (desk.hostSel === id) + '">'
+      + '<span class="nm">' + esc(hostLabel(h)) + '</span>'
+      + '<span class="when">' + esc([x.age, x.suburb].filter(Boolean).join(" · ")) + '</span>'
+      + '<span class="meta"><span class="pill">' + esc((M && M.HOST_STATUS[h.meta.status]) || h.meta.status || "") + '</span>'
+      + (linked.length ? '<span class="pill dark" style="background:var(--slate)">' + esc(linked.length > 1 ? linked.length + " paired by staff" : "Paired: " + linked[0]) + '</span>' : '')
+      + (best && !best.linked ? '<span class="pill dark" style="background:' + BAND[best.band][1] + '">Best: ' + esc(best.studentName) + ' · ' + best.score + '</span>'
+          : r && h.meta.status === "active" && !linked.length ? '<span class="pill">No suitable applicant yet</span>' : '')
+      + '</span></button></li>';
+  }).join("") : '<li class="empty-state">No host profiles yet.</li>';
+  var h = desk.hostSel && hostById(desk.hostSel);
+  el("#hname").textContent = h ? hostLabel(h) : "Suggested pairings";
+  el("#hoverview").hidden = !h;
+  el("#mbody").innerHTML = !M ? emptyHTML(MATCHER_MISSING) : h ? hostDetailHTML(h) : overviewHTML();
+}
+
+function overviewHTML(){
+  var mt = desk.match;
+  if (!desk.hosts.length) return emptyHTML("No host profiles yet. Download the host template, fill in one row per homeowner in Excel or Google Sheets, "
+    + "then add the saved CSV with Add host files, or copy the rows (heading row first) and use Paste hosts. Suggested pairings appear here as soon as hosts are added.");
+  if (!mt) return emptyHTML("Working out the pairings…");
+  var ids = Object.keys(mt.students);
+  if (!ids.length) return emptyHTML("No applicants to match yet. Pairings appear here when applicants finish, or when you add their profile files on the Applicants tab.");
+  var pool = ids.filter(function(id){ return !mt.students[id].excluded.length; }).length;
+  var looking = desk.hosts.filter(function(h){ return h.meta.status === "active"; }).length;
+  var html = '<p class="sub">' + count(desk.hosts.length, "host") + ' (' + looking + ' looking) · ' + pool + ' of ' + count(ids.length, "applicant")
+    + ' in the matching pool · ' + count(mt.pairings.length, "pairing") + ' suggested.</p>'
+    + '<p class="sub" style="font-size:12.5px">Each suggestion uses one applicant and one room, best scores first, and keeps the pairings staff have already made. '
+    + 'Suggesting a pairing shortlists the applicant for that homeowner in their review. Nobody is contacted.</p>'
+    + '<div class="secthead">Suggested pairings</div>'
+    + (mt.pairings.length ? mt.pairings.map(function(p){ var r = resultFor(p.hostId, p.studentId); return r ? matchCardHTML(r, true) : ""; }).join("")
+        : emptyHTML("No pairing passes every filter yet. Open a host to see who was ruled out, and why."));
+  if (mt.alsoPaired.length) html += '<div class="secthead">Also paired by staff</div><ul class="why">' + mt.alsoPaired.map(function(a){
+    return '<li class="' + (a.eligible ? "ok" : "no") + '"><button class="linkbtn" data-open="' + esc(a.studentId) + '">' + esc(a.studentName) + '</button> with '
+      + esc(a.hostName + " (" + label(PAIRING, a.status).toLowerCase() + ")") + (a.eligible ? ", scoring " + a.score
+        : ", but: " + esc(a.blockers.map(function(b){ return b.text; }).join("; "))) + '.</li>';
+  }).join("") + '</ul>';
+  if (mt.unmatchedHosts.length) html += '<div class="secthead">Hosts still waiting</div><ul class="why">' + mt.unmatchedHosts.map(function(u){
+    return '<li class="warn"><button class="linkbtn" data-host="' + esc(u.id) + '">' + esc(u.name) + '</button>: '
+      + esc(u.eligible ? count(u.eligible, "suitable applicant") + ", already suggested for other hosts"
+        : "no suitable applicant yet" + (u.reasons.length ? "; most were ruled out by " + u.reasons.join(", ") : "")) + '.</li>';
+  }).join("") + '</ul>';
+  if (mt.unmatchedStudents.length) html += '<div class="secthead">Applicants without a suggestion</div><p class="sub">'
+    + esc(mt.unmatchedStudents.map(function(u){ return u.name + (u.eligible ? " (" + count(u.eligible, "possible host") + ")" : " (no suitable host yet)"); }).join(", ")) + '.</p>';
+  return html;
+}
+
+function matchCardHTML(r, pairMode){
+  var it = itemById(r.studentId), type = it && PROFILE_TYPES[it.screeningProfile], status = it ? reviewFor(it).pairingStatus : "new";
+  var paired = r.linked && STAFF_PAIRED.indexOf(status) !== -1;
+  return '<div class="mcard"><div class="mhead">'
+    + '<span class="score" style="background:' + (r.eligible ? BAND[r.band][1] : "var(--bad)") + '" title="' + esc(r.eligible ? BAND[r.band][0] : "Ruled out") + '">' + r.score + '</span>'
+    + (pairMode ? '<b>' + esc(r.hostName) + '</b><span class="amp">and</span>' : '') + '<b>' + esc(r.studentName) + '</b>'
+    + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '')
+    + (paired ? '<span class="pill dark" style="background:var(--slate)">' + esc(label(PAIRING, status)) + ' by staff</span>' : '')
+    + '</div><div class="mparts">' + r.parts.map(function(p){
+        return '<span class="mpart" title="' + esc(p.label + ": " + p.note) + '">' + esc(p.label) + ' ' + Math.round(p.points) + '/' + p.weight
+          + '<i><b style="width:' + Math.round(p.value * 100) + '%"></b></i></span>';
+      }).join("") + '</div>'
+    + whyHTML(r)
+    + '<div class="btnrow">'
+    + (paired ? '' : '<button class="cont primary small" data-suggest="' + esc(r.studentId) + '" data-for="' + esc(r.hostId) + '"' + (r.eligible ? '' : ' disabled') + '>Suggest this pairing</button>')
+    + '<button class="cont ghost small" data-open="' + esc(r.studentId) + '">Open applicant</button>'
+    + (pairMode ? '<button class="cont ghost small" data-host="' + esc(r.hostId) + '">View host</button>' : '')
+    + '</div></div>';
+}
+function whyHTML(r){
+  var li = function(cls){ return function(t){ return '<li class="' + cls + '">' + esc(t) + '</li>'; }; };
+  var first = r.blockers.map(function(b){ return b.text; }).map(li("no")).concat(r.strengths.slice(0, 4).map(li("ok")), r.cautions.slice(0, 3).map(li("warn")));
+  var rest = r.strengths.slice(4).map(li("ok")).concat(r.cautions.slice(3).map(li("warn")));
+  return (first.length ? '<ul class="why">' + first.join("") + '</ul>' : '')
+    + (rest.length ? '<details><summary>' + rest.length + ' more</summary><ul class="why">' + rest.join("") + '</ul></details>' : '');
+}
+
+function hostDetailHTML(h){
+  var M = GenStayMatch, r = desk.match && desk.match.hosts[h.meta.hostId], x = h.host || {}, ranked = r ? r.ranked : [];
+  var html = '<div class="mcard"><div class="mhead"><b>' + esc(M.hostFullName(h)) + '</b>'
+    + (x.age ? '<span class="pill">' + esc(x.age) + '</span>' : '') + (x.suburb ? '<span class="pill">' + esc(x.suburb) + '</span>' : '')
+    + '<span class="grow"></span><label>Status <select id="hst-status">' + Object.keys(M.HOST_STATUS).map(function(k){
+        return '<option value="' + k + '"' + (h.meta.status === k ? " selected" : "") + '>' + esc(M.HOST_STATUS[k]) + '</option>';
+      }).join("") + '</select></label>'
+    + '<button class="cont ghost small" id="hremove">Remove host</button></div>'
+    + '<div class="hfacts">' + M.hostFacts(h).map(function(f){ return '<div><span>' + esc(f[0]) + '</span>' + esc(f[1]) + '</div>'; }).join("") + '</div></div>'
+    + '<div class="secthead">Best applicants for ' + esc(hostLabel(h)) + (ranked.length > 10 ? ' (top 10 of ' + ranked.length + ')' : '') + '</div>'
+    + (ranked.length ? ranked.slice(0, 10).map(function(m){ return matchCardHTML(m, false); }).join("")
+        : emptyHTML(desk.items.length ? "No applicant passes this homeowner’s filters yet." : "No applicants to match yet."));
+  if (r && r.ruledOut.length) html += '<details class="out"><summary>Ruled out (' + r.ruledOut.length + ')</summary><ul class="why">'
+    + r.ruledOut.map(function(o){ return '<li class="no"><b>' + esc(o.studentName) + ':</b> ' + esc(o.blockers.map(function(b){ return b.text; }).join("; ")) + '</li>'; }).join("")
+    + '</ul></details>';
+  return html;
+}
+
+/* The applicant review panel's shortlist of homeowners. */
+function drawBestHosts(it){
+  var box = el("#rv-best");
+  if (!box) return;
+  var s = window.GenStayMatch && desk.match && desk.match.students[it.id];
+  var head = '<div class="secthead">Best homeowners</div>';
+  if (!desk.hosts.length){ box.innerHTML = head + '<p class="sub" style="font-size:12.5px">Add host profiles on the Hosts and matches tab to see the best homeowners here.</p>'; return; }
+  if (!s){ box.innerHTML = ""; return; }
+  if (s.excluded.length){ box.innerHTML = head + '<p class="sub" style="font-size:12.5px">Not matched automatically: ' + esc(s.excluded.join("; ")) + '.</p>'; return; }
+  if (!s.ranked.length){
+    var near = s.ruledOut.slice().sort(function(a, b){ return a.blockers.length - b.blockers.length || b.score - a.score; })[0];
+    box.innerHTML = head + '<p class="sub" style="font-size:12.5px">No suitable homeowner yet.'
+      + (near ? ' Closest: ' + esc(near.hostName) + ' (' + esc(near.blockers.map(function(b){ return b.text; }).join("; ")) + ').' : '') + '</p>';
+    return;
+  }
+  box.innerHTML = head + s.ranked.slice(0, 3).map(function(r){
+    var h = hostById(r.hostId);
+    return '<div class="hrow"><span class="score" style="background:' + BAND[r.band][1] + '" title="' + esc(BAND[r.band][0]) + '">' + r.score + '</span>'
+      + '<span class="grow"><b>' + esc(r.hostName) + '</b><small>' + esc([h && h.host && h.host.suburb, BAND[r.band][0]].filter(Boolean).join(" · ")) + '</small></span>'
+      + '<button class="cont ghost small" data-use="' + esc(r.hostId) + '">Use</button></div>';
+  }).join("");
+  Array.prototype.forEach.call(box.querySelectorAll("[data-use]"), function(b){
+    b.onclick = function(){
+      var h = hostById(b.getAttribute("data-use")); if (!h) return;
+      el("#rv-for").value = GenStayMatch.hostFullName(h);
+      if (["new", "screening"].indexOf(el("#rv-status").value) !== -1) el("#rv-status").value = "shortlisted";
+      setStatus("rvstat", "wait", "Press Save review to keep this.");
+    };
+  });
+}
+</script>
+<script>
+"use strict";
 /* ============================================================
    BOOT
    ============================================================ */

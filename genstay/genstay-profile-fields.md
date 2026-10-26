@@ -1,8 +1,10 @@
-# GenStay Matchmaking Profile: data contract (v1.0)
+# GenStay Matchmaking Profile: data contract (v1.1)
 
-The receiving template (`genstay-profile-template.html`) is blank until it gets one JSON object in the shape below. Every field is optional. Missing fields show as "—", and the toolbar counts how many of the 81 tracked fields have arrived. `genstay-profile.sample.json` is a complete worked example. Run `GenStayProfile.blank()` in the console to get the empty shape.
+The receiving template (`genstay-profile-template.html`) is blank until it gets one JSON object in the shape below. Every field is optional. Missing fields show as "—", and the toolbar counts how many of the 82 tracked fields have arrived. `genstay-profile.sample.json` is a complete worked example. Run `GenStayProfile.blank()` in the console to get the empty shape.
 
 Unknown keys are ignored and logged to the console (`[GenStay] Unknown field "studnet"…`), so typos show up while you're wiring it in.
+
+v1.1 adds `interests.fieldMentor`. Host profiles (the homeowners) and the matching on the staff desk are described in `genstay-host-fields.md`.
 
 ## Sending data in
 
@@ -113,11 +115,12 @@ The Source column is a suggestion for which stage captures each field. Pre = que
 
 | Path | Type / values | Source | Use |
 |---|---|---|---|
-| `hobbies` | string[] | Post | Score (overlap with homeowner) |
+| `hobbies` | string[] | Post | Score (overlap with the homeowner's interests) |
 | `lifeGoals` | string[] | Post | Score |
-| `careerGoal` | string | Post | Score |
-| `homeownerBackground` | string (preferred homeowner career) | Post | Score |
-| `canOffer`, `wantsToLearn` | string[] | Post | Score (reciprocity) |
+| `careerGoal` | string | Post | Score (career link) |
+| `homeownerBackground` | string (preferred homeowner career) | Post | Display |
+| `fieldMentor` | `keen` `open` `no` (would they like a homeowner who worked in their field) | Post | Score (how much the career link counts) |
+| `canOffer`, `wantsToLearn` | string[] | Post | Score (against what the homeowner enjoys and can teach) |
 
 ### household (hard filters)
 
@@ -150,7 +153,7 @@ The Source column is a suggestion for which stage captures each field. Pre = que
 |---|---|---|---|
 | `bedtime`, `wakeTime`, `quietAfter` | `"22:30"` (24-hour, shown as 10:30 pm) | Post | Score |
 | `weekdays`, `weekends` | string | Post | Score |
-| `socialLevel` | 1–5 (shown as dots) | Post | Score |
+| `socialLevel` | 1–5 (shown as dots) | Post | Score (against the homeowner's hopes for time together) |
 | `socialNote` | string | Post | Review |
 | `guests`, `tidiness`, `communication` | string | Post | Score |
 
@@ -193,14 +196,16 @@ The screening game (`game/pepaws-porch.html`) builds the profile itself. There i
 
 ### Quick demo
 
-`game/pepaws-porch.demo.html` builds the same profile from eight days of timed multiple choice and two pages of key matching questions, so it fills fewer fields. Differences:
+`game/pepaws-porch.demo.html` builds the same profile from nine days of timed multiple choice and two pages of key matching questions, so it fills fewer fields. Differences:
 
 - `meta.profileId` starts with `DEMO-`.
-- `screening.pathByDay` is `[{day, path}]` for the eight days played. Days keep their full-fortnight numbers (1, 2, 4, 6, 8, 9, 11, 14), so `screening.landmarks` uses 6, 9, 11 and 14 like the full game.
+- `screening.pathByDay` is `[{day, path}]` for the nine days played. Days keep their full-fortnight numbers (1, 2, 3, 4, 6, 8, 9, 11, 14), so `screening.landmarks` uses 6, 9, 11 and 14 like the full game.
 - `screening.flags` includes `quick_demo`, plus `missed_timer` when a 25-second timer ran out.
 - `screening.watchPoint` always opens with a quick-demo note and lists any timed-out questions.
 - No `screening.answers`, `finalWords` or `redemption` (there are no written answers and no Day 13), and no contact details beyond the email.
-- `interests.homeownerBackground` comes from the area of study, as in the full game's pre-fill.
+- The questions fill: `student.age`, `gender`, `languages`; `placement.campus`, `moveInDate`, `stayMonths`; `support.rentBudgetWeekly`, `hoursPerWeek`, `helpTypes`, `notOffered`; `household.homeownerGender`, `otherLodgers`, `smoker`, `needsSmokeFree`, `okWithPets`, `petAllergy` (smoking and pets are one tap each, so they can't contradict); `interests.careerGoal` (from options for the applicant's area of study), `fieldMentor`, `hobbies`, `wantsToLearn`; `lifestyle.socialLevel`.
+- Day 3 asks what the applicant would like to do with Marg this week. The answer pre-fills the questions: hearing about her career sets `fieldMentor` to `keen`, the community garden adds Gardening to `helpTypes` and `hobbies`, and baking adds Cooking and baking to `hobbies` and Family recipes to `wantsToLearn`. `student.languages` starts with English. All of these stay editable.
+- `interests.homeownerBackground` comes from the area of study, as in the full game's pre-fill, unless the applicant says a homeowner from their field doesn't matter.
 
 ### Automatic checks
 
@@ -229,7 +234,8 @@ Profiles live in the published artifact's record store, under access rules decla
 |---|---|---|---|
 | `profiles/<applicant id>` | Latest profile, plus a list of the applicant's runs | The applicant (their own only), Editors, the owner | The applicant (their own only), Editors, the owner |
 | `profiles/<applicant id>/runs/<run id>` | Every run, so replays can be compared | The applicant (their own only), Editors, the owner | The applicant (their own only) |
-| `reviews/<applicant id>` | Staff fields above | Editors and the owner | Editors and the owner |
+| `reviews/<applicant id>` | Staff fields above, plus `suggestedHostId` (the host profile behind `suggestedFor`) | Editors and the owner | Editors and the owner |
+| `hosts/<host id>` | Host profiles (`genstay-host-fields.md`) | Editors and the owner | Editors and the owner |
 
 Everything else in the store is locked to Editors and the owner. An applicant can technically read back their own profile, screening meters included, because writing implies reading; nothing in the game shows it to them. The applicant id is the platform's opaque viewer id, so no name or email is used as a key.
 
