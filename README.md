@@ -81,6 +81,10 @@ answers and shown in the profile.
   **Download PDF** opens the print dialog instead: choose **Save as PDF**. The template opened on
   its own has the same **Download PDF** and **Print** buttons.
 - If an applicant played more than once, a run picker appears. The latest run opens first.
+- **Delete applicant** removes the open applicant for good: their profile, every run and the
+  staff review. **Delete shown** does the same for everyone in the list as searched and filtered
+  (to clear test runs after a market day, for example). Both ask for a second click, and other
+  staff screens update straight away.
   (The demo's desk lists every run as its own applicant instead: see [Market day](#market-day).)
 - The queue follows the record store live: new profiles appear as applicants finish, without
   pressing **Refresh**.
@@ -90,7 +94,10 @@ answers and shown in the profile.
 The desk's second tab holds the homeowners' profiles and suggests pairings.
 `genstay/genstay-host-fields.md` describes every field and exactly how pairings are judged.
 
-- **Adding hosts.** **Add host files** takes a JSON hosts file (like `game/genstay-hosts.sample.json`)
+- **Adding hosts.** **Load sample hosts** adds the fictional hosts published beside the page
+  (`genstay-hosts.sample.json`, in the demo), asking first if it would replace hosts already
+  there; the button only appears where that file is published. **Add host files** takes a JSON
+  hosts file (like `game/genstay-hosts.sample.json`)
   or a CSV. **Host template (CSV)** downloads a spreadsheet with every column and an example row:
   fill in one row per homeowner and add the saved CSV, or copy the rows (heading row first) and use
   **Paste hosts**. Adding a host again with the same Host ID updates them. **Download hosts (CSV)**
@@ -133,7 +140,7 @@ The desk's second tab holds the homeowners' profiles and suggests pairings.
   that rules it out (✕), and a score breakdown.
 - **Select a host** to see their details, every applicant ranked for them, and who was ruled out
   and why. Change their status (available, in screening, shortlisted, on hold, has a sharer) or
-  remove them there.
+  **Delete host** there. **Delete all hosts** clears the list. Both ask for a second click.
 - **Suggest this pairing** shortlists the applicant for that homeowner in their review, which shows
   in their profile. Nobody is contacted. On the Applicants tab, each review also lists the
   applicant's **best homeowners**, and **Use** fills in the suggested homeowner.
@@ -208,8 +215,9 @@ finish, and the big screen shows who was matched with whom.
    (they still see their match). Sign each tablet in to a stall account. Several tablets can share
    one account: the demo's desk lists every run as its own participant.
 3. **The staff screen.** Open the demo's link with `#staff` on a laptop signed in as an Editor,
-   choose **Live board**, then **Full screen**. Optionally add `genstay-hosts.sample.json` on the
-   Hosts and matches tab too, to show the optimal allocation across everyone who played.
+   choose **Live board**, then **Full screen**. The Hosts and matches tab holds the same fictional
+   hosts (**Load sample hosts** if it's empty), to show the optimal allocation across everyone
+   who played. After a practice round, **Delete shown** on the Applicants tab clears the board.
 4. **Between players**, the results screen can stay up; the next player reloads the page or opens
    the link again. Nothing personal stays in the browser once the profile is saved.
 
