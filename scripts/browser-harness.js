@@ -27,40 +27,68 @@ function serve() {
 }
 
 /* A stand-in for window.claude: db (paths, get/set, collections, orderBy,
-   limit), user and downloads. Shared across reloads through sessionStorage. */
+   limit, live onSnapshot listeners), user and downloads. The store lives in
+   localStorage, so it survives reloads and is shared by the tabs of one
+   browser context, as the real record store is by everyone's screens. */
 const MOCK = `
 (() => {
+  /* One store per browser context, shared by its tabs like the real record
+     store: a write in one tab reaches the others' live listeners. */
   const KEY = "__mockdb";
-  const load = () => { try { return JSON.parse(sessionStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } };
-  const store = load();
-  const persist = () => sessionStorage.setItem(KEY, JSON.stringify(store));
-  const snap = (p) => ({ id: p.split("/").pop(), exists: p in store, data: () => store[p] ? JSON.parse(JSON.stringify(store[p])) : undefined });
+  const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } };
+  const store = read();
+  const listeners = new Set();
+  const notify = () => listeners.forEach((l) => l());
+  const persist = () => { localStorage.setItem(KEY, JSON.stringify(store)); setTimeout(notify, 0); };
+  window.addEventListener("storage", (e) => {
+    if (e.key !== KEY) return;
+    const next = read();
+    Object.keys(store).forEach((k) => { if (!(k in next)) delete store[k]; });
+    Object.assign(store, next);
+    notify();
+  });
+  const clone = (x) => (x === undefined ? undefined : JSON.parse(JSON.stringify(x)));
+  const snap = (p) => ({ id: p.split("/").pop(), exists: p in store, data: () => clone(store[p]) });
+  /* calls fn now (asynchronously) and after every change until unsubscribed */
+  const watch = (fn) => {
+    const l = () => { if (listeners.has(l)) fn(); };
+    listeners.add(l); setTimeout(l, 0);
+    return () => { listeners.delete(l); };
+  };
   function doc(p) {
     return { id: p.split("/").pop(), path: p,
       get: async () => snap(p),
       set: async (d) => {
         if (window.__deny) throw { code: "not_granted" };
         if (window.__failOnce) { window.__failOnce = 0; throw { code: "unavailable" }; }
-        store[p] = JSON.parse(JSON.stringify(d)); persist();
+        store[p] = clone(d); persist();
       },
-      update: async (d) => { if (!(p in store)) throw { code: "invalid_argument" }; Object.assign(store[p], d); persist(); },
+      update: async (d) => { if (!(p in store)) throw { code: "invalid_argument" }; Object.assign(store[p], clone(d)); persist(); },
       delete: async () => { delete store[p]; persist(); },
+      onSnapshot: (next) => { let last = null; return watch(() => { const sig = JSON.stringify([p in store, store[p]]); if (sig !== last) { last = sig; next(snap(p)); } }); },
       collection: (c) => collection(p + "/" + c) };
   }
   function collection(c, order, lim) {
     const depth = c.split("/").length + 1;
+    const ids = () => {
+      let out = Object.keys(store).filter((k) => k.startsWith(c + "/") && k.split("/").length === depth);
+      if (order) out.sort((a, b) => String(store[a][order[0]] || "").localeCompare(String(store[b][order[0]] || "")) * (order[1] === "desc" ? -1 : 1));
+      return lim ? out.slice(0, lim) : out;
+    };
+    const result = (list) => { const docs = list.map(snap); return { docs, size: docs.length, empty: !docs.length, docChanges: () => [] }; };
     return { path: c,
       doc: (id) => doc(c + "/" + (id || Math.random().toString(36).slice(2))),
       orderBy: (f, dir) => collection(c, [f, dir || "asc"], lim),
       limit: (n) => collection(c, order, n),
-      get: async () => {
-        let ids = Object.keys(store).filter((k) => k.startsWith(c + "/") && k.split("/").length === depth);
-        if (order) ids.sort((a, b) => String(store[a][order[0]] || "").localeCompare(String(store[b][order[0]] || "")) * (order[1] === "desc" ? -1 : 1));
-        if (lim) ids = ids.slice(0, lim);
-        const docs = ids.map(snap);
-        return { docs, size: docs.length, empty: !docs.length };
+      get: async () => result(ids()),
+      onSnapshot: (next) => {
+        let last = null;
+        if (window.__subs !== undefined) window.__subs++;
+        const stop = watch(() => { const list = ids(), sig = JSON.stringify(list.map((k) => [k, store[k]])); if (sig !== last) { last = sig; next(result(list)); } });
+        return () => { if (window.__subs !== undefined) window.__subs--; stop(); };
       } };
   }
+  window.__subs = 0;
   window.__downloads = [];
   const caps = {
     db: { doc, collection },

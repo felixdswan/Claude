@@ -4,7 +4,7 @@ The receiving template (`genstay-profile-template.html`) is blank until it gets 
 
 Unknown keys are ignored and logged to the console (`[GenStay] Unknown field "studnet"…`), so typos show up while you're wiring it in.
 
-v1.1 adds `interests.fieldMentor`. Host profiles (the homeowners) and the matching on the staff desk are described in `genstay-host-fields.md`.
+v1.1 adds `interests.fieldMentor`, `screening.landmarks[].tags`, four more study areas (`law`, `engineering`, `business`, `design`) and the five campus keys. Host profiles (the homeowners) and the matching on the staff desk are described in `genstay-host-fields.md`.
 
 ## Sending data in
 
@@ -94,7 +94,7 @@ The Source column is a suggestion for which stage captures each field. Pre = que
 | `languages` | string[] | Pre | Score |
 | `studentType` | `domestic` `international` | Pre | Review (visa work-hour limits) |
 | `university`, `course`, `yearOfStudy` | string / number | Pre | Display |
-| `discipline` | `health` `carework` `allied_health` `social_work` `psychology` `education` `other` | Pre | Score (selects the homeowner's career template) |
+| `discipline` | `health` `carework` `allied_health` `social_work` `psychology` `education` `law` `engineering` `business` `design` `other` | Pre | Score (selects the homeowner's career template) |
 | `work.role`, `work.hoursPerWeek`, `work.schedule` | string / number | Pre | Score (time available) |
 | `emergencyContact.name` / `.relationship` / `.phone` | string (staff only) | Pre | Display |
 
@@ -102,7 +102,7 @@ The Source column is a suggestion for which stage captures each field. Pre = que
 
 | Path | Type / values | Source | Use |
 |---|---|---|---|
-| `campus` | string | Pre | Filter |
+| `campus` | `UTS City Campus` `USyd Camperdown` `UNSW Kensington` `Macquarie Uni` `WSU Parramatta` `Another campus` (the keys of the hosts' `placement.campusCommuteMins`; older free text is recognised) | Pre | Filter + Score (commute) |
 | `campusDays` | `["Mon","Tue",…]` (consecutive days collapse to `Mon–Thu`) | Pre | Score |
 | `preferredAreas` | string[] | Pre | Score |
 | `maxCommuteMins` / `maxCommuteFlexMins` | number (preferred / stretch) | Pre | Filter on stretch, Score on preferred |
@@ -176,7 +176,7 @@ The Source column is a suggestion for which stage captures each field. Pre = que
 | `lowestMoment` | `{day, note}` or string | Game | Review |
 | `redemption` | string (Day 13) | Game | Review |
 | `flags` | string[] (`noticed_step`, `learned_meds_folder`, …) | Game | Review |
-| `landmarks` | `[{day, response}]` for days 6, 9, 11 and 14, or `{ "6": "…" }` | Game | Review |
+| `landmarks` | `[{day, response, tags}]` for days 6, 9, 11 and 14, or `{ "6": "…" }`. `tags` say how the moment was handled (`grief_invited`, `fall_checked`, `fall_lifted`, `emergency_called`…), which the matching weighs against a host's risk flags | Game | Review + Score |
 | `answers` | `[{day, question, answer}]` (verbatim) | Game | Review |
 | `finalWords` | string (Day 13 closing answer, verbatim) | Game | Review |
 | `watchPoint` | string | Staff | Review |
@@ -203,9 +203,12 @@ The screening game (`game/pepaws-porch.html`) builds the profile itself. There i
 - `screening.flags` includes `quick_demo`, plus `missed_timer` when a 25-second timer ran out.
 - `screening.watchPoint` always opens with a quick-demo note and lists any timed-out questions.
 - No `screening.answers`, `finalWords` or `redemption` (there are no written answers and no Day 13), and no contact details beyond the email.
-- The questions fill: `student.age`, `gender`, `languages`; `placement.campus`, `moveInDate`, `stayMonths`; `support.rentBudgetWeekly`, `hoursPerWeek`, `helpTypes`, `notOffered`; `household.homeownerGender`, `otherLodgers`, `smoker`, `needsSmokeFree`, `okWithPets`, `petAllergy` (smoking and pets are one tap each, so they can't contradict); `interests.careerGoal` (from options for the applicant's area of study), `fieldMentor`, `hobbies`, `wantsToLearn`; `lifestyle.socialLevel`.
+- The start screen asks for a first name and an optional email (typing an email at a market stand slows everyone down).
+- The questions fill: `student.age`, `gender`, `languages`; `placement.campus` (one of the five campuses, from a list), `moveInDate` (the first of one of the next few months, from a list), `stayMonths`; `support.rentBudgetWeekly`, `hoursPerWeek`, `helpTypes`, `notOffered`; `household.homeownerGender`, `otherLodgers`, `smoker`, `needsSmokeFree`, `okWithPets`, `petAllergy` (smoking and pets are one tap each, so they can't contradict); `interests.careerGoal` (from options for the applicant's area of study), `fieldMentor`, `hobbies`, `wantsToLearn`; `lifestyle.socialLevel`.
 - Day 3 asks what the applicant would like to do with Marg this week. The answer pre-fills the questions: hearing about her career sets `fieldMentor` to `keen`, the community garden adds Gardening to `helpTypes` and `hobbies`, and baking adds Cooking and baking to `hobbies` and Family recipes to `wantsToLearn`. `student.languages` starts with English. All of these stay editable.
 - `interests.homeownerBackground` comes from the area of study, as in the full game's pre-fill, unless the applicant says a homeowner from their field doesn't matter.
+- **The demo match.** When the questions are submitted, the demo matches the profile against the fictional hosts in `genstay-hosts.sample.json` (published beside it) with `GenStayMatch.bestMatch()`, and shows the participant their homeowner. The run saves it as `demoMatch`: `{hostId, hostName, first, age, partnerAge, suburb, career, score, hostFit, studentFit, band, highlights, talkAbout, closest, standsInWay, setAside, at}`. The staff desk's Live board shows exactly that. It is not part of the profile and never reaches the template.
+- **Each run is its own applicant.** A market stand's tablets share one signed-in account, so the demo's desk lists every run separately (below).
 
 ### Automatic checks
 
@@ -232,10 +235,12 @@ Profiles live in the published artifact's record store, under access rules decla
 
 | Path | Holds | Who can read | Who can write |
 |---|---|---|---|
-| `profiles/<applicant id>` | Latest profile, plus a list of the applicant's runs | The applicant (their own only), Editors, the owner | The applicant (their own only), Editors, the owner |
-| `profiles/<applicant id>/runs/<run id>` | Every run, so replays can be compared | The applicant (their own only), Editors, the owner | The applicant (their own only) |
+| `profiles/<applicant id>` | Latest profile, plus a list of the applicant's runs (the demo keeps no list, only `latestRun`) | The applicant (their own only), Editors, the owner | The applicant (their own only), Editors, the owner |
+| `profiles/<applicant id>/runs/<run id>` | Every run, so replays can be compared (`{pid, savedAt, complete, profile}`, and in the demo `demoMatch`) | The applicant (their own only), Editors, the owner | The applicant (their own only) |
 | `reviews/<applicant id>` | Staff fields above, plus `suggestedHostId` (the host profile behind `suggestedFor`) | Editors and the owner | Editors and the owner |
 | `hosts/<host id>` | Host profiles (`genstay-host-fields.md`) | Editors and the owner | Editors and the owner |
+
+The demo's account document keeps no list of runs: one shared stand account would grow it without limit, and tablets saving at once would overwrite each other's lists. Its desk reads the runs themselves, and treats each as an applicant of its own. Both desks follow the store live, so new profiles appear without pressing Refresh.
 
 Everything else in the store is locked to Editors and the owner. An applicant can technically read back their own profile, screening meters included, because writing implies reading; nothing in the game shows it to them. The applicant id is the platform's opaque viewer id, so no name or email is used as a key.
 
