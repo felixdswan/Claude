@@ -2,7 +2,7 @@
 
 A host profile describes one older person (or couple) offering a room: the homeowner a student would live with. The staff desk's **Hosts and matches** tab reads host profiles, stores them, and compares every host with every applicant using `game/genstay-matching.js`. The quick demo uses the same matching to give each market-day participant a fictional homeowner.
 
-`game/genstay-hosts.sample.json` holds ten fictional hosts in this format. Each has a `meta.testPurpose` saying what it exercises (a falls risk, a female-only preference, a couple who need a driver, a host on hold…). The demo loads that file from beside the page, so replacing it changes the demo's homeowners.
+`game/genstay-hosts.sample.json` holds fifteen fictional hosts in this format, covering every study area the games offer and all five campuses. Each has a `meta.testPurpose` saying what it exercises (a falls risk, a female-only preference, a couple who need a driver, a host on hold…). The demo loads that file from beside the page, so replacing it changes the demo's homeowners.
 
 Every field is optional. A missing field never rules a pairing out: that part of the score counts as half, and the reasons say what to check.
 

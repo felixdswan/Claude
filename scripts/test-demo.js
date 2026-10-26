@@ -167,7 +167,7 @@ function storyChecks(trace, mode) {
 /* The Hosts and matches tab, on the store the worst run left. Sam Lee (the
    worst run) is kept out of matching by screening; Jenny Graffet (the sample
    profile, shortlisted by staff for Helen Whitcombe) and Pat Ward (a teaching
-   student) are added as files. Then the ten sample hosts as a JSON file, and
+   student) are added as files. Then the fifteen sample hosts as a JSON file, and
    Joan pasted as spreadsheet rows. */
 async function hostsTab(page) {
   const out = {};
@@ -194,15 +194,15 @@ async function hostsTab(page) {
   if (!/^﻿Host ID,Status,Host fit/.test(await download("genstay-host-template.csv"))) errors.push("hosts: template CSV is missing its headings");
 
   await page.setInputFiles("#hostimporter", { name: "genstay-hosts.sample.json", mimeType: "application/json", buffer: fs.readFileSync(HOSTS_FILE) });
-  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 10, null, { timeout: 5000 });
+  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 15, null, { timeout: 5000 });
   const rows = ["First name\tLast name\tGender\tSuburb\tFormer career\tPayment a week\tAvailable from\tShortest stay (months)\tCommute minutes\tSharer gender\tHours a week\tHelp wanted\tTime together (1-5)\tHobbies\tSmoke-free home\tPets",
     "Joan\tPrice\tFemale\tAshfield\tPrimary school teacher\t140\t1/2/2027\t6\tUTS City Campus: 30; USyd Camperdown: 25\tAny\t8-10\tcompanionship; gardening\t2\tReading; Gardening\tYes\t"].join("\n");
   await page.click("#hostpastebtn");
   await page.fill("#hostpastein", rows);
   await page.click("#hostpasteadd");
-  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 11, null, { timeout: 5000 });
+  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 16, null, { timeout: 5000 });
   out.stored = await page.evaluate(() => Object.keys(window.__store).filter((k) => /^hosts\//.test(k)).length);
-  if (out.stored !== 11) errors.push("hosts: " + out.stored + " host profiles stored, not 11");
+  if (out.stored !== 16) errors.push("hosts: " + out.stored + " host profiles stored, not 16");
   const joan = await page.evaluate(() => window.__store["hosts/H-joan-price-ashfield"]);
   if (!joan || joan.placement.campusCommuteMins["UTS City Campus"] !== 30 || joan.support.lodgerPaymentWeekly !== 140) errors.push("hosts: pasted row not read: " + JSON.stringify(joan && joan.placement));
   const kevPill = await page.textContent('#hlist .qitem:has-text("Kev Doyle")');
@@ -252,19 +252,19 @@ async function hostsTab(page) {
   if (!/Click again/.test(await page.textContent("#hremove"))) errors.push("hosts: removal didn't ask for a second click");
   await page.click("#hremove");
   await page.waitForFunction(() => !window.__store["hosts/H-joan-price-ashfield"], null, { timeout: 5000 });
-  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 10, null, { timeout: 5000 })
+  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 15, null, { timeout: 5000 })
     .catch(() => errors.push("hosts: removed host still listed"));
 
   /* one host file replaces Helen (same host id), and the spreadsheet export */
   const helen = JSON.parse(fs.readFileSync(HOSTS_FILE, "utf8")).hosts[0];
   await page.setInputFiles("#hostimporter", { name: "helen.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(helen)) });
   await page.waitForFunction(() => /Added 1 host profile/.test(document.getElementById("hstat").textContent), null, { timeout: 5000 });
-  if ((await page.$$("#hlist .qitem")).length !== 10) errors.push("hosts: re-importing Helen added a duplicate instead of replacing her");
+  if ((await page.$$("#hlist .qitem")).length !== 15) errors.push("hosts: re-importing Helen added a duplicate instead of replacing her");
   await page.click("#hostexport");
   await page.waitForFunction(() => window.__downloads.some((d) => /^genstay-hosts-.*\.csv$/.test(d.filename)), null, { timeout: 5000 });
   const exported = await page.evaluate(() => window.__downloads.filter((d) => /^genstay-hosts-/.test(d.filename)).pop().data);
   out.exportedRows = exported.trim().split(/\r?\n/).length - 1;
-  if (out.exportedRows !== 10) errors.push("hosts: export has " + out.exportedRows + " rows, not 10");
+  if (out.exportedRows !== 15) errors.push("hosts: export has " + out.exportedRows + " rows, not 15");
 
   /* the applicant review panel: Pat's best homeowners; Sam's reason for being left out */
   await page.click("#tab-app");

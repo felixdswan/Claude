@@ -1,7 +1,7 @@
 /* Checks for the GenStay matching engine (game/genstay-matching.js), no browser needed.
 
-   - the ten sample hosts (game/genstay-hosts.sample.json) read cleanly
-   - nine market-day participants, each answering the demo's questions, are
+   - the fifteen sample hosts (game/genstay-hosts.sample.json) read cleanly
+   - fourteen market-day participants, each answering the demo's questions, are
      matched with the host they were written for, with reasons in plain words
    - each sample host's test purpose holds: every hard filter rules a pairing
      out, on either side, and says why
@@ -67,7 +67,18 @@ const P = {
   Leo: { expect: "GH-2027-010", first: "Leo", gender: "Male", age: 22, discipline: "health", goal: "Pharmacy", campus: "Macquarie Uni", social: 4, languages: ["English", "Mandarin"],
     help: ["Company and conversation", "Cooking shared meals", "Appointments and outings", "Tech and phone help"], hobbies: ["Sport and fitness", "Cooking and baking"], grief: "grief_invited", hours: { min: 6, max: 8 } },
   Ella: { expect: "GH-2027-001", first: "Ella", gender: "Female", age: 21, discipline: "education", goal: "Secondary teaching", campus: "UTS City Campus", social: 4, languages: ["English", "Italian"],
-    help: ["Company and conversation", "Cooking shared meals", "Tech and phone help", "Shopping and errands"], hobbies: ["Reading", "Walking"], learn: ["Local history"], hours: { min: 6, max: 8 } }
+    help: ["Company and conversation", "Cooking shared meals", "Tech and phone help", "Shopping and errands"], hobbies: ["Reading", "Walking"], learn: ["Local history"], hours: { min: 6, max: 8 } },
+  /* the five hosts added to spread the crowd: the study areas no other host covered */
+  Kemi: { expect: "GH-2027-011", first: "Kemi", gender: "Female", age: 22, discipline: "social_work", goal: "Social work", campus: "UTS City Campus", languages: ["English", "Yoruba"],
+    help: ["Company and conversation", "Shopping and errands", "Appointments and outings", "Tech and phone help"], hobbies: ["Music", "Crafts"], hours: { min: 6, max: 8 } },
+  Luca: { expect: "GH-2027-012", first: "Luca", gender: "Male", age: 21, discipline: "allied_health", goal: "Physiotherapy", campus: "USyd Camperdown", social: 4, languages: ["English", "Italian"],
+    help: ["Company and conversation", "Gardening", "Cooking shared meals", "Shopping and errands"], hobbies: ["Gardening", "Sport and fitness"], learn: ["Gardening"], hours: { min: 6, max: 8 } },
+  Arjun: { expect: "GH-2027-013", first: "Arjun", gender: "Male", age: 23, discipline: "other", goal: "Science", campus: "UNSW Kensington", social: 4, languages: ["English", "Hindi"],
+    help: ["Company and conversation", "Tech and phone help", "Shopping and errands", "Appointments and outings"], hobbies: ["Sport and fitness", "Films and TV"] },
+  Bree: { expect: "GH-2027-014", first: "Bree", gender: "Female", age: 24, discipline: "carework", goal: "Aged care", campus: "WSU Parramatta",
+    help: ["Company and conversation", "Being home in the evenings", "Shopping and errands", "Bins and light chores", "Appointments and outings"], hobbies: ["Crafts", "Cooking and baking"] },
+  Noah: { expect: "GH-2027-015", first: "Noah", gender: "Male", age: 26, discipline: "psychology", goal: "Psychology", campus: "USyd Camperdown", social: 2, motivation: "quiet_space",
+    help: ["Tech and phone help", "Shopping and errands", "Gardening"], hobbies: ["Board games and puzzles", "Reading", "Walking"], hours: { min: 6, max: 8 } }
 };
 /* One participant, optionally changed: as the desk passes them to the matcher. */
 function who(name, change) {
@@ -79,7 +90,7 @@ function who(name, change) {
 /* 1. the sample hosts */
 {
   const r = M.parseHosts(HOSTS_TEXT);
-  check(r.hosts.length === 10 && !r.problems.length, "sample hosts: read " + r.hosts.length + ", problems: " + r.problems.join("; "));
+  check(r.hosts.length === 15 && !r.problems.length, "sample hosts: read " + r.hosts.length + ", problems: " + r.problems.join("; "));
   check(JSON.stringify(r.hosts.map((h) => h.meta.hostId)) === JSON.stringify(JSON.parse(HOSTS_TEXT).hosts.map((h) => h.meta.hostId)), "sample hosts: ids changed on reading");
   const kev = M.hostStatus(byId("GH-2027-009")), helen = M.hostStatus(byId("GH-2027-001"));
   check(!kev.available && kev.label === "On hold" && helen.available && helen.label === "Shortlisted", "host status: " + JSON.stringify([kev, helen]));
@@ -98,6 +109,20 @@ for (const name of Object.keys(P)) {
   check(r.forStudent.length >= 2 && r.forStudent.length <= 4 && r.forStudent.every((t) => t && !/undefined|null|NaN|\{|  /.test(t)), name + "'s reasons: " + JSON.stringify(r.forStudent));
   check(r.talkAbout.length <= 2 && r.talkAbout.every((t) => !/undefined|null|  /.test(t)), name + "'s things to talk about: " + JSON.stringify(r.talkAbout));
   check(r.parts.host.reduce((n, x) => n + x.weight, 0) === 100 && r.parts.student.reduce((n, x) => n + x.weight, 0) === 100, "weights on a side don't add up to 100");
+}
+/* every sentence a participant can see, for every participant and host, reads as English */
+{
+  const bad = new Set();
+  for (const name of Object.keys(P)) for (const h of HOSTS) {
+    const r = M.score(who(name), h);
+    r.forStudent.concat(r.talkAbout, r.blockers.map((x) => x.you)).forEach((t) => {
+      if (/\ba (two|three|four|\d)\b|\ban? [aeiou]n? |  | ,|undefined|null|NaN|\b(west|indian|italian|greek|sydney|parramatta) [a-z]/.test(t)) bad.add(t);
+    });
+    const offered = r.forStudent.filter((t) => /, and you offered /.test(t)).map((t) => t.split(", and you offered ")[1]);
+    const said = who(name).profile.support.helpTypes.concat(who(name).profile.interests.canOffer || []).map((x) => x.toLowerCase());
+    offered.forEach((o) => { if (said.indexOf(o) === -1) bad.add(name + " with " + h.meta.hostId + ": \"you offered " + o + "\", which they didn't offer"); });
+  }
+  check(!bad.size, "sentences shown to participants read badly:\n  " + [...bad].join("\n  "));
 }
 {
   const ella = M.bestMatch(who("Ella"), HOSTS).result.forStudent.join(" | ");
@@ -124,6 +149,9 @@ const filters = [
   ["Ivy", "GH-2027-002", "commute", (p) => { p.placement.campus = "Macquarie University"; }],             // 75 minutes from Randwick
   ["Ivy", "GH-2027-002", "safety", (p) => { p.screening.meters.awareness = 2; }],                         // Bob's falls risk
   ["Zoe", "GH-2027-007", "dealbreaker", (p) => { p.lifestyle.socialLevel = 1; }],                         // Di: not someone who keeps to their room
+  ["Bree", "GH-2027-014", "pets", (p) => { p.household.petAllergy = true; p.household.okWithPets = false; }], // Gwen's budgies
+  ["Arjun", "GH-2027-013", "gender", (p) => { p.household.homeownerGender = "male"; }],                   // a couple: Priya counts too
+  ["Noah", "GH-2027-015", "age", (p) => { p.student.age = 19; }],                                         // Colin wants 20 to 40
   ["Ella", "GH-2027-001", "gender", (p) => { p.household.homeownerGender = "male"; }],                    // the student's own preference
   ["Ella", "GH-2027-001", "dates", (p) => { p.placement.moveInDate = "2027-09-01"; }],
   ["Ella", "GH-2027-001", "screening", (p) => { p.screening.profile = "transactional_guest"; }],
@@ -157,6 +185,10 @@ filters.forEach(([name, hostId, kind, change], i) => {
     "brushing off grief didn't count against a match with Ray, who was recently bereaved");
   check(hostFit("Ella", "GH-2027-001", (p) => { p.screening.landmarks[1].tags = ["fall_lifted"]; }) >= hostFit("Ella", "GH-2027-001") - 3,
     "a fall response weighed heavily with Helen, who has no falls risk");
+  check(hostFit("Luca", "GH-2027-012", (p) => { p.screening.landmarks[1].tags = ["fall_lifted"]; }) < hostFit("Luca", "GH-2027-012"),
+    "lifting a fallen homeowner didn't count against a match with Frank, who has a falls risk");
+  check(M.score(who("Kemi"), byId("GH-2027-011")).talkAbout.some((t) => /share a bathroom with her/.test(t)), "Joyce's shared bathroom isn't a talking point");
+  check(M.score(who("Arjun"), byId("GH-2027-013")).talkAbout.some((t) => /draw the line at meat cooked at home/.test(t)), "the Mehtas' vegetarian kitchen isn't a talking point");
   const leo = (langs) => M.score(who("Leo", (p) => { p.student.languages = langs; }), byId("GH-2027-010")).score;
   check(leo(["English", "Mandarin"]) > leo(["English"]), "speaking Mandarin didn't help a match with Ray");
   const social = (n) => M.score(who("Zoe", (p) => { p.lifestyle.socialLevel = n; }), byId("GH-2027-007")).score;
@@ -203,7 +235,8 @@ filters.forEach(([name, hostId, kind, change], i) => {
   check(used.length === new Set(used).size, "a student was paired twice");
   check(res.pairings.filter((p) => !p.locked).every((p) => p.eligible), "an ineligible pairing was suggested");
   check(res.pairings.every((p) => p.studentRank >= 1 && p.hostRank >= 1), "pairings don't say how each side ranked the other");
-  check(res.unmatchedStudents.some((u) => /Ella/.test(u.name)), "Ella, who lost Helen to staff's pairing, isn't listed as waiting");
+  const ella = res.pairings.find((p) => p.studentName === "Ella");
+  check(!ella || (ella.hostId !== "GH-2027-001" && ella.studentRank > 1), "Ella, who lost Helen to staff's pairing, wasn't given her next choice: " + JSON.stringify(ella));
   /* no other allocation of the open rooms scores more in total than the one chosen */
   const open = res.pairings.filter((p) => !p.locked), sum = open.reduce((n, p) => n + p.score, 0);
   const pairs = [];
@@ -239,7 +272,7 @@ filters.forEach(([name, hostId, kind, change], i) => {
 /* 8. reading host lists */
 {
   const csv1 = M.hostsToCsv(HOSTS), again = M.parseHosts(csv1);
-  check(again.hosts.length === 10 && !again.problems.length, "CSV: read back " + again.hosts.length + " hosts, problems: " + again.problems.join("; "));
+  check(again.hosts.length === 15 && !again.problems.length, "CSV: read back " + again.hosts.length + " hosts, problems: " + again.problems.join("; "));
   check(M.hostsToCsv(again.hosts) === csv1, "CSV: a second round trip changed the file");
   for (const name of Object.keys(P)) {
     const a = M.bestMatch(who(name), HOSTS), b = M.bestMatch(who(name), again.hosts);
@@ -300,6 +333,8 @@ filters.forEach(([name, hostId, kind, change], i) => {
   check(M.campusKey("UTS City campus, Ultimo") === "UTS City Campus" && M.campusKey("University of Sydney") === "USyd Camperdown" && M.campusKey("Another campus") === null, "campus names aren't recognised");
   check(M.concept("Lifts in the homeowner’s car") === "lifts" && M.concept("Heavy lifting") === "heavy_lifting" && M.concept("Pet care") === "pets", "lifts, lifting and pet care are confused");
   check(M.fieldOf("Retired district nurse") === "health" && M.fieldOf("Speech pathologist") === "allied_health" && M.fieldOf("Counsellor") === "psychology", "careers aren't placed in the right field");
+  check(M.fieldOf("Physiotherapist, ran a sports injury clinic") === "allied_health" && M.fieldOf("Psychotherapist") === "psychology" && M.fieldOf("Aged care nurse, later ran a nursing home") === "carework",
+    "fields: a physiotherapist, psychotherapist or aged care nurse misread");
   check(M.fieldOf("Mechanical and aerospace") === "engineering" && M.fieldOf("Lawn bowls") !== "law" && M.fieldOf("Fine arts") === "design", "fields: engineering, law or the arts misread");
 }
 

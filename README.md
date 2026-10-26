@@ -28,7 +28,7 @@ then pairs each player with a fictional homeowner. It's built for a live market-
     game/pepaws-porch.demo.html          the quick demo, with its own staff desk, one file
     game/genstay-profile-template.html   the GenStay profile template the desk shows each profile in
     game/genstay-matching.js             the matching: reads host profiles, filters and scores pairings from both sides, allocates the best
-    game/genstay-hosts.sample.json       ten fictional hosts: the demo's market-day homeowners, and examples of the host format
+    game/genstay-hosts.sample.json       fifteen fictional hosts: the demo's market-day homeowners, and examples of the host format
     genstay/genstay-profile-fields.md    the profile data contract, and how the game fills and stores it
     genstay/genstay-profile.sample.json  a complete example profile
     genstay/genstay-host-fields.md       the host profile format, the host spreadsheet, and how matching works
@@ -246,7 +246,7 @@ second tab, without anyone pressing Refresh.
 
     node scripts/test-matching.js
 
-checks the matching on its own: the ten sample hosts, nine market-day participants against the
+checks the matching on its own: the fifteen sample hosts, fourteen market-day participants against the
 hosts written for them, every host's test purpose as a filter, both sides of the score and the
 game's evidence, the allocation against brute force, the demo's closest match, reading and writing
 host spreadsheets, and that both staff desks carry the same Hosts and matches code.

@@ -82,8 +82,8 @@
     psychology: ["social_work", "health"], education: ["social_work", "psychology"], law: ["business"], business: ["law"],
     engineering: ["design", "science"], design: ["engineering"], science: ["engineering", "health"]};
   var FIELD_WORDS = [
-    ["psychology", /psycholog|counsel|therapist|psychiatr|mental health/],
     ["allied_health", /physio|occupational|\bot\b|speech|dietit|nutrition|podiat|exercise physiolog|chiropract|osteopath|audiolog|optometr/],
+    ["psychology", /psycholog|counsel|therapist|psychiatr|mental health/],   // after allied health: a physiotherapist isn't a therapist here
     ["social_work", /social work|community services|community work|welfare|case work|youth work|child protection/],
     ["education", /teach|school|principal|lectur|tutor|education|early childhood|kindergarten|librarian|professor|academic/],
     ["carework", /aged care|disabilit|support worker|care worker|\bcarer\b|community care|home care/],
@@ -265,9 +265,10 @@
   function plural(n, one, many) { return n + " " + (n === 1 ? one : many); }
   function rangeText(r, unit) { return (r.min === r.max || r.max == null ? r.min + (r.max == null ? "+" : "") : r.min + "–" + r.max) + (unit ? " " + unit : ""); }
   function joinAnd(items) { return items.length < 2 ? items.join("") : items.slice(0, -1).join(", ") + " and " + items[items.length - 1]; }
-  function aOrAn(word) { return /^[aeiou]/i.test(word) ? "an " + word : "a " + word; }
-  var PROPER = /^(Italian|French|Greek|Swedish|Vietnamese|Cantonese|Mandarin|Hebrew|English|Arabic|Hindi|Spanish|Korean|Auslan|Sydney|Australian|Instagram|Snapchat|MyGov|Qantas|BBC|Buddhist|Sunday|Saturday|Easter)\b/;
-  function lowerFirst(s) { s = String(s || ""); return /^[A-Z][a-z]/.test(s) && !PROPER.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+  function aOrAn(word) { return /^(two|three|four|several|some|\d)/i.test(word) ? word : /^[aeiou]/i.test(word) ? "an " + word : "a " + word; }
+  var PROPER = /^(Italian|French|Greek|Swedish|Vietnamese|Cantonese|Mandarin|Hebrew|English|Arabic|Hindi|Gujarati|Igbo|Yoruba|Spanish|Korean|Auslan|Indian|Chinese|Sydney|Parramatta|Australian|Bollywood|Instagram|Snapchat|MyGov|Qantas|BBC|CSIRO|Buddhist|Sunday|Saturday|Easter)\b/;
+  /* lowercases a leading word unless it's a name, or starts a name ("West African cooking") */
+  function lowerFirst(s) { s = String(s || ""); return /^[A-Z][a-z]/.test(s) && !PROPER.test(s) && !/^[A-Z][a-z]+ [A-Z]/.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
   function clamp(x) { return Math.max(0, Math.min(1, x)); }
   function avg(pairs) { /* [[value, weight], ...] ignoring null values */
     var w = 0, t = 0;
@@ -562,9 +563,10 @@
     if (h.pets.length && s.okWithPets === true) out.talkAbout.push(hostWord + " has " + aOrAn(joinAnd(h.pets.map(lowerFirst))));
 
     /* the student's requirements */
-    if (s.wantsGender !== "any" && h.gender && h.gender !== s.wantsGender) {
-      if (h.partnerGender === s.wantsGender) warn("Asked for a " + GENDER_WORD[s.wantsGender] + " homeowner; " + h.first + " is a couple");
-      else block("gender", "Asked for a " + GENDER_WORD[s.wantsGender] + " homeowner", "you asked for a " + GENDER_WORD[s.wantsGender] + " homeowner");
+    /* a couple fits only if both partners do: the preference is often about feeling safe at home */
+    if (s.wantsGender !== "any" && ((h.gender && h.gender !== s.wantsGender) || (h.partnerGender && h.partnerGender !== s.wantsGender))) {
+      var couple = h.partnerGender ? ", and " + h.first + " are a couple" : "";
+      block("gender", "Asked for a " + GENDER_WORD[s.wantsGender] + " homeowner" + couple, "you asked for a " + GENDER_WORD[s.wantsGender] + " homeowner" + couple);
     }
     if (s.needsSmokeFree === true && (h.smoker === true || h.smokeFree === false))
       block("smoking", "Needs a smoke-free home, and " + hostWord + " smokes", "you need a smoke-free home");
@@ -680,12 +682,12 @@
     part("student", "company", company, h.social != null && s.social != null ? "both answered" : null);
 
     // what the host wants to learn, and what the student offers
-    var teach = overlap(h.wantsToLearn, s.offers.concat(s.hobbies));
+    var teach = overlap(h.wantsToLearn, s.hobbies.concat(s.offers));   /* an offer outranks a hobby with the same meaning */
     var reciprocity = h.wantsToLearn.length ? clamp(0.3 + 0.7 * teach.count) : null;
     if (teach.full.length) {
-      var t0 = teach.full[0];
-      good(hostWord + " would like a hand with " + lowerFirst(t0.mine.label) + "; the applicant offers " + lowerFirst(t0.theirs.label));
-      tell(7, hostWord + " would like a hand with " + lowerFirst(t0.mine.label) + ", and you offered " + lowerFirst(t0.theirs.label));
+      var t0 = teach.full[0], offered = !!offerKeys[t0.theirs.key], what = lowerFirst(t0.theirs.label);
+      good(hostWord + " would like a hand with " + lowerFirst(t0.mine.label) + "; the applicant " + (offered ? "offers " : "enjoys ") + what);
+      tell(7, hostWord + " would like a hand with " + lowerFirst(t0.mine.label) + (offered ? ", and you offered " : ", and you’re into ") + what);
     }
     part("host", "reciprocity", reciprocity, h.wantsToLearn.length ? teach.full.length + " of " + h.wantsToLearn.length + " things " + P.they + " want" + P.s + " to learn" : null);
 
@@ -726,14 +728,14 @@
 
     /* 3. fit for the student */
     // interests: shared hobbies, and what the host can teach them
-    var both = overlap(s.hobbies, h.hobbies.concat(h.canOffer)), learn = overlap(s.wantsToLearn, h.canOffer.concat(h.hobbies));
+    var both = overlap(s.hobbies, h.hobbies.concat(h.canOffer)), learn = overlap(s.wantsToLearn, h.hobbies.concat(h.canOffer));  /* something the host offers outranks a hobby */
     var interests = (h.hobbies.length + h.canOffer.length) && (s.hobbies.length + s.wantsToLearn.length)
       ? clamp((both.count + 1.5 * learn.count) / 3) : null;
     if (both.full.length) { good("Shared interests: " + words(both.full.map(function (x) { return x.mine; }), 3)); tell(6, "You both enjoy " + words(both.full.map(function (x) { return x.mine; }), 2)); }
     if (learn.full.length) {
-      var l0 = learn.full[0].theirs.label.replace(/ (lessons|knowledge)$/i, "");
-      good("Wants to learn " + lowerFirst(learn.full[0].mine.label) + "; " + hostWord + " can teach " + lowerFirst(l0));
-      tell(8, hostWord + " could teach you " + lowerFirst(l0));
+      var l0 = learn.full[0], lt = lowerFirst(l0.theirs.label.replace(/ (lessons|knowledge)$/i, "")), want = lowerFirst(l0.mine.label);
+      if (keysOf(h.canOffer)[l0.theirs.key]) { good("Wants to learn " + want + "; " + hostWord + " can teach " + lt); tell(8, hostWord + " could teach you " + lt); }
+      else { good("Wants to learn " + want + "; " + hostWord + " enjoys " + lt); tell(7, "You’d like to learn " + want + ", and " + hostWord + " loves " + lt); }
     }
     if (h.settles && s.studentType === "international") { good(hostWord + " offers help settling into Sydney"); tell(7, hostWord + " would help you settle into Sydney"); }
     part("student", "interests", interests, interests == null ? null : both.full.length + " shared, " + learn.full.length + " to learn");
