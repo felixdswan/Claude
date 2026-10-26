@@ -185,19 +185,48 @@
   var AVAILABLE = ["new", "screening", "shortlisted", "intro_booked"];
   var STAFF_PAIRED = ["shortlisted", "intro_booked", "matched"];
   var SERIOUS = {threatening_language: "threatening language", drug_references: "drug references"};
-  /* Answers that on their own keep someone out of matching: each would put a
-     homeowner at real risk. Every other choice in the game only weighs in the score.
-     `you` is what the participant reads. */
-  var UNSAFE = {
-    fall_lifted: {staff: "lifted Marg straight up after her fall (Day 11)",
+  /* How the games' answers count against a placement. Every tagged answer in
+     both games has been reviewed; any not listed here is fine (a warmer or a
+     more independent style never counts against anyone, and keyword-matched
+     written answers are left to staff).
+     fail: rules a placement out on its own, because it would put a homeowner at real risk.
+     part: a concern; PART_FAIL_LIMIT of them together also rule a placement out.
+     `staff` is what the desk says; `you` is what the participant reads. */
+  var ANSWER_GRADES = {
+    fall_lifted: {grade: "fail", staff: "lifted Marg straight up after her fall",
       you: "After Marg’s fall, you helped her straight up. With a possible head, neck or hip injury, the safe thing is to keep her still, check where it hurts and call for help."},
-    fall_dismissed: {staff: "walked away and left Marg on the ground after her fall (Day 11)",
+    fall_dismissed: {grade: "fail", staff: "walked away and left Marg on the ground after her fall",
       you: "After Marg’s fall, you took her word for it and left. Someone who has fallen needs checking, and company, until it’s clear they’re safe."},
-    emergency_shaken: {staff: "shook Marg and rang her son before calling 000 when she collapsed (Day 14)",
+    emergency_shaken: {grade: "fail", staff: "shook Marg and rang her son before calling 000 when she collapsed",
       you: "When Marg collapsed, you shook her and rang her son first. In an emergency, call 000 straight away and follow the call-taker’s instructions."},
-    emergency_water: {staff: "gave Marg water and sat her up when she collapsed (Day 14)",
-      you: "When Marg collapsed, you gave her water and sat her up. Someone who has collapsed shouldn’t be given anything to drink, or moved, unless 000 says so."}
+    emergency_water: {grade: "fail", staff: "gave Marg water and sat her up when she collapsed",
+      you: "When Marg collapsed, you gave her water and sat her up. Someone who has collapsed shouldn’t be given anything to drink, or moved, unless 000 says so."},
+    phone_taken: {grade: "part", staff: "took Marg’s phone and deleted the scam text without asking",
+      you: "When the scam text arrived, you took Marg’s phone and deleted it yourself. The worry was right, but it’s her phone: show her the warning signs and let her decide."},
+    scam_ignored: {grade: "part", staff: "left Marg to deal with a scam text alone",
+      you: "When the scam text arrived, you left it to Marg. Pointing out the warning signs, or suggesting she ring the bank, keeps her safe without taking over."},
+    grief_dismissed: {grade: "part", staff: "told Marg her friend was “in a better place” on the day she died",
+      you: "When Dorothy died, you told Marg she was in a better place. In grief, listening helps more than looking on the bright side."},
+    friction_defensive: {grade: "part", staff: "answered Marg’s complaint about the noise by pointing out they pay rent",
+      you: "When Marg raised the late-night noise, you pointed out that you pay rent. A homeshare works on give and take, not on what you’ve paid for."},
+    boundary_lecture: {grade: "part", staff: "lectured Marg at length about her remark",
+      you: "After Marg’s remark, you lectured her at length. Saying calmly why it didn’t sit well with you is more likely to be heard."},
+    fall_secret: {grade: "part", staff: "promised to keep Marg’s fall a secret, and left it there",
+      you: "After Marg’s fall, you promised not to tell anyone and left it there. A possible knock to the head needs a doctor, even if it stays private."},
+    fall_told_behind_back: {grade: "part", staff: "rang Marg’s son behind her back after the fall",
+      you: "After the fall, you rang David behind Marg’s back. It’s her call who is told: offer to help her tell him."},
+    step_ignored: {grade: "part", staff: "left the loose brick step as it was after Marg fell on it",
+      you: "After Marg fell, you left the brick step as it was. A known hazard needs blocking off and fixing, with her say-so."},
+    step_diy: {grade: "part", staff: "tried to fix the brick step themselves, without asking or knowing how",
+      you: "You tried to fix the brick step yourself, without asking Marg or knowing how. Ask first, and get someone who knows how."},
+    david_deflected: {grade: "part", staff: "deflected David’s questions about the fall",
+      you: "When David asked about the fall, you said it wasn’t your house. Being straight with family about what happened builds trust."},
+    emergency_delayed: {grade: "part", staff: "ran next door for help before calling 000 when Marg collapsed",
+      you: "When Marg collapsed, you ran next door before calling anyone. Call 000 first, then get help."},
+    emergency_left: {grade: "part", staff: "left Marg alone to flag down the ambulance",
+      you: "While waiting for the ambulance, you left Marg alone to go outside. Stay with her, and send someone else to the door if you can."}
   };
+  var PART_FAIL_LIMIT = 3;
   /* A placement needs at least a Good match. Below this, the applicant waits for a suitable host. */
   var MIN_SCORE = 65;
   var TYPE_NAMES = {connector: "The Connector", considerate_companion: "The Considerate Companion",
@@ -437,14 +466,23 @@
     var hh = p.household || {}, sup = p.support || {}, life = p.lifestyle || {}, sc = p.screening || {};
     var field = stu.discipline && stu.discipline !== "other" ? (FIELDS[stu.discipline] ? stu.discipline : fieldOf(stu.discipline)) : null;
     var goalField = fieldOf(it.careerGoal);
-    var tags = {}, unsafe = [];
+    var tags = {}, graded = [], gradedSeen = {};
+    var grade = function (day, t) {
+      var g = ANSWER_GRADES[t], key = t + "@" + day;
+      if (!g || gradedSeen[key]) return;
+      gradedSeen[key] = 1;
+      graded.push({day: num(day), tag: t, grade: g.grade, staff: g.staff, you: g.you});
+    };
+    /* every choice in the game (screening.choices), and the landmark days, which older profiles carry alone */
+    list(sc.choices).forEach(function (c) { if (isObj(c)) grade(c.day, c.tag); });
     (sc.landmarks || []).forEach(function (l) {
       if (!isObj(l)) return;
       list(l.tags || l.tag).forEach(function (t) {
         if (TAG_QUALITY[t] != null) tags[l.day] = (tags[l.day] || []).concat([{tag: t, response: l.response}]);
-        if (UNSAFE[t] && unsafe.indexOf(t) === -1) unsafe.push(t);
+        grade(l.day, t);
       });
     });
+    graded.sort(function (a, b) { return (a.day || 0) - (b.day || 0); });
     var licence = sup.driversLicence;
     var offers = concepts(list(sup.helpTypes).concat(list(it.canOffer)));
     return {
@@ -453,7 +491,7 @@
       status: meta.pairingStatus || "new", suggestedFor: meta.suggestedFor || "", suggestedHostId: s.suggestedHostId || "",
       complete: !!(meta.stages && meta.stages.postGame), hasGame: !blank(sc.profile), type: sc.profile || null,
       meters: sc.meters || {}, flags: sc.flags || [], motivation: sc.motivation || null, quickDemo: (sc.flags || []).indexOf("quick_demo") !== -1,
-      evidence: tags, unsafe: unsafe,
+      evidence: tags, graded: graded,
       gender: genderCode(stu.gender), age: num(stu.age), studentType: norm(stu.studentType) || null, languages: list(stu.languages),
       field: field || goalField, goalField: goalField, discipline: stu.discipline || null, careerGoal: it.careerGoal || "",
       fieldMentor: it.fieldMentor || null,
@@ -471,6 +509,7 @@
     };
   }
 
+  function dayText(g) { return g.staff + (g.day ? " (Day " + g.day + ")" : ""); }
   /* Is this student already paired with this host by staff? */
   function linkedTo(s, h) {
     if (s.suggestedHostId) return s.suggestedHostId === h.id;
@@ -484,13 +523,20 @@
       out.push({kind: "status", text: s.status === "matched" ? "Already matched" + (s.suggestedFor ? " with " + s.suggestedFor : "")
         : s.status === "not_suitable" ? "Marked not suitable" : s.status === "on_hold" ? "On hold" : "Status: " + s.status});
     if (!s.hasGame) out.push({kind: "screening", text: "Hasn’t finished the screening game"});
-    else if (serious.length) out.push({kind: "screening", text: "Screening flagged " + joinAnd(serious.map(function (f) { return SERIOUS[f]; })) + ", so they’re kept out of automatic matching",
+    else if (serious.length) out.push({kind: "screening", basis: "flags", text: "Screening flagged " + joinAnd(serious.map(function (f) { return SERIOUS[f]; })) + ", so they’re kept out of automatic matching",
       points: ["Some of what you wrote needs a conversation with our team before any placement."]});
-    else if (s.type === "transactional_guest") out.push({kind: "screening", text: "Screening result is The Transactional Guest, which is kept out of automatic matching",
-      points: ["Your choices leaned towards treating the home as a room to rent, rather than a home to share with someone."]});
-    if (s.hasGame && s.unsafe.length) out.push({kind: "screening", unsafe: s.unsafe,
-      text: "Unsafe " + (s.unsafe.length > 1 ? "answers" : "answer") + " in screening: " + joinAnd(s.unsafe.map(function (t) { return UNSAFE[t].staff; })) + ", so they’re kept out of automatic matching",
-      points: s.unsafe.map(function (t) { return UNSAFE[t].you; })});
+    var fails = s.graded.filter(function (g) { return g.grade === "fail"; }), parts = s.graded.filter(function (g) { return g.grade === "part"; });
+    var byAnswers = s.hasGame && (fails.length > 0 || parts.length >= PART_FAIL_LIMIT);
+    if (s.hasGame && !serious.length && s.type === "transactional_guest") out.push({kind: "screening", basis: "type",
+      text: "Screening result is The Transactional Guest, which is kept out of automatic matching",
+      /* the concrete choices behind it, unless they're listed as a reason of their own below */
+      points: ["Across the game, your choices treated the home mostly as a room to rent, rather than a home to share with Marg."]
+        .concat(byAnswers ? [] : s.graded.map(function (g) { return g.you; }))});
+    if (byAnswers) out.push({kind: "screening", basis: fails.length ? "unsafe" : "pattern", answers: s.graded.map(function (g) { return g.tag; }),
+      text: (fails.length ? "Unsafe " + (fails.length > 1 ? "answers" : "answer") + " in screening: " + joinAnd(fails.map(dayText))
+          + (parts.length ? "; also " + joinAnd(parts.map(dayText)) : "")
+        : parts.length + " concerning answers in screening: " + joinAnd(parts.map(dayText))) + ", so they’re kept out of automatic matching",
+      points: fails.concat(parts).map(function (g) { return g.you; })});
     if (!s.complete) out.push({kind: "questions", text: "Hasn’t finished the matching questions"});
     out.forEach(function (b) { b.you = b.points ? b.points.join(" ") : b.text; });
     return out;
@@ -692,6 +738,9 @@
     if (s.flags.indexOf("welfare_concern") !== -1) warn("Possible welfare concern in screening: read the watch-point first");
     if (s.flags.indexOf("low_safety_awareness") !== -1 && !h.risks.fall_risk) warn("Low safety awareness in screening");
     if (s.flags.indexOf("answers_to_check") !== -1) warn("Some answers need checking (see the watch-point)");
+    var concerns = s.graded.filter(function (g) { return g.grade === "part"; });
+    if (concerns.length && concerns.length < PART_FAIL_LIMIT && !s.graded.some(function (g) { return g.grade === "fail"; }))
+      warn("Concerning " + (concerns.length > 1 ? "answers" : "answer") + " in screening (" + concerns.length + "; " + PART_FAIL_LIMIT + " would screen them out): " + joinAnd(concerns.map(dayText)));
     if (s.quickDemo) warn("Screened with the quick demo only");
     part("host", "care", care, needWords.length ? "against " + joinAnd(needWords) : s.type ? TYPE_NAMES[s.type] || s.type : "no game result");
 
@@ -957,9 +1006,12 @@
   function bestMatch(student, hosts) {
     var s = studentView(student);
     var hs = (hosts || []).map(hostView).filter(function (h) { return h.available; });
-    if (!hs.length) return null;
     var mine = studentBlockers(s, false), own = mine.map(function (b) { return b.kind; });
     var screened = mine.filter(function (b) { return b.kind === "screening"; });
+    var screenedOut = screened.map(function (b) { return {basis: b.basis || "screening", text: b.text, points: b.points || [b.you], answers: b.answers || []}; });
+    /* a screen-out doesn't depend on the hosts */
+    if (!hs.length) return screened.length ? {status: "screened_out", minScore: MIN_SCORE, host: null, result: null, closest: false,
+      setAside: own.filter(function (k) { return k !== "screening"; }), screenedOut: screenedOut, ranked: [], standsInWay: [], shortfall: []} : null;
     var all = hs.map(function (h) { return judge(s, h); });
     var hostOnly = function (r) { return r.blockers.filter(function (b) { return own.indexOf(b.kind) === -1; }); };
     var ok = all.filter(function (r) { return r.eligible; }).sort(byScore);
@@ -979,7 +1031,7 @@
             host: status === "screened_out" ? null : hs.filter(function (x) { return x.id === pick.hostId; })[0].raw,
             result: status === "screened_out" ? null : pick, closest: closest,
             setAside: own.filter(function (k) { return k !== "screening"; }),
-            screenedOut: screened.map(function (b) { return {text: b.text, points: b.points || [b.you], unsafe: b.unsafe || []}; }),
+            screenedOut: screenedOut,
             ranked: ok.map(function (r) { return {hostId: r.hostId, hostName: r.hostName, score: r.score}; }),
             standsInWay: status === "waiting" && closest ? hostOnly(pick).map(function (b) { return b.you; }) : [],
             shortfall: shortfall};
@@ -1212,7 +1264,7 @@
   }
 
   return {
-    version: VERSION, HOST_COLUMNS: HOST_COLUMNS, HOST_STATUS: HOST_STATUS, CAMPUSES: CAMPUSES, FIELDS: FIELDS, PROGRAM_FIELDS: PROGRAM_FIELDS, VOCAB: VOCAB, MIN_SCORE: MIN_SCORE, UNSAFE: UNSAFE,
+    version: VERSION, HOST_COLUMNS: HOST_COLUMNS, HOST_STATUS: HOST_STATUS, CAMPUSES: CAMPUSES, FIELDS: FIELDS, PROGRAM_FIELDS: PROGRAM_FIELDS, VOCAB: VOCAB, MIN_SCORE: MIN_SCORE, ANSWER_GRADES: ANSWER_GRADES, PART_FAIL_LIMIT: PART_FAIL_LIMIT,
     HOST_WEIGHTS: HOST_WEIGHTS, STUDENT_WEIGHTS: STUDENT_WEIGHTS, PART_LABELS: PART_LABELS, EXAMPLE_HOST: EXAMPLE_HOST, TAG_QUALITY: TAG_QUALITY,
     score: score, matchAll: matchAll, bestMatch: bestMatch, assign: assign, hostStatus: hostStatus,
     parseHosts: parseHosts, hostsToCsv: hostsToCsv, hostCsvTemplate: hostCsvTemplate, blankHost: blankHost, hostFacts: hostFacts,

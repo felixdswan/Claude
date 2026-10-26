@@ -1625,6 +1625,8 @@ function screeningPart(){
       .concat(answerChecks().length ? ["answers_to_check"] : [])
       .concat(S.choices.some(function(c){ return c.timedOut; }) ? ["missed_timer"] : []),
     watchPoint: autoWatchPoint(),
+    /* every choice made, so the matching can weigh each day's answers (not only the landmarks) */
+    choices: S.choices.filter(function(c){ return c.tag; }).map(function(c){ return {day: c.day, tag: c.tag}; }),
     landmarks: [6, 9, 11, 14].map(function(day){
       var made = S.choices.filter(function(c){ return c.day === day; });
       return {day: day, response: made.map(function(c){ return c.chosen; }).join(" · "), tags: made.map(function(c){ return c.tag; })};
@@ -1872,20 +1874,27 @@ function freshDates(hosts, generated){
 }
 function prepareMatch(){ loadDemoHosts(); }
 /* Resolves the match summary, or null if the hosts or the matcher couldn't load in time. */
+/* Resolves the outcome, or null. A screen-out (and its reasons) needs only
+   the matcher, so it still shows when the hosts file can't load. */
 function findDemoMatch(){
   var late = new Promise(function(done){ setTimeout(function(){ done(null); }, 6000); });
-  return Promise.race([loadDemoHosts(), late]).then(function(hosts){
+  return Promise.race([Promise.all([loadDemoHosts(), loadMatcher()]), late]).then(function(got){
     var M = window.GenStayMatch;
-    var best = M && hosts && hosts.length ? M.bestMatch({id: S.pid, name: S.name, profile: buildProfile()}, hosts) : null;
-    if (!best) return null;
-    return matchSummary(best);
+    if (!M) return null;
+    return matchSummary(M.bestMatch({id: S.pid, name: S.name, profile: buildProfile()}, (got && got[0]) || []));
   }, function(){ return null; });
 }
 function capFirst(t){ t = String(t || ""); return t.charAt(0).toUpperCase() + t.slice(1); }
-/* The note under the profile type. A run screened out by an unsafe answer isn't told there's no pass or fail. */
+/* Why the reasons below rule a placement out: one unsafe choice, or several concerning ones together. */
+function screenIntro(basis){
+  return basis.indexOf("unsafe") !== -1 ? "Safety comes first in a homeshare, and some choices rule a placement out on their own."
+    : basis.indexOf("pattern") !== -1 ? "No single choice ruled it out, but together these did."
+    : "Your choices across the game rule out a placement for now.";
+}
+/* The note under the profile type. A run that was screened out isn't told there's no pass or fail. */
 function resultNote(){
   return (outcomeOf(S.demoMatch) === "screened_out"
-    ? "Most of the game is a reflection on the path you took, but the choices above rule a placement out on their own."
+    ? "Most of the game is a reflection on the path you took, but the choices above rule a placement out."
     : "This is a reflection on the path you took, not a pass-or-fail result.")
     + " It comes from the quick demo; the full screening is fourteen days with written answers. A person at the placement service makes any placement decision.";
 }
@@ -1902,7 +1911,7 @@ function drawMatchCard(){
   if (o === "screened_out"){
     box.innerHTML = '<div class="matchcard mc-out"><div class="mc-kicker">No placement this time</div>'
       + '<div class="mc-name">We can’t offer you a homeowner from this run</div>'
-      + '<p class="mc-talk">Safety comes first in a homeshare, and some choices rule a placement out on their own.</p>'
+      + '<p class="mc-talk">' + esc(screenIntro(m.basis || ["unsafe"])) + '</p>'
       + '<ul class="mc-list">' + (m.reasons || []).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>'
       + '<p class="mc-note">In a real application, a coordinator would talk this through with you. You’re welcome to play again.</p></div>';
     return;
@@ -2759,6 +2768,7 @@ function matchSummary(best){
   var M = GenStayMatch, out = {status: best.status, minScore: best.minScore, at: nowISO()};
   if (best.status === "screened_out"){
     out.reasons = [].concat.apply([], best.screenedOut.map(function(b){ return b.points; }));
+    out.basis = best.screenedOut.map(function(b){ return b.basis; });
     return out;
   }
   var h = best.host, x = h.host || {}, r = best.result;

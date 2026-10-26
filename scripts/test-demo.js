@@ -33,6 +33,7 @@ const errors = [];
 const newPage = newPageFactory(errors, "pepaws-porch.demo.html");
 const words = (t) => String(t || "").split(/\s+/).filter(Boolean).length;
 const HOSTS_FILE = path.resolve(__dirname, "../game/genstay-hosts.sample.json");
+const PATTERN_TAGS = ["scam_ignored", "grief_dismissed", "friction_defensive"];
 
 async function start(page, name, area, email) {
   await page.fill("#fname", name);
@@ -53,6 +54,7 @@ async function play(page, mode, { timeOut = [] } = {}) {
       const day = window.DAYS[s.di], step = day.steps[s.si];
       return { view: s.view, phase: s.phase, show: day.show, t: step.t, noReply: !!step.noReply,
         scores: step.options ? step.options.map((o) => (o.fx ? o.fx.connection + o.fx.respect + o.fx.reliability + o.fx.awareness : 0)) : [],
+        tags: step.options ? step.options.map((o) => o.tag) : [],
         text: document.getElementById("panel").innerText, topbar: document.querySelector(".topbar").innerText };
     });
     if (st.view === "questionnaire") return trace;
@@ -73,8 +75,10 @@ async function play(page, mode, { timeOut = [] } = {}) {
       if (!st.noReply && !/No answer in time/.test(await page.textContent("#panel"))) errors.push("demo: no timeout message on day " + st.show);
       continue;
     }
-    const pick = st.scores.every((x) => x === 0) ? (mode === "best" ? 2 : 1)
-      : st.scores.indexOf(mode === "best" ? Math.max(...st.scores) : Math.min(...st.scores));
+    /* "pattern": a part fail wherever there is one, the best answer elsewhere */
+    const partFail = mode === "pattern" ? st.tags.findIndex((t) => PATTERN_TAGS.indexOf(t) !== -1) : -1;
+    const pick = partFail !== -1 ? partFail : st.scores.every((x) => x === 0) ? (mode === "worst" ? 1 : 2)
+      : st.scores.indexOf(mode === "worst" ? Math.min(...st.scores) : Math.max(...st.scores));
     await page.click(`.opt[data-i="${pick}"]`);
     await page.waitForFunction((n) => S.choices.length > n, before, { timeout: 5000 });
   }
@@ -377,7 +381,8 @@ async function pdfFrom(page, nameFragment) {
       : { social: 2, otherLanguage: "Greek", pets: "allergic" });
     await page.screenshot({ path: path.join(OUT, "results-" + mode + ".png"), fullPage: true });
     if (mode === "best") cardChecks(card, mode);
-    else screenedOutChecks(card, mode, [/helped her straight up/, /keep her still/, /shook her and rang her son first/, /call 000 straight away/, /coordinator would talk this through/]);
+    else screenedOutChecks(card, mode, [/Safety comes first/, /helped her straight up/, /keep her still/, /shook her and rang her son first/, /call 000 straight away/,
+      /deleted it yourself/, /better place/, /pay rent/, /coordinator would talk this through/]);
     const doc = await runDoc(page), parent = await page.evaluate(() => window.__store["profiles/applicant-1"]);
     const p = doc && doc.profile, sc = p && p.screening;
     if (!doc || !doc.complete) { errors.push(mode + ": profile not saved"); continue; }
@@ -396,6 +401,8 @@ async function pdfFrom(page, nameFragment) {
       if (it.careerGoal !== "Early childhood teaching" || it.fieldMentor !== "open" || p.lifestyle.socialLevel !== 2) errors.push("worst: career answers not in the profile: " + JSON.stringify(it));
     }
     if (JSON.stringify(sc.landmarks.map((x) => x.day)) !== "[6,9,11,14]") errors.push(mode + ": landmark days " + JSON.stringify(sc.landmarks.map((x) => x.day)));
+    const days = [...new Set((sc.choices || []).map((c) => c.day))];
+    if (JSON.stringify(days) !== "[1,2,3,4,6,8,9,11,14]" || sc.choices.some((c) => !c.tag)) errors.push(mode + ": not every day's choices were saved for screening: " + JSON.stringify(sc.choices));
     if (sc.flags.indexOf("quick_demo") === -1 || !/^Quick demo/.test(sc.watchPoint)) errors.push(mode + ": not marked as a quick demo for staff");
     if ((await page.$$(".rows .row")).length !== 4) errors.push(mode + ": results don't list the four big moments");
     if (!/nine days/.test(await page.textContent("h1"))) errors.push(mode + ": results heading doesn't count nine days");
@@ -459,6 +466,22 @@ async function pdfFrom(page, nameFragment) {
     if (missed.length !== 2) errors.push("timeouts: recorded " + missed.length + " timed-out questions");
     if (sc.flags.indexOf("missed_timer") === -1 || !/Ran out of time on 2 of 10 questions/.test(sc.watchPoint)) errors.push("timeouts: not reported to staff: " + sc.watchPoint);
     report.timeouts = { missed, motivation: sc.motivation, watchPoint: sc.watchPoint };
+    await ctx.close();
+  }
+
+  /* three part fails and no single fail: screened out, with every reason, even when the hosts file can't load */
+  {
+    const { ctx, page } = await newPage(browser, base);
+    await ctx.route("**/genstay-hosts.sample.json", (r) => r.abort());
+    await start(page, "Pat Tern", "social_work");
+    await play(page, "pattern");
+    const card = await answerQuestions(page);
+    screenedOutChecks(card, "pattern", [/No single choice ruled it out, but together these did/, /left it to Marg/, /better place/, /pay rent/]);
+    if (/Safety comes first/.test(card.text) || /straight up|000/.test(card.text)) errors.push("pattern: the card gives reasons the participant didn't earn: " + card.text);
+    const doc = await runDoc(page);
+    if (!doc || !doc.demoMatch || doc.demoMatch.status !== "screened_out") errors.push("pattern: the screen-out wasn't saved with the run");
+    report.pattern = { reasons: card.saved && card.saved.reasons, note: card.note };
+    await page.screenshot({ path: path.join(OUT, "results-pattern.png"), fullPage: true });
     await ctx.close();
   }
 

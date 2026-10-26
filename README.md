@@ -105,11 +105,22 @@ The desk's second tab holds the homeowners' profiles and suggests pairings.
 - **The game's evidence counts.** A host's risk flags decide which of the applicant's choices
   matter: with a falls risk, how they handled Marg's fall and the emergency; after a bereavement,
   how they met her grief; with mild memory loss, how calmly they handled the biased remark.
-- **Unsafe answers screen people out.** Four answers rule out automatic matching on their own,
-  because each would put a homeowner at real risk: lifting Marg straight up after her fall,
-  walking away and leaving her on the ground, shaking her and ringing her son before 000 when she
-  collapses, and giving her water and sitting her up. A later recovery doesn't undo the first
-  instinct. Staff see which answer it was; anything else in the game only weighs in the score.
+- **Answers are graded, and poor ones screen people out.** Every answer in both games has been
+  reviewed (`ANSWER_GRADES` in `genstay-matching.js`):
+  - **Fail (4):** rules out automatic matching on its own, because it would put a homeowner at
+    real risk: lifting Marg straight up after her fall, walking away and leaving her on the
+    ground, shaking her and ringing her son before 000 when she collapses, and giving her water
+    and sitting her up.
+  - **Part fail (12):** a concern, such as leaving Marg alone with a scam text, telling her a
+    friend who just died is "in a better place", answering a complaint with "I pay rent", running
+    next door before calling 000, or (in the full game) keeping her fall secret. **Three part
+    fails** rule out automatic matching too; one or two show staff a caution on each pairing.
+  - **Fine (66):** everything else. A warmer or a more independent style never counts against
+    anyone, and keyword-matched written answers are left to staff.
+
+  Every choice on every day counts, and a later recovery doesn't undo the first instinct. Staff
+  see each answer and its day; the participant sees the reasons in plain words, with what to do
+  instead.
 - **Suggested pairings** are the best allocation overall (an optimal assignment, the Hungarian
   method): one applicant per room, making the most suitable pairings in total, so someone may be
   suggested for their second-best host when their best suits another applicant much better. The

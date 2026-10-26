@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GenStay Matchmaking Profile</title>
 <!--
-  GenStay Matchmaking Profile — receiving template v1.1.0
+  GenStay Matchmaking Profile — receiving template v1.2.0
   ---------------------------------------------------------------
   Blank by default. Send it a profile object (shape: GenStayProfile.blank())
   through any of these routes and it fills itself in:
@@ -220,7 +220,7 @@ body.pdf *{font-variation-settings:normal!important} /* the canvas can't draw va
 (function () {
   'use strict';
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.2.0';
 
   /* ---------- settings (override with window.GENSTAY_CONFIG before this script) ---------- */
   var CONFIG = Object.assign({
@@ -255,7 +255,7 @@ body.pdf *{font-variation-settings:normal!important} /* the canvas can't draw va
     checks: { identity: null, policeCheck: null, references: null, firstAid: null },
     screening: { profile: null, meters: { connection: null, respect: null, reliability: null, awareness: null },
                  motivation: null, finalPath: null, pathByDay: [], recovered: null, lowestMoment: null, redemption: null,
-                 flags: [], landmarks: [], answers: [], finalWords: null, watchPoint: null }
+                 flags: [], choices: [], landmarks: [], answers: [], finalWords: null, watchPoint: null }
   };
 
   /* ---------- display labels for coded values (unknown codes are shown humanised) ---------- */

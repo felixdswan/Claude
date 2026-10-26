@@ -1,10 +1,10 @@
-# GenStay Matchmaking Profile: data contract (v1.1)
+# GenStay Matchmaking Profile: data contract (v1.2)
 
 The receiving template (`genstay-profile-template.html`) is blank until it gets one JSON object in the shape below. Every field is optional. Missing fields show as "—", and the toolbar counts how many of the 82 tracked fields have arrived. `genstay-profile.sample.json` is a complete worked example. Run `GenStayProfile.blank()` in the console to get the empty shape.
 
 Unknown keys are ignored and logged to the console (`[GenStay] Unknown field "studnet"…`), so typos show up while you're wiring it in.
 
-v1.1 adds `interests.fieldMentor`, `screening.landmarks[].tags` and the five campus keys. Host profiles (the homeowners) and the matching on the staff desk are described in `genstay-host-fields.md`.
+v1.2 adds `screening.choices`. v1.1 added `interests.fieldMentor`, `screening.landmarks[].tags` and the five campus keys. Host profiles (the homeowners) and the matching on the staff desk are described in `genstay-host-fields.md`.
 
 ## Sending data in
 
@@ -177,6 +177,7 @@ The Source column is a suggestion for which stage captures each field. Pre = que
 | `redemption` | string (Day 13) | Game | Review |
 | `flags` | string[] (`noticed_step`, `learned_meds_folder`, …) | Game | Review |
 | `landmarks` | `[{day, response, tags}]` for days 6, 9, 11 and 14, or `{ "6": "…" }`. `tags` say how the moment was handled (`grief_invited`, `fall_checked`, `fall_lifted`, `emergency_called`…), which the matching weighs against a host's risk flags; four unsafe tags (`fall_lifted`, `fall_dismissed`, `emergency_shaken`, `emergency_water`) keep the applicant out of matching on their own | Game | Review + Score + Filter |
+| `choices` | `[{day, tag}]`: every multiple-choice answer, in order. The matching grades each one (`ANSWER_GRADES`): one fail, or three part fails, keep the applicant out of matching | Game | Filter |
 | `answers` | `[{day, question, answer}]` (verbatim) | Game | Review |
 | `finalWords` | string (Day 13 closing answer, verbatim) | Game | Review |
 | `watchPoint` | string | Staff | Review |

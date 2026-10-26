@@ -300,7 +300,62 @@ filters.forEach(([name, hostId, kind, change], i) => {
   check(guest.status === "screened_out" && guest.host === null && /room to rent/.test(guest.screenedOut[0].points[0]), "The Transactional Guest wasn't screened out: " + guest.status);
 }
 
-/* 7c. the staff desk suggests only pairings at least as strong as the demo's bar */
+/* 7c. every answer in both games is graded: a fail, a part fail, or reviewed as fine.
+   A new answer fails this check until someone decides how it counts. */
+{
+  const REVIEWED_FINE = [
+    /* a warmer or more independent style is never a fail */
+    "arrival_connected", "arrival_tour", "arrival_alone", "arrival_practical", "motivation_study", "motivation_saving", "motivation_company", "motivation_learning",
+    "shared_cooking", "courteous_independence", "dinner_avoided", "noticed_step", "career_chat", "career_curiosity", "career_exchange", "career_deferred",
+    "together_garden", "together_baking", "together_later", "scam_taught", "scam_escalated", "step_deferred",
+    "grief_present", "grief_invited", "grief_practical", "grief_withdrawn", "grief_shared", "attended_funeral", "supported_funeral", "funeral_checkin", "skipped_funeral",
+    "friction_repair", "friction_wait", "friction_guidelines", "boundary_laughed", "boundary_avoided", "boundary_calm", "boundary_sharp", "boundary_curious",
+    "fall_checked", "fall_asked", "fall_called", "fall_gp", "fall_supported", "step_reported", "step_plan",
+    "david_honest", "david_confidential", "david_included", "emergency_called", "emergency_froze", "emergency_wait_safe",
+    "folder_found", "went_with_host", "followed_to_hospital", "packed_belongings",
+    /* keyword-matched written answers: too unreliable to screen anyone out, so staff read them */
+    "asked_about_career", "career_one_way", "honest_refusal", "study_then_join", "accepted_garden", "vague_excuse", "repair_open", "repair_withdrawn",
+    "redemption_attempted", "redemption_withdrawn"
+  ];
+  const inGames = new Set();
+  for (const file of ["pepaws-porch.html", "pepaws-porch.demo.html"]) for (const m of read("game/" + file).matchAll(/tag:"([a-z0-9_]+)"/g)) inGames.add(m[1]);
+  const unreviewed = [...inGames].filter((t) => !M.ANSWER_GRADES[t] && REVIEWED_FINE.indexOf(t) === -1);
+  check(!unreviewed.length, "answers nobody has graded (add them to ANSWER_GRADES, or to REVIEWED_FINE here): " + unreviewed.join(", "));
+  const stale = Object.keys(M.ANSWER_GRADES).filter((t) => !inGames.has(t)).concat(REVIEWED_FINE.filter((t) => !inGames.has(t)));
+  check(!stale.length, "graded answers that no game offers any more: " + stale.join(", "));
+  const both = Object.keys(M.ANSWER_GRADES).filter((t) => REVIEWED_FINE.indexOf(t) !== -1);
+  check(!both.length, "answers both graded and reviewed as fine: " + both.join(", "));
+  Object.entries(M.ANSWER_GRADES).forEach(([t, g]) => check(/^(fail|part)$/.test(g.grade) && g.staff.length > 15 && g.you.length > 40, t + ": grade or wording missing"));
+  console.log("answers graded:", Object.values(M.ANSWER_GRADES).filter((g) => g.grade === "fail").length, "fail,",
+    Object.values(M.ANSWER_GRADES).filter((g) => g.grade === "part").length, "part fail,", REVIEWED_FINE.length, "fine");
+}
+
+/* 7d. part fails on any day add up: PART_FAIL_LIMIT of them screen someone out */
+{
+  const choosing = (...picks) => (p) => { p.screening.choices = picks.map(([day, tag]) => ({ day, tag })); };
+  const two = M.bestMatch(who("Ella", choosing([4, "scam_ignored"], [6, "grief_dismissed"], [1, "arrival_alone"])), HOSTS);
+  check(two.status === "matched" && two.result.cautions.some((c) => /Concerning answers in screening \(2; 3 would screen them out\)/.test(c)),
+    "two part fails should be a caution for staff, not a screen-out: " + two.status + " " + JSON.stringify(two.result && two.result.cautions));
+  const three = M.bestMatch(who("Ella", choosing([4, "scam_ignored"], [6, "grief_dismissed"], [8, "friction_defensive"])), HOSTS);
+  check(three.status === "screened_out" && three.screenedOut.length === 1 && three.screenedOut[0].basis === "pattern" && three.screenedOut[0].points.length === 3,
+    "three part fails didn't screen out, with each reason: " + JSON.stringify(three.screenedOut));
+  check(/scam text/.test(three.screenedOut[0].points[0]) && /better place/.test(three.screenedOut[0].points[1]) && /pay rent/.test(three.screenedOut[0].points[2]), "the reasons aren't in day order");
+  check(/3 concerning answers in screening: .*\(Day 4\).*\(Day 6\).*\(Day 8\)/.test(three.screenedOut[0].text), "staff aren't told which answers and days: " + three.screenedOut[0].text);
+  const repeat = M.bestMatch(who("Ella", (p) => { choosing([4, "scam_ignored"], [6, "grief_dismissed"])(p); p.screening.landmarks.find((l) => l.day === 6).tags = ["grief_dismissed"]; }), HOSTS);
+  check(repeat.status === "matched", "the same answer, saved in both the choices and the landmarks, counted twice");
+  const mixed = M.bestMatch(who("Ella", choosing([4, "phone_taken"], [11, "fall_lifted"])), HOSTS);
+  check(mixed.screenedOut[0].basis === "unsafe" && /straight up/.test(mixed.screenedOut[0].points[0]) && /phone/.test(mixed.screenedOut[0].points[1]) && /; also /.test(mixed.screenedOut[0].text),
+    "an unsafe answer isn't given first, with the part fails after: " + JSON.stringify(mixed.screenedOut));
+  const guest = M.bestMatch(who("Ella", (p) => { p.screening.profile = "transactional_guest"; choosing([8, "friction_defensive"])(p); }), HOSTS);
+  check(guest.screenedOut[0].basis === "type" && guest.screenedOut[0].points.length === 2 && /pay rent/.test(guest.screenedOut[0].points[1]),
+    "The Transactional Guest isn't given the concrete choices behind it: " + JSON.stringify(guest.screenedOut));
+  const noHosts = M.bestMatch(who("Ella", choosing([11, "fall_dismissed"])), []);
+  check(noHosts && noHosts.status === "screened_out" && noHosts.screenedOut[0].points.length === 1, "a screen-out needs hosts to be given");
+  const full = M.score(who("Ella", choosing([11, "fall_secret"], [11, "step_diy"], [12, "david_deflected"])), byId("GH-2027-001"));
+  check(!full.eligible && full.blockers.some((x) => /3 concerning answers/.test(x.text)), "the full game's part fails don't add up: " + JSON.stringify(full.blockers));
+}
+
+/* 7e. the staff desk suggests only pairings at least as strong as the demo's bar */
 {
   const res = M.matchAll(Object.keys(P).map((n) => who(n)), HOSTS);
   check(res.minScore === M.MIN_SCORE && res.pairings.filter((p) => !p.locked).every((p) => p.score >= M.MIN_SCORE), "a pairing under the bar was suggested");
