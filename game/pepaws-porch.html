@@ -200,6 +200,40 @@ details.out .why{margin-top:8px}
 .bestfor .hrow .grow{flex:1;min-width:0;display:flex;flex-direction:column}
 .bestfor .hrow small{color:var(--ink-3);font-size:11.5px}
 .bestfor .score{min-width:32px;padding:6px 4px;font-size:12px}
+.sides{display:flex;flex-wrap:wrap;gap:6px 16px;font:500 12px/1.3 var(--mono);color:var(--ink-2)}
+.sides b{font-weight:700;color:var(--ink)}
+details.parts summary{cursor:pointer;font-size:13px;color:var(--ink-2)}
+details.parts .secthead{margin-top:10px}
+details.parts .mparts{margin-top:6px}
+/* the live board */
+.board{flex:1;min-height:0;overflow-y:auto;background:var(--paper);padding:18px;display:flex;flex-direction:column;gap:16px}
+.board:fullscreen{padding:32px}
+.board-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px}
+.board-head h2{font-size:30px;margin-top:4px}
+.board-head .grow{flex:1;min-width:220px}
+.board-stats{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:15px;color:var(--ink-2)}
+.board-stats b{font:700 20px/1 var(--mono);color:var(--ink)}
+.board-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.bcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.bcard.fresh{border-color:var(--sage);box-shadow:0 0 0 3px rgba(111,124,90,.25)}
+.bcard.arrive{animation:arrive .6s ease-out}
+@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.bcard.arrive{animation:none}}
+.b-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.b-person{font:600 24px/1.15 var(--display)}
+.b-when{font:500 12px/1 var(--mono);color:var(--ink-3)}
+.b-arrow{font:600 11px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.b-host{display:flex;align-items:center;gap:10px}
+.b-avatar{width:44px;height:44px;border-radius:50%;background:var(--sage);color:var(--on-dark);display:grid;place-items:center;font:600 16px/1 var(--display);flex:none}
+.b-name{font:600 19px/1.2 var(--display);flex:1;min-width:0}
+.b-score{font:700 18px/1 var(--mono);background:var(--sage);color:var(--on-dark);border-radius:9px;padding:7px 9px}
+.b-sub{font-size:13.5px;color:var(--ink-2)}
+.b-why{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.4}
+.b-why li{padding-left:18px;position:relative}
+.b-why li::before{content:"✓";position:absolute;left:1px;color:var(--good);font-weight:700}
+.bcard.waiting{border-style:dashed}
+.bcard.out{background:var(--paper)}
+.b-state{font:600 19px/1.2 var(--display)}
 @media (max-width:900px){
   #app.wide{height:auto;min-height:94vh}
   .desk{grid-template-columns:1fr}
@@ -989,12 +1023,12 @@ var DAYS = [
     {t:"say", narr:true, text:"Early morning. A crash comes from the kitchen. Marg is on the floor. She is breathing, but groggy and not responding clearly."},
     {t:"choice", timer:15, prompt:"What do you do first?", sub:"You have fifteen seconds.", timeoutFx:impact(0,0,0,-1), timeoutNote:"The moment passes. You can still act now.", options:[
       {text:"Check whether she responds, call 000 now and put the phone on speaker.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called", reply:"The call-taker answers. You stay with Marg and follow their instructions."},
-      {text:"Shake her and call David first.", fx:impact(0,-1,0,-2), tag:"emergency_delayed", reply:"David doesn’t pick up straight away. You realise this needs 000, now."},
+      {text:"Shake her and call David first.", fx:impact(0,-1,0,-2), tag:"emergency_shaken", reply:"David doesn’t pick up straight away. You realise this needs 000, now."},
       {text:"Run next door for help before calling anyone.", fx:impact(0,0,0,-1), tag:"emergency_delayed", reply:"The neighbour comes to the door. You ask them to call 000 while you go back to Marg."},
       {text:"Freeze for a moment, then take a breath.", fx:impact(0,0,0,-1), tag:"emergency_froze", reply:"You find your phone. There is still time to call 000."}
     ]},
-    {t:"say", narr:true, requiresAnyTags:["emergency_froze","emergency_delayed","timeout_emergency"], text:"You take a breath. There is still time to get help."},
-    {t:"choice", timer:15, prompt:"What next?", sub:"You can still change what happens.", requiresAnyTags:["emergency_froze","emergency_delayed","timeout_emergency"],
+    {t:"say", narr:true, requiresAnyTags:["emergency_froze","emergency_delayed","emergency_shaken","timeout_emergency"], text:"You take a breath. There is still time to get help."},
+    {t:"choice", timer:15, prompt:"What next?", sub:"You can still change what happens.", requiresAnyTags:["emergency_froze","emergency_delayed","emergency_shaken","timeout_emergency"],
      timeoutNote:"A neighbour hears you call out and rings 000. You stay with Marg.", options:[
       {text:"Call 000 and put the phone on speaker.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called", reply:"The call-taker is with you now."},
       {text:"Call out to a neighbour to ring 000 while you stay beside Marg.", fx:impact(0,1,1,1), tag:"emergency_called", flag:"emergency_called", reply:"A neighbour rings 000, and you stay with Marg."}
@@ -1627,6 +1661,10 @@ function renderText(day, step){
    profile contract (genstay-profile-fields.md).
    ============================================================ */
 var YES_NO = [[true, "Yes"], [false, "No"]];
+/* Campuses as the host profiles name them (placement.campusCommuteMins). */
+var CAMPUS_OPTIONS = [["UTS City Campus", "UTS City Campus (Ultimo)"], ["USyd Camperdown", "University of Sydney (Camperdown)"],
+  ["UNSW Kensington", "UNSW (Kensington)"], ["Macquarie Uni", "Macquarie University"], ["WSU Parramatta", "Western Sydney University (Parramatta)"],
+  ["Another campus", "Another campus"]];
 var Q_PAGES = [
   {title:"About you", intro:"Five short pages. Most answers are a tap. Anything marked optional can be left blank.", fields:[
     {id:"preferredName", path:"student.preferredName", type:"text", label:"Preferred name", ph:"If different from your first name"},
@@ -1647,7 +1685,7 @@ var Q_PAGES = [
     {id:"university", path:"student.university", type:"text", label:"University or college", req:true},
     {id:"course", path:"student.course", type:"text", label:"Course", req:true, ph:"e.g. Bachelor of Nursing"},
     {id:"yearOfStudy", path:"student.yearOfStudy", type:"select", label:"Year of study", req:true, num:true, opts:[["1","1st year"],["2","2nd year"],["3","3rd year"],["4","4th year"],["5","5th year or later"]]},
-    {id:"campus", path:"placement.campus", type:"text", label:"Campus you attend most", req:true, ph:"e.g. UTS City campus, Ultimo"},
+    {id:"campus", path:"placement.campus", type:"select", label:"Campus you attend most", req:true, opts:CAMPUS_OPTIONS},
     {id:"campusDays", path:"placement.campusDays", type:"days", label:"Days you’re usually on campus", full:true},
     {id:"careerGoal", path:"interests.careerGoal", type:"text", label:"Career you’re working towards", full:true},
     {type:"section", label:"Paid work, if you have any"},
@@ -1690,7 +1728,7 @@ var Q_PAGES = [
   ]},
   {title:"Helping out and shared interests", fields:[
     {id:"hoursPerWeek", path:"support.hoursPerWeek", type:"range", label:"Hours a week you can give to shared household life", req:true, full:true, opts:[["6-8","6–8 hours"],["8-10","8–10 hours"],["10-12","10–12 hours"],["12-15","12–15 hours"]]},
-    {id:"helpTypes", path:"support.helpTypes", type:"chips", label:"Happy to help with", req:true, full:true, opts:["Company and conversation","Cooking shared meals","Tech and phone help","Gardening","Bins and light chores","Shopping and errands","Lifts in the homeowner’s car","Pet care"]},
+    {id:"helpTypes", path:"support.helpTypes", type:"chips", label:"Happy to help with", req:true, full:true, opts:["Company and conversation","Cooking shared meals","Tech and phone help","Gardening","Bins and light chores","Shopping and errands","Lifts in the homeowner’s car","Pet care","Appointments and outings","Being home in the evenings"]},
     {id:"notOffered", path:"support.notOffered", type:"chips", label:"Not comfortable offering", full:true, opts:["Personal care","Managing medication","Overnight care","Heavy lifting","Cleaning the whole house"]},
     {id:"bestTimes", path:"support.bestTimes", type:"chips", label:"Best times to help", full:true, opts:["Weekday mornings","Weekday afternoons","Weekday evenings","Saturdays","Sundays"]},
     {id:"nightsHomePerWeek", path:"support.nightsHomePerWeek", type:"range", label:"Nights at home most weeks", opts:[["3-4","3–4 nights"],["5-6","5–6 nights"],["7","Every night"]]},
@@ -1932,8 +1970,11 @@ function screeningPart(){
       .concat(S.meters.awareness <= 3 ? ["low_safety_awareness"] : [])
       .concat(answerChecks().length ? ["answers_to_check"] : []),
     watchPoint: autoWatchPoint(),
+    /* every choice made, so the matching can weigh each day's answers (not only the landmarks) */
+    choices: S.choices.filter(function(c){ return c.tag; }).map(function(c){ return {day: c.day, tag: c.tag}; }),
     landmarks: [6, 9, 11, 14].map(function(day){
-      return {day: day, response: S.choices.filter(function(c){ return c.day === day; }).map(function(c){ return c.chosen; }).join(" · ")};
+      var made = S.choices.filter(function(c){ return c.day === day; });
+      return {day: day, response: made.map(function(c){ return c.chosen; }).join(" · "), tags: made.map(function(c){ return c.tag; })};
     }).filter(function(x){ return x.response; }),
     answers: S.responses.filter(function(r){ return r.day !== 13; }).map(function(r){ return {day: r.day, question: r.prompt, answer: r.answer}; }),
     finalWords: final ? final.answer : null
@@ -2187,9 +2228,10 @@ function mergedProfile(item, profile){
 }
 
 function renderStaff(){
+  stopLive();
   app.className = "wide";
   desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, run: null, frame: null, ready: false, pending: null,
-          hosts: [], match: null, hostSel: null, tab: "app"};
+          hosts: [], match: null, hostSel: null, tab: "app", live: [], loaded: {}};
   app.innerHTML =
     '<div class="topbar"><div class="toprow"><span class="daylabel">Pepaws Porch · staff review</span>'
     + '<span class="clock" id="acount">loading…</span></div>' + tabsHTML() + '</div>'
@@ -2357,7 +2399,7 @@ function makePdfFile(profiles, filename, statusId){
   });
 }
 
-/* ---------- queue ---------- */
+/* ---------- queue: live from the record store ---------- */
 function loadQueue(openId){
   if (!desk.db){
     setStatus("astat", "wait", "The placement record isn’t available in this view. Profile files you add are shown here but not saved.");
@@ -2367,22 +2409,43 @@ function loadQueue(openId){
     if (openId) openItem(openId);
     return Promise.resolve();
   }
+  stopQueue();
+  desk.openId = openId || null; desk.loaded = {};
   setStatus("astat", "wait", "Reading the placement record…");
-  return Promise.all([
-    desk.db.collection("profiles").orderBy("updatedAt", "desc").limit(1000).get(),
-    desk.db.collection("reviews").limit(1000).get()
-  ]).then(function(res){
-    desk.items = res[0].docs.map(function(d){ return Object.assign({id: d.id}, d.data()); }).filter(function(it){ return it.profile; });
+  var lost = function(err){ setStatus("astat", "no", "Lost the live link to the placement record (" + ((err && err.code) || "unavailable") + "). Press Refresh."); };
+  desk.live.push(desk.db.collection("profiles").orderBy("updatedAt", "desc").limit(1000).onSnapshot(function(snap){
+    if (!desk) return;
+    desk.items = snap.docs.map(function(d){ return Object.assign({id: d.id}, d.data()); }).filter(function(it){ return it.profile; });
+    desk.loaded.profiles = true;
+    queueChanged();
+  }, lost));
+  desk.live.push(desk.db.collection("reviews").limit(1000).onSnapshot(function(snap){
+    if (!desk) return;
     desk.reviews = {};
-    res[1].docs.forEach(function(d){ desk.reviews[d.id] = d.data(); });
-    setStatus("astat", "ok", "Read " + desk.items.length + " profile" + (desk.items.length === 1 ? "" : "s") + ".");
-    drawQueue();
-    refreshMatches();
-    var target = openId || (!desk.current && visibleItems().length ? visibleItems()[0].id : null);
-    if (target) openItem(target);
-  }, function(err){
-    setStatus("astat", "no", "Couldn’t read the placement record (" + ((err && err.code) || "unavailable") + "). Try Refresh.");
-  });
+    snap.docs.forEach(function(d){ desk.reviews[d.id] = d.data(); });
+    desk.loaded.reviews = true;
+    queueChanged();
+  }, lost));
+  return Promise.resolve();
+}
+/* Redraws after any live change, keeping the open profile open. */
+function queueChanged(){
+  if (!desk || !desk.loaded.profiles || !desk.loaded.reviews) return;
+  setStatus("astat", "ok", count(desk.items.length, "profile") + ". New ones appear here as people finish.");
+  drawQueue();
+  refreshMatches();
+  var target = desk.openId && itemById(desk.openId) ? desk.openId : !desk.current && visibleItems().length ? visibleItems()[0].id : null;
+  if (target){ desk.openId = null; openItem(target); }
+}
+function stopQueue(){
+  (desk.live || []).forEach(function(stop){ stop(); });
+  desk.live = [];
+}
+function stopLive(){
+  if (!desk) return;
+  stopQueue();
+  if (desk.hostsLive){ desk.hostsLive(); desk.hostsLive = null; }
+  clearInterval(desk.boardTick);
 }
 function visibleItems(){
   return desk.items.filter(function(it){
@@ -2519,15 +2582,18 @@ function importTexts(texts){
 <script>
 "use strict";
 /* ============================================================
-   HOSTS AND MATCHES  (the staff desk's second tab)
-   Host profiles, for the older people offering a room, come from the
-   host spreadsheet (a saved CSV, or rows pasted from it) or JSON files.
-   They're kept in hosts/<host id>, which only Editors and the owner can
-   read. genstay-matching.js, published beside this page, compares every
-   host with every applicant whenever either side changes and suggests
-   the best pairings, with its reasons. Suggesting a pairing shortlists
-   the applicant for that homeowner in their review, so it shows in
-   their profile. Nobody is contacted.
+   HOSTS AND MATCHES  (the staff desk's second and third tabs)
+   Host profiles, for the older people offering a room, come from
+   JSON files (genstay-hosts.sample.json is the format) or the host
+   spreadsheet (a saved CSV, or rows pasted from it). They're kept in
+   hosts/<host id>, which only Editors and the owner can read.
+   genstay-matching.js, published beside this page, judges every host
+   and applicant from both sides whenever either changes, and suggests
+   the best overall allocation with its reasons. Suggesting a pairing
+   shortlists the applicant for that homeowner in their review, so it
+   shows in their profile. Nobody is contacted.
+   The live board shows each finished applicant with their best match:
+   on market day, the fictional pairing the participant was shown.
    This block is the same in pepaws-porch.html and pepaws-porch.demo.html.
    ============================================================ */
 var MATCHER_URL = "genstay-matching.js";
@@ -2550,7 +2616,8 @@ function loadMatcher(){
 function tabsHTML(){
   return '<div class="tabs" role="tablist" aria-label="Staff desk">'
     + '<button class="tab" role="tab" id="tab-app" aria-controls="deskapp" aria-selected="true">Applicants</button>'
-    + '<button class="tab" role="tab" id="tab-hosts" aria-controls="deskhosts" aria-selected="false">Hosts and matches</button></div>';
+    + '<button class="tab" role="tab" id="tab-hosts" aria-controls="deskhosts" aria-selected="false">Hosts and matches</button>'
+    + '<button class="tab" role="tab" id="tab-board" aria-controls="deskboard" aria-selected="false">Live board</button></div>';
 }
 function hostDeskHTML(){
   return '<div class="desk" id="deskhosts" role="tabpanel" aria-labelledby="tab-hosts" hidden>'
@@ -2566,12 +2633,17 @@ function hostDeskHTML(){
     + '</div><ul class="qlist" id="hlist"></ul></div>'
     + '<div class="viewer"><div class="vbar"><b class="grow" id="hname">Suggested pairings</b>'
     + '<button class="cont small" id="hoverview" hidden>All pairings</button><span class="status" id="mstat"></span></div>'
-    + '<div class="matchbody" id="mbody"></div></div></div>';
+    + '<div class="matchbody" id="mbody"></div></div></div>'
+    + '<div class="board" id="deskboard" role="tabpanel" aria-labelledby="tab-board" hidden>'
+    + '<div class="board-head"><div class="grow"><div class="secthead">Live</div><h2>Who matched with whom</h2></div>'
+    + '<div class="board-stats" id="board-stats"></div><button class="cont ghost small" id="board-full">Full screen</button></div>'
+    + '<div class="board-grid" id="board-grid" aria-live="polite"></div></div>';
 }
 
 function bindHostDesk(){
   el("#tab-app").onclick = function(){ showTab("app"); };
   el("#tab-hosts").onclick = function(){ showTab("hosts"); };
+  el("#tab-board").onclick = function(){ showTab("board"); };
   el("#hostimporter").onchange = function(){ importHostFiles(this.files); this.value = ""; };
   el("#hostpastebtn").onclick = function(){ el("#hostpastebox").hidden = false; el("#hostpastein").focus(); };
   el("#hostpastecancel").onclick = function(){ el("#hostpastebox").hidden = true; el("#hostpastein").value = ""; };
@@ -2595,6 +2667,9 @@ function bindHostDesk(){
   el("#hlist").addEventListener("click", matchClick);
   el("#mbody").addEventListener("click", matchClick);
   el("#mbody").addEventListener("change", function(e){ if (e.target.id === "hst-status") setHostStatus(desk.hostSel, e.target.value); });
+  var full = el("#board-full");
+  full.hidden = !document.fullscreenEnabled;
+  full.onclick = function(){ var b = el("#deskboard"); if (b.requestFullscreen) b.requestFullscreen().then(null, function(){}); };
 }
 function matchClick(e){
   var b = e.target.closest && e.target.closest("button");
@@ -2606,11 +2681,13 @@ function matchClick(e){
 }
 function showTab(name){
   desk.tab = name;
-  el("#deskapp").hidden = name !== "app";
-  el("#deskhosts").hidden = name !== "hosts";
-  el("#tab-app").setAttribute("aria-selected", String(name === "app"));
-  el("#tab-hosts").setAttribute("aria-selected", String(name === "hosts"));
+  ["app", "hosts", "board"].forEach(function(t){
+    el("#desk" + t).hidden = t !== name;
+    el("#tab-" + t).setAttribute("aria-selected", String(t === name));
+  });
+  clearInterval(desk.boardTick);
   if (name === "hosts") drawHosts();
+  if (name === "board"){ drawBoard(); desk.boardTick = setInterval(drawBoard, 20000); }
 }
 
 /* ---------- reading, saving and removing hosts ---------- */
@@ -2623,13 +2700,18 @@ function loadHosts(){
       refreshMatches();
       return;
     }
+    if (desk.hostsLive){ desk.hostsLive(); desk.hostsLive = null; }
+    var first = true;
     setStatus("hstat", "wait", "Reading host profiles…");
-    return desk.db.collection("hosts").limit(1000).get().then(function(res){
-      desk.hosts = res.docs.map(function(d){ return d.data(); }).filter(function(h){ return h && h.meta && h.meta.hostId; });
-      setStatus("hstat", "ok", "Read " + count(desk.hosts.length, "host profile") + ".");
+    /* live: another staff screen adding or changing a host shows up here too */
+    desk.hostsLive = desk.db.collection("hosts").limit(1000).onSnapshot(function(snap){
+      if (!desk) return;
+      desk.hosts = snap.docs.map(function(d){ return d.data(); }).filter(function(h){ return h && h.meta && h.meta.hostId; });
+      if (first) setStatus("hstat", "ok", "Read " + count(desk.hosts.length, "host profile") + ". Changes appear here as they’re made.");
+      first = false;
       refreshMatches();
     }, function(err){
-      setStatus("hstat", "no", "Couldn’t read the host profiles (" + ((err && err.code) || "unavailable") + "). Try Refresh.");
+      setStatus("hstat", "no", "Lost the live link to the host profiles (" + ((err && err.code) || "unavailable") + "). Press Refresh.");
     });
   });
 }
@@ -2674,8 +2756,8 @@ function saveHosts(list, statusId, okText){
 function setHostStatus(id, status){
   var h = hostById(id); if (!h) return;
   var copy = JSON.parse(JSON.stringify(h));
-  copy.meta.status = status; copy.meta.updatedAt = nowISO().slice(0, 10);
-  saveHosts([copy], "mstat", hostLabel(h) + ": " + GenStayMatch.HOST_STATUS[status].toLowerCase() + ".");
+  copy.meta.pairingStatus = status; copy.meta.updatedAt = nowISO().slice(0, 10);
+  saveHosts([copy], "mstat", hostLabel(h) + ": " + GenStayMatch.hostStatus(copy).label.toLowerCase() + ".");
 }
 /* Two clicks, because the viewer blocks confirm(). */
 function removeHost(b){
@@ -2705,12 +2787,14 @@ function refreshMatches(){
     return {id: it.id, name: it.name || "Unnamed applicant", profile: mergedProfile(it), suggestedHostId: (desk.reviews[it.id] || {}).suggestedHostId || ""};
   }), desk.hosts);
   if (desk.tab === "hosts") drawHosts();
+  if (desk.tab === "board") drawBoard();
   var it = currentItem();
   if (it) drawBestHosts(it);
 }
 function hostById(id){ return desk.hosts.filter(function(h){ return h.meta.hostId === id; })[0] || null; }
 function itemById(id){ return desk.items.filter(function(it){ return it.id === id; })[0] || null; }
 function hostLabel(h){ return window.GenStayMatch ? GenStayMatch.hostName(h) : (h.meta && h.meta.hostId) || "Host"; }
+function hostFirstOf(id){ var h = hostById(id); return h && window.GenStayMatch ? GenStayMatch.hostFirst(h) : "the host"; }
 function resultFor(hostId, studentId){
   var r = desk.match && desk.match.hosts[hostId];
   return r ? r.ranked.concat(r.ruledOut).filter(function(x){ return x.studentId === studentId; })[0] || null : null;
@@ -2724,6 +2808,7 @@ function linkedNames(hostId){
   }).map(function(x){ return x.studentName; }) : [];
 }
 function count(n, word){ return n + " " + word + (n === 1 ? "" : "s"); }
+function ordinal(n){ return n + (n % 10 === 1 && n % 100 !== 11 ? "st" : n % 10 === 2 && n % 100 !== 12 ? "nd" : n % 10 === 3 && n % 100 !== 13 ? "rd" : "th"); }
 function emptyHTML(text){ return '<div class="empty-state">' + esc(text) + '</div>'; }
 
 /* The applicant's review: shortlisted (unless already further along) for this homeowner. */
@@ -2759,21 +2844,21 @@ function hostIdFor(name, it){
   return before.suggestedFor && before.suggestedFor.trim().toLowerCase() === n ? before.suggestedHostId || null : null;
 }
 
-/* ---------- drawing ---------- */
+/* ---------- drawing the Hosts and matches tab ---------- */
 function drawHosts(){
   if (!desk || !el("#hlist")) return;
   var M = window.GenStayMatch, mt = desk.match;
   if (desk.hostSel && !hostById(desk.hostSel)) desk.hostSel = null;
   var hosts = desk.hosts.slice().sort(function(a, b){ return hostLabel(a).localeCompare(hostLabel(b)); });
   el("#hlist").innerHTML = hosts.length ? hosts.map(function(h){
-    var id = h.meta.hostId, r = mt && mt.hosts[id], best = r && r.ranked[0], linked = linkedNames(id), x = h.host || {};
+    var id = h.meta.hostId, r = mt && mt.hosts[id], best = r && r.ranked[0], linked = linkedNames(id), st = M ? M.hostStatus(h) : {label: "", available: true};
     return '<li><button class="qitem" data-host="' + esc(id) + '" aria-current="' + (desk.hostSel === id) + '">'
       + '<span class="nm">' + esc(hostLabel(h)) + '</span>'
-      + '<span class="when">' + esc([x.age, x.suburb].filter(Boolean).join(" · ")) + '</span>'
-      + '<span class="meta"><span class="pill">' + esc((M && M.HOST_STATUS[h.meta.status]) || h.meta.status || "") + '</span>'
+      + '<span class="when">' + esc([(h.host || {}).age, (h.home || {}).suburb].filter(Boolean).join(" · ")) + '</span>'
+      + '<span class="meta"><span class="pill">' + esc(st.label) + '</span>'
       + (linked.length ? '<span class="pill dark" style="background:var(--slate)">' + esc(linked.length > 1 ? linked.length + " paired by staff" : "Paired: " + linked[0]) + '</span>' : '')
-      + (best && !best.linked ? '<span class="pill dark" style="background:' + BAND[best.band][1] + '">Best: ' + esc(best.studentName) + ' · ' + best.score + '</span>'
-          : r && h.meta.status === "active" && !linked.length ? '<span class="pill">No suitable applicant yet</span>' : '')
+      + (best && !best.linked && st.available ? '<span class="pill dark" style="background:' + BAND[best.band][1] + '">Best: ' + esc(best.studentName) + ' · ' + best.score + '</span>'
+          : r && st.available && !linked.length ? '<span class="pill">No suitable applicant yet</span>' : '')
       + '</span></button></li>';
   }).join("") : '<li class="empty-state">No host profiles yet.</li>';
   var h = desk.hostSel && hostById(desk.hostSel);
@@ -2784,19 +2869,21 @@ function drawHosts(){
 
 function overviewHTML(){
   var mt = desk.match;
-  if (!desk.hosts.length) return emptyHTML("No host profiles yet. Download the host template, fill in one row per homeowner in Excel or Google Sheets, "
-    + "then add the saved CSV with Add host files, or copy the rows (heading row first) and use Paste hosts. Suggested pairings appear here as soon as hosts are added.");
+  if (!desk.hosts.length) return emptyHTML("No host profiles yet. Add the hosts file (JSON), or download the host template, fill in one row per homeowner "
+    + "in Excel or Google Sheets, and add the saved CSV, or copy the rows (heading row first) and use Paste hosts. Suggested pairings appear here as soon as hosts are added.");
   if (!mt) return emptyHTML("Working out the pairings…");
   var ids = Object.keys(mt.students);
-  if (!ids.length) return emptyHTML("No applicants to match yet. Pairings appear here when applicants finish, or when you add their profile files on the Applicants tab.");
+  if (!ids.length) return emptyHTML("No applicants to match yet. Pairings appear here as applicants finish, or when you add their profile files on the Applicants tab.");
   var pool = ids.filter(function(id){ return !mt.students[id].excluded.length; }).length;
-  var looking = desk.hosts.filter(function(h){ return h.meta.status === "active"; }).length;
-  var html = '<p class="sub">' + count(desk.hosts.length, "host") + ' (' + looking + ' looking) · ' + pool + ' of ' + count(ids.length, "applicant")
+  var looking = desk.hosts.filter(function(h){ return GenStayMatch.hostStatus(h).available; }).length;
+  var html = '<p class="sub">' + count(desk.hosts.length, "host") + ' (' + looking + ' available) · ' + pool + ' of ' + count(ids.length, "applicant")
     + ' in the matching pool · ' + count(mt.pairings.length, "pairing") + ' suggested.</p>'
-    + '<p class="sub" style="font-size:12.5px">Each suggestion uses one applicant and one room, best scores first, and keeps the pairings staff have already made. '
-    + 'Suggesting a pairing shortlists the applicant for that homeowner in their review. Nobody is contacted.</p>'
+    + '<p class="sub" style="font-size:12.5px">Each pairing is scored from both sides: how well the applicant meets the host’s needs, and how well the home suits the applicant. '
+    + 'The suggestions use one applicant per room and make the most suitable pairings overall, so someone may be suggested for their second-best host when their best suits another applicant much better. '
+    + 'Only pairings scoring ' + mt.minScore + ' or more are suggested: an applicant whose best is lower waits on the shortlist for a suitable host. '
+    + 'Pairings staff have made are kept. Suggesting a pairing shortlists the applicant for that homeowner in their review. Nobody is contacted.</p>'
     + '<div class="secthead">Suggested pairings</div>'
-    + (mt.pairings.length ? mt.pairings.map(function(p){ var r = resultFor(p.hostId, p.studentId); return r ? matchCardHTML(r, true) : ""; }).join("")
+    + (mt.pairings.length ? mt.pairings.map(function(p){ var r = resultFor(p.hostId, p.studentId); return r ? matchCardHTML(r, true, p) : ""; }).join("")
         : emptyHTML("No pairing passes every filter yet. Open a host to see who was ruled out, and why."));
   if (mt.alsoPaired.length) html += '<div class="secthead">Also paired by staff</div><ul class="why">' + mt.alsoPaired.map(function(a){
     return '<li class="' + (a.eligible ? "ok" : "no") + '"><button class="linkbtn" data-open="' + esc(a.studentId) + '">' + esc(a.studentName) + '</button> with '
@@ -2805,27 +2892,39 @@ function overviewHTML(){
   }).join("") + '</ul>';
   if (mt.unmatchedHosts.length) html += '<div class="secthead">Hosts still waiting</div><ul class="why">' + mt.unmatchedHosts.map(function(u){
     return '<li class="warn"><button class="linkbtn" data-host="' + esc(u.id) + '">' + esc(u.name) + '</button>: '
-      + esc(u.eligible ? count(u.eligible, "suitable applicant") + ", already suggested for other hosts"
+      + esc(u.eligible ? count(u.eligible, "suitable applicant") + ", each placed with a host that suits them better overall"
         : "no suitable applicant yet" + (u.reasons.length ? "; most were ruled out by " + u.reasons.join(", ") : "")) + '.</li>';
   }).join("") + '</ul>';
-  if (mt.unmatchedStudents.length) html += '<div class="secthead">Applicants without a suggestion</div><p class="sub">'
-    + esc(mt.unmatchedStudents.map(function(u){ return u.name + (u.eligible ? " (" + count(u.eligible, "possible host") + ")" : " (no suitable host yet)"); }).join(", ")) + '.</p>';
+  if (mt.unmatchedStudents.length) html += '<div class="secthead">Shortlisted: waiting for a suitable host</div><p class="sub">'
+    + esc(mt.unmatchedStudents.map(function(u){
+        return u.name + (u.strongEnough ? " (" + count(u.strongEnough, "strong enough host") + ", each placed with someone who suits them better overall)"
+          : u.eligible ? " (best so far " + u.best + ")" : " (no host passes every check yet)");
+      }).join(", ")) + '.</p>';
   return html;
 }
 
-function matchCardHTML(r, pairMode){
+function partsHTML(parts){
+  return parts.map(function(p){
+    return '<span class="mpart" title="' + esc(p.label + (p.note ? ": " + p.note : "")) + '">' + esc(p.label) + ' ' + Math.round(p.points) + '/' + p.weight
+      + '<i><b style="width:' + Math.round(p.value * 100) + '%"></b></i></span>';
+  }).join("");
+}
+/* One pairing: the overall score, each side's fit, the reasons, the actions. p (optional) is the allocation entry. */
+function matchCardHTML(r, pairMode, p){
   var it = itemById(r.studentId), type = it && PROFILE_TYPES[it.screeningProfile], status = it ? reviewFor(it).pairingStatus : "new";
-  var paired = r.linked && STAFF_PAIRED.indexOf(status) !== -1;
+  var paired = r.linked && STAFF_PAIRED.indexOf(status) !== -1, who = String(r.studentName).split(" ")[0], host = hostFirstOf(r.hostId);
   return '<div class="mcard"><div class="mhead">'
     + '<span class="score" style="background:' + (r.eligible ? BAND[r.band][1] : "var(--bad)") + '" title="' + esc(r.eligible ? BAND[r.band][0] : "Ruled out") + '">' + r.score + '</span>'
     + (pairMode ? '<b>' + esc(r.hostName) + '</b><span class="amp">and</span>' : '') + '<b>' + esc(r.studentName) + '</b>'
     + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '')
     + (paired ? '<span class="pill dark" style="background:var(--slate)">' + esc(label(PAIRING, status)) + ' by staff</span>' : '')
-    + '</div><div class="mparts">' + r.parts.map(function(p){
-        return '<span class="mpart" title="' + esc(p.label + ": " + p.note) + '">' + esc(p.label) + ' ' + Math.round(p.points) + '/' + p.weight
-          + '<i><b style="width:' + Math.round(p.value * 100) + '%"></b></i></span>';
-      }).join("") + '</div>'
+    + (p && !p.locked && p.studentRank > 1 ? '<span class="pill">' + esc(who + "’s " + ordinal(p.studentRank) + " choice") + '</span>' : '')
+    + (r.eligible && desk.match && r.score < desk.match.minScore ? '<span class="pill">Under ' + desk.match.minScore + ': not suggested automatically</span>' : '')
+    + '</div>'
+    + '<div class="sides"><span>For ' + esc(host) + ' <b>' + r.hostFit + '</b></span><span>For ' + esc(who) + ' <b>' + r.studentFit + '</b></span></div>'
     + whyHTML(r)
+    + '<details class="parts"><summary>Score breakdown</summary><div class="secthead">How well ' + esc(who) + ' meets ' + esc(host) + '’s needs</div><div class="mparts">' + partsHTML(r.parts.host) + '</div>'
+    + '<div class="secthead">How well the home suits ' + esc(who) + '</div><div class="mparts">' + partsHTML(r.parts.student) + '</div></details>'
     + '<div class="btnrow">'
     + (paired ? '' : '<button class="cont primary small" data-suggest="' + esc(r.studentId) + '" data-for="' + esc(r.hostId) + '"' + (r.eligible ? '' : ' disabled') + '>Suggest this pairing</button>')
     + '<button class="cont ghost small" data-open="' + esc(r.studentId) + '">Open applicant</button>'
@@ -2842,10 +2941,13 @@ function whyHTML(r){
 
 function hostDetailHTML(h){
   var M = GenStayMatch, r = desk.match && desk.match.hosts[h.meta.hostId], x = h.host || {}, ranked = r ? r.ranked : [];
+  var code = M.hostStatus(h).code, codes = Object.keys(M.HOST_STATUS);
+  if (codes.indexOf(code) === -1) codes.push(code);
   var html = '<div class="mcard"><div class="mhead"><b>' + esc(M.hostFullName(h)) + '</b>'
-    + (x.age ? '<span class="pill">' + esc(x.age) + '</span>' : '') + (x.suburb ? '<span class="pill">' + esc(x.suburb) + '</span>' : '')
-    + '<span class="grow"></span><label>Status <select id="hst-status">' + Object.keys(M.HOST_STATUS).map(function(k){
-        return '<option value="' + k + '"' + (h.meta.status === k ? " selected" : "") + '>' + esc(M.HOST_STATUS[k]) + '</option>';
+    + (x.age ? '<span class="pill">' + esc(x.age) + '</span>' : '') + ((h.home || {}).suburb ? '<span class="pill">' + esc(h.home.suburb) + '</span>' : '')
+    + ((h.meta || {}).hostFit ? '<span class="pill">' + esc(h.meta.hostFit) + ' fit</span>' : '')
+    + '<span class="grow"></span><label>Status <select id="hst-status">' + codes.map(function(k){
+        return '<option value="' + esc(k) + '"' + (code === k ? " selected" : "") + '>' + esc(M.HOST_STATUS[k] || k.replace(/_/g, " ")) + '</option>';
       }).join("") + '</select></label>'
     + '<button class="cont ghost small" id="hremove">Remove host</button></div>'
     + '<div class="hfacts">' + M.hostFacts(h).map(function(f){ return '<div><span>' + esc(f[0]) + '</span>' + esc(f[1]) + '</div>'; }).join("") + '</div></div>'
@@ -2868,15 +2970,16 @@ function drawBestHosts(it){
   if (!s){ box.innerHTML = ""; return; }
   if (s.excluded.length){ box.innerHTML = head + '<p class="sub" style="font-size:12.5px">Not matched automatically: ' + esc(s.excluded.join("; ")) + '.</p>'; return; }
   if (!s.ranked.length){
-    var near = s.ruledOut.slice().sort(function(a, b){ return a.blockers.length - b.blockers.length || b.score - a.score; })[0];
+    var near = s.ruledOut[0];
     box.innerHTML = head + '<p class="sub" style="font-size:12.5px">No suitable homeowner yet.'
       + (near ? ' Closest: ' + esc(near.hostName) + ' (' + esc(near.blockers.map(function(b){ return b.text; }).join("; ")) + ').' : '') + '</p>';
     return;
   }
-  box.innerHTML = head + s.ranked.slice(0, 3).map(function(r){
+  box.innerHTML = head + (s.ranked[0].score < desk.match.minScore ? '<p class="sub" style="font-size:12.5px">None reaches ' + desk.match.minScore + ' yet, so the applicant waits on the shortlist for a suitable host.</p>' : '')
+    + s.ranked.slice(0, 3).map(function(r){
     var h = hostById(r.hostId);
     return '<div class="hrow"><span class="score" style="background:' + BAND[r.band][1] + '" title="' + esc(BAND[r.band][0]) + '">' + r.score + '</span>'
-      + '<span class="grow"><b>' + esc(r.hostName) + '</b><small>' + esc([h && h.host && h.host.suburb, BAND[r.band][0]].filter(Boolean).join(" · ")) + '</small></span>'
+      + '<span class="grow"><b>' + esc(r.hostName) + '</b><small>' + esc([h && (h.home || {}).suburb, BAND[r.band][0]].filter(Boolean).join(" · ")) + '</small></span>'
       + '<button class="cont ghost small" data-use="' + esc(r.hostId) + '">Use</button></div>';
   }).join("");
   Array.prototype.forEach.call(box.querySelectorAll("[data-use]"), function(b){
@@ -2887,6 +2990,78 @@ function drawBestHosts(it){
       setStatus("rvstat", "wait", "Press Save review to keep this.");
     };
   });
+}
+
+/* ---------- the live board ---------- */
+/* A participant's outcome, as the results screen and this board show it: matched
+   with a host, shortlisted and waiting for a suitable host, or not placed. */
+function matchSummary(best){
+  if (!best) return null;
+  var M = GenStayMatch, out = {status: best.status, minScore: best.minScore, at: nowISO()};
+  if (best.status === "screened_out"){
+    out.reasons = [].concat.apply([], best.screenedOut.map(function(b){ return b.points; }));
+    out.basis = best.screenedOut.map(function(b){ return b.basis; });
+    return out;
+  }
+  var h = best.host, x = h.host || {}, r = best.result;
+  return Object.assign(out, {hostId: M.hostId(h), hostName: M.hostName(h), first: M.hostFirst(h), age: x.age || null,
+          partnerAge: x.householdType === "couple" && x.partner ? x.partner.age || null : null,
+          suburb: (h.home || {}).suburb || "", career: String(x.formerCareer || "").split(",")[0],
+          score: r.score, hostFit: r.hostFit, studentFit: r.studentFit, band: r.band,
+          highlights: r.forStudent, talkAbout: r.talkAbout, closest: best.closest, standsInWay: best.standsInWay,
+          shortfall: best.shortfall, setAside: best.setAside});
+}
+/* The outcome of a summary, including ones saved before outcomes had names. */
+function outcomeOf(m){ return !m ? null : m.status || (m.heldBack ? "screened_out" : m.closest ? "waiting" : "matched"); }
+function outcomeLabel(m){
+  var o = outcomeOf(m);
+  return o === "matched" ? "Demo match: " + m.first + " · " + m.score : o === "waiting" ? "Shortlisted: waiting for a host" : o === "screened_out" ? "Not placed: screening" : "";
+}
+/* The outcome the participant saw, or (for applicants who never saw one) their outcome against the hosts here. */
+function boardMatch(it){
+  if (it.demoMatch) return it.demoMatch;
+  if (!window.GenStayMatch || !desk.hosts.length) return null;
+  desk.boardCache = desk.boardCache || {};
+  var key = it.id + "@" + it.updatedAt + "@" + desk.hosts.length, c = desk.boardCache[key];
+  if (c === undefined) c = desk.boardCache[key] = matchSummary(GenStayMatch.bestMatch({id: it.id, name: it.name, profile: mergedProfile(it)}, desk.hosts));
+  return c;
+}
+function ago(iso){
+  var s = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000));
+  return !isFinite(s) ? "" : s < 60 ? "just now" : s < 3600 ? Math.floor(s / 60) + " min ago" : s < 86400 ? Math.floor(s / 3600) + " h ago" : String(iso).slice(0, 10);
+}
+function drawBoard(){
+  if (!desk || !el("#board-grid")) return;
+  var done = desk.items.filter(function(it){ return it.complete; });
+  var rows = done.map(function(it){ return {it: it, m: boardMatch(it)}; });
+  var tally = {}, n = {matched: 0, waiting: 0, screened_out: 0};
+  rows.forEach(function(r){ var o = outcomeOf(r.m); if (o) n[o]++; if (o === "matched") tally[r.m.first] = (tally[r.m.first] || 0) + 1; });
+  var top = Object.keys(tally).sort(function(a, b){ return tally[b] - tally[a]; }).slice(0, 3);
+  el("#board-stats").innerHTML = '<span><b>' + done.length + '</b> played</span><span><b>' + n.matched + '</b> placed</span>'
+    + '<span><b>' + n.waiting + '</b> on the shortlist</span><span><b>' + n.screened_out + '</b> not placed</span>'
+    + (top.length ? '<span>Most matched: ' + esc(top.map(function(k){ return k + " (" + tally[k] + ")"; }).join(", ")) + '</span>' : '');
+  /* a new arrival animates in once, and stays highlighted for 20 seconds */
+  var seen = desk.boardSeen, firstDraw = !seen, now = Date.now();
+  desk.boardSeen = seen = seen || {};
+  el("#board-grid").innerHTML = rows.length ? rows.slice(0, 60).map(function(r){
+    var it = r.it, m = r.m, o = outcomeOf(m), arrive = !firstDraw && !seen[it.id];
+    if (!seen[it.id]) seen[it.id] = firstDraw ? 1 : now;
+    var fresh = seen[it.id] > 1 && now - seen[it.id] < 20000;
+    var initials = o === "matched" ? m.hostName.split(/\s+/).filter(function(w){ return w !== "and"; }) : [];
+    initials = initials.length ? initials[0].charAt(0) + (initials.length > 1 ? initials[initials.length - 1].charAt(0) : "") : "";
+    return '<article class="bcard' + (o === "waiting" ? " waiting" : o === "screened_out" ? " out" : "") + (fresh ? " fresh" : "") + (arrive ? " arrive" : "") + '">'
+      + '<div class="b-top"><span class="b-person">' + esc(String(it.name || "Someone").split(" ")[0]) + '</span><span class="b-when">' + esc(ago(it.updatedAt)) + '</span></div>'
+      + (o === "matched" ? '<div class="b-arrow">matched with</div>'
+          + '<div class="b-host"><span class="b-avatar" aria-hidden="true">' + esc(initials) + '</span><span class="b-name">' + esc(m.first) + (m.age ? ", " + m.age + (m.partnerAge ? " and " + m.partnerAge : "") : "") + '</span>'
+          + '<span class="b-score">' + m.score + '</span></div>'
+          + '<div class="b-sub">' + esc([m.suburb, m.career].filter(Boolean).join(" · ")) + '</div>'
+          + (m.highlights && m.highlights.length ? '<ul class="b-why">' + m.highlights.slice(0, 2).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>' : '')
+        : o === "waiting" ? '<div class="b-arrow">shortlisted</div><div class="b-state">Waiting for a suitable host</div>'
+          + '<div class="b-sub">' + (m.closest ? "No current host passes every check yet" : "Best so far " + m.score + "; we place at " + (m.minScore || 65) + " or more") + '</div>'
+        : o === "screened_out" ? '<div class="b-arrow">not placed this time</div><div class="b-sub">Safety and screening come first</div>'
+        : '<div class="b-arrow">' + (desk.hosts.length ? "no match yet" : "add hosts to see matches") + '</div>')
+      + '</article>';
+  }).join("") : '<div class="empty-state">Matches appear here, newest first, as people finish.</div>';
 }
 </script>
 <script>
@@ -2909,7 +3084,7 @@ window.addEventListener("hashchange", function(){
     if (S && S.pid && !S.submittedAt) save();
     S = freshState(); S.view = "staff"; render();
   } else if (S && S.view === "staff"){
-    desk = null; S = freshState(); render();
+    stopLive(); desk = null; S = freshState(); render();
   }
 });
 boot();

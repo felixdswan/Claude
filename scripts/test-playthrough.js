@@ -75,9 +75,9 @@ async function play(page, mode, { letTimerRun = false } = {}) {
 
 async function answerQuestions(page, extra = {}) {
   const fill = { age: "21", phone: "0491 570 156", ecName: "Claire Graffet", ecPhone: "0491 570 110", university: "UTS",
-    course: "Bachelor of Nursing", campus: "UTS City campus, Ultimo", moveInDate: "2027-02-01", rentBudgetWeekly: "200", languages: "English, Italian" };
+    course: "Bachelor of Nursing", moveInDate: "2027-02-01", rentBudgetWeekly: "200", languages: "English, Italian" };
   const pick = { gender: "Female", studentType: "domestic", yearOfStudy: "2", transport: "public transport", maxCommuteMins: "40",
-    stayMonths: "12", homeownerGender: "female", otherLodgers: "none", hoursPerWeek: "8-10", fieldMentor: "keen" };
+    stayMonths: "12", homeownerGender: "female", otherLodgers: "none", hoursPerWeek: "8-10", fieldMentor: "keen", campus: "UTS City Campus" };
   const yes = { smoker: "false", needsSmokeFree: "true", okWithPets: "true", petAllergy: "false" };
   Object.assign(fill, extra.fill); Object.assign(pick, extra.pick); Object.assign(yes, extra.yes);
   for (let p = 0; p < 5; p++) {
@@ -225,19 +225,35 @@ async function checkContract(browser, base, profile, label) {
       await page.waitForTimeout(300);
       const dl = await page.evaluate(() => window.__downloads.map((d) => d.filename));
       if (!dl.length) errors.push("staff: export all produced no download");
-      /* the Hosts and matches tab (the same code as the demo's, which tests it in depth): Jenny and Pat
-         (the sample, pasted) were shortlisted for Margaret Hollis in their files, and Sam Lee by the review above */
+      /* the Hosts and matches tab (the same code as the demo's, which tests it in depth). Staff shortlist
+         Jenny and Sam for Helen Whitcombe; the sample hosts file is added; Helen has one room */
+      await page.click('.qitem:has-text("Jenny Graffet")');
+      await page.waitForSelector("#rv-for");
+      await page.fill("#rv-for", "Helen Whitcombe");
+      await page.click("#rv-save");
+      await page.waitForFunction(() => /Saved/.test(document.getElementById("rvstat").textContent));
+      await page.click('.qitem:has-text("Sam Lee")');
+      await page.waitForSelector("#rv-for");
+      await page.fill("#rv-for", "Helen Whitcombe");
+      await page.click("#rv-save");
+      await page.waitForFunction(() => /Saved/.test(document.getElementById("rvstat").textContent));
       await page.click("#tab-hosts");
-      await page.setInputFiles("#hostimporter", { name: "marg.json", mimeType: "application/json",
-        buffer: fs.readFileSync(path.resolve(__dirname, "../genstay/genstay-host.sample.json")) });
-      await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 1 && desk.match, null, { timeout: 8000 });
+      await page.setInputFiles("#hostimporter", { name: "genstay-hosts.sample.json", mimeType: "application/json",
+        buffer: fs.readFileSync(path.resolve(__dirname, "../game/genstay-hosts.sample.json")) });
+      await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 15 && desk.match, null, { timeout: 8000 });
       const m = await page.evaluate(() => ({ pairings: desk.match.pairings.map((p) => p.hostName + " + " + p.studentName + (p.locked ? " (staff)" : "")),
         also: desk.match.alsoPaired.map((a) => a.studentName + (a.eligible ? "" : " (ruled out)")) }));
-      if (!m.pairings.some((p) => /^Marg Hollis \+ (Jenny Graffet|Pat Ward) \(staff\)$/.test(p))) errors.push("hosts: the staff's pairing with Marg wasn't kept: " + m.pairings.join(", "));
+      if (!m.pairings.some((p) => /^Helen Whitcombe \+ Jenny Graffet \(staff\)$/.test(p))) errors.push("hosts: the staff's pairing with Helen wasn't kept: " + m.pairings.join(", "));
       if (!m.also.some((a) => /^Sam Lee \(ruled out\)$/.test(a))) errors.push("hosts: Sam Lee's shortlisting isn't flagged as ruled out: " + m.also.join(", "));
       if (!/Also paired by staff/.test(await page.textContent("#mbody"))) errors.push("hosts: the overview doesn't list the other staff pairings");
       report.hosts = m;
       await page.screenshot({ path: path.join(OUT, "hosts.png") });
+      /* the live board: everyone who finished, with their best host */
+      await page.click("#tab-board");
+      await page.waitForFunction(() => document.querySelectorAll("#board-grid .bcard .b-name").length >= 2, null, { timeout: 5000 })
+        .catch(() => errors.push("board: finished applicants aren't shown with a host"));
+      report.board = await page.$$eval("#board-grid .bcard", (c) => c.map((n) => n.innerText.replace(/\s+/g, " ").slice(0, 80)));
+      if (!report.board.some((t) => /^Sam .*not placed this time/i.test(t))) errors.push("board: Sam Lee, kept out by screening, is shown as paired: " + report.board.join(" | "));
     }
     await ctx.close();
   }

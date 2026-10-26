@@ -127,6 +127,26 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 .dotled{width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-3)}
 .dotled.ok{background:var(--good)} .dotled.no{background:var(--bad)} .dotled.wait{background:var(--warn)}
 
+/* the participant's demo match */
+.matchcard{border:1px solid var(--line-2);border-radius:14px;background:var(--field);padding:16px;display:flex;flex-direction:column;gap:10px}
+.mc-kicker{font:600 11px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--sage-lo)}
+.mc-head{display:flex;align-items:center;gap:12px}
+.mc-avatar{width:54px;height:54px;border-radius:50%;background:var(--sage);color:var(--on-dark);display:grid;place-items:center;font:600 19px/1 var(--display);flex:none}
+.mc-who{flex:1;min-width:0}
+.mc-name{font:600 21px/1.2 var(--display)}
+.mc-sub{font-size:13.5px;color:var(--ink-2)}
+.mc-score{display:flex;flex-direction:column;align-items:center;background:var(--sage);color:var(--on-dark);border-radius:10px;padding:7px 10px;flex:none}
+.mc-score b{font:700 22px/1 var(--mono)}
+.mc-score span{font:600 10px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.mc-why{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;font-size:14.5px;line-height:1.4}
+.mc-why li{padding-left:20px;position:relative}
+.mc-why li::before{content:"✓";position:absolute;left:2px;color:var(--good);font-weight:700}
+.mc-talk{font-size:13.5px;line-height:1.45;color:var(--ink-2);margin:0}
+.mc-note{font-size:12px;color:var(--ink-3);margin:0}
+.matchcard.mc-wait{border-style:dashed}
+.matchcard.mc-out{background:var(--paper)}
+.mc-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.45}
+
 /* staff review desk */
 .desk{flex:1;min-height:0;display:grid;grid-template-columns:330px 1fr;background:var(--paper)}
 .queue{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--card)}
@@ -191,6 +211,40 @@ details.out .why{margin-top:8px}
 .bestfor .hrow .grow{flex:1;min-width:0;display:flex;flex-direction:column}
 .bestfor .hrow small{color:var(--ink-3);font-size:11.5px}
 .bestfor .score{min-width:32px;padding:6px 4px;font-size:12px}
+.sides{display:flex;flex-wrap:wrap;gap:6px 16px;font:500 12px/1.3 var(--mono);color:var(--ink-2)}
+.sides b{font-weight:700;color:var(--ink)}
+details.parts summary{cursor:pointer;font-size:13px;color:var(--ink-2)}
+details.parts .secthead{margin-top:10px}
+details.parts .mparts{margin-top:6px}
+/* the live board */
+.board{flex:1;min-height:0;overflow-y:auto;background:var(--paper);padding:18px;display:flex;flex-direction:column;gap:16px}
+.board:fullscreen{padding:32px}
+.board-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px}
+.board-head h2{font-size:30px;margin-top:4px}
+.board-head .grow{flex:1;min-width:220px}
+.board-stats{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:15px;color:var(--ink-2)}
+.board-stats b{font:700 20px/1 var(--mono);color:var(--ink)}
+.board-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.bcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.bcard.fresh{border-color:var(--sage);box-shadow:0 0 0 3px rgba(111,124,90,.25)}
+.bcard.arrive{animation:arrive .6s ease-out}
+@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.bcard.arrive{animation:none}}
+.b-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.b-person{font:600 24px/1.15 var(--display)}
+.b-when{font:500 12px/1 var(--mono);color:var(--ink-3)}
+.b-arrow{font:600 11px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.b-host{display:flex;align-items:center;gap:10px}
+.b-avatar{width:44px;height:44px;border-radius:50%;background:var(--sage);color:var(--on-dark);display:grid;place-items:center;font:600 16px/1 var(--display);flex:none}
+.b-name{font:600 19px/1.2 var(--display);flex:1;min-width:0}
+.b-score{font:700 18px/1 var(--mono);background:var(--sage);color:var(--on-dark);border-radius:9px;padding:7px 9px}
+.b-sub{font-size:13.5px;color:var(--ink-2)}
+.b-why{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.4}
+.b-why li{padding-left:18px;position:relative}
+.b-why li::before{content:"✓";position:absolute;left:1px;color:var(--good);font-weight:700}
+.bcard.waiting{border-style:dashed}
+.bcard.out{background:var(--paper)}
+.b-state{font:600 19px/1.2 var(--display)}
 @media (max-width:900px){
   #app.wide{height:auto;min-height:94vh}
   .desk{grid-template-columns:1fr}
@@ -845,7 +899,7 @@ var DAYS = [
       {text:"Call 000 on speaker, and stay with her.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called",
        reply:"The call-taker guides you until the paramedics arrive.",
        replyByFlag:{flag:"learned_meds_folder", text:"The call-taker guides you. You hand the paramedics her medical folder."}},
-      {text:"Shake her, and call her son, David.", fx:impact(0,-1,0,-2), tag:"emergency_delayed", reply:"David doesn’t answer. Minutes pass before you ring 000."},
+      {text:"Shake her, and call her son, David.", fx:impact(0,-1,0,-2), tag:"emergency_shaken", reply:"David doesn’t answer. Minutes pass before you ring 000."},
       {text:"Run next door for help.", fx:impact(0,0,0,-1), tag:"emergency_delayed", reply:"The neighbour rings 000 while you go back to Marg."},
       {text:"Give her water, and help her sit up.", fx:impact(0,-1,0,-2), tag:"emergency_water", reply:"Paramedics say not to move her or give her anything."}
     ]}
@@ -864,7 +918,8 @@ var LOW_NOTES = {
   grief_dismissed:"Said Dorothy was in a better place", friction_defensive:"Defensive about the late-night noise",
   boundary_laughed:"Laughed along with the remark", boundary_avoided:"Let the remark pass",
   fall_lifted:"Lifted Marg straight after the fall", fall_dismissed:"Walked away after the fall",
-  emergency_delayed:"Delayed calling 000 in the emergency", emergency_water:"Gave Marg water and moved her in the emergency"
+  emergency_delayed:"Delayed calling 000 in the emergency", emergency_shaken:"Shook Marg and rang David before 000",
+  emergency_water:"Gave Marg water and moved her in the emergency"
 };
 </script>
 <script>
@@ -887,7 +942,7 @@ function freshState(){
     meters: {connection: START_METER, respect: START_METER, reliability: START_METER, awareness: START_METER},
     flags: {}, tags: {}, pathByDay: {},
     motivation: "", choices: [], concerns: [], pending: null, stepEnteredAt: null,
-    q: {}, qPage: 0, qPrefilled: false, synced: false
+    q: {}, qPage: 0, qPrefilled: false, synced: false, demoMatch: null, matchPending: false
   };
 }
 
@@ -1087,15 +1142,15 @@ function renderTitle(){
           + '<div class="btnrow" style="margin-top:10px"><button class="cont primary" id="resend">Send it now</button></div></div>'
         : '')
     + '<div style="display:flex;flex-direction:column;gap:12px">'
-    + '<label>Your full name<input type="text" id="fname" autocomplete="name" maxlength="120" value="' + esc(S.name) + '"></label>'
-    + '<label>University email<input type="email" id="femail" autocomplete="email" maxlength="160" value="' + esc(S.email) + '"></label>'
+    + '<label>Your first name<input type="text" id="fname" autocomplete="given-name" maxlength="120" value="' + esc(S.name) + '"></label>'
+    + '<label>Email <span class="opt-tag">(optional)</span><input type="email" id="femail" autocomplete="email" maxlength="160" value="' + esc(S.email) + '"></label>'
     + '<label>Area of study<select id="study-area">'
     + Object.keys(DISCIPLINES).map(function(k){
         return '<option value="' + k + '"' + (S.studyArea === k ? " selected" : "") + '>' + esc(DISCIPLINES[k].label) + '</option>';
       }).join("")
     + '</select></label></div>'
     + '<div class="notice"><b>Content note.</b> The ' + daysInWords() + ' days include a bereavement, a biased remark, a fall and a medical emergency. Each of those days carries its own note. You can pause at any time, and the timer pauses with you.</div>'
-    + '<label class="check"><input type="checkbox" id="c1"><span>I understand my choices, my answers to the matching questions and how long I took are recorded, read by staff at the placement service, and used to build my matching profile.</span></label>'
+    + '<label class="check"><input type="checkbox" id="c1"><span>I understand this is a demonstration. My choices, my answers and how long I took make a sample matching profile that placement staff can see, and a match with a fictional homeowner. Nothing here is a real placement.</span></label>'
     + '<label class="check"><input type="checkbox" id="c2"><span>I have read the content note and I’m ready to continue.</span></label>'
     + '<div id="terr"></div>'
     + '<button class="cont primary" id="begin">Begin day 1</button>'
@@ -1114,10 +1169,9 @@ function renderTitle(){
   el("#begin").onclick = function(){
     var name = el("#fname").value.trim(), email = el("#femail").value.trim();
     var errs = [];
-    if (name.length < 2) errs.push("Enter your full name.");
-    /* Australian university or educational addresses only (any *.edu.au, plus monash.edu). */
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.push("Enter a valid email address.");
-    else if (!/(^|\.)(edu\.au|monash\.edu)$/i.test(email.split("@").pop())) errs.push("Use your Australian university or educational email address.");
+    if (name.length < 2) errs.push("Enter your first name.");
+    /* Optional at a market stand, where typing an email in public slows everyone down. */
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.push("Check the email address, or leave it blank.");
     if (!el("#c1").checked || !el("#c2").checked) errs.push("Tick both boxes to start.");
     if (errs.length){ el("#terr").innerHTML = '<p class="err">' + esc(errs.join(" ")) + '</p>'; return; }
     S = freshState();
@@ -1295,14 +1349,28 @@ var CAREER_GOALS = {
   social_work:   ["Social work", "Community services", "Youth work"],
   psychology:    ["Psychology", "Counselling"],
   education:     ["Early childhood teaching", "Primary teaching", "Secondary teaching", "Special education"],
-  other:         ["Business", "Engineering or IT", "Law", "Science", "Creative arts", "Something else"]
+  other:         ["Something else"]
 };
+/* Campuses as the host profiles name them (placement.campusCommuteMins). */
+var CAMPUS_OPTIONS = [["UTS City Campus", "UTS City Campus (Ultimo)"], ["USyd Camperdown", "University of Sydney (Camperdown)"],
+  ["UNSW Kensington", "UNSW (Kensington)"], ["Macquarie Uni", "Macquarie University"], ["WSU Parramatta", "Western Sydney University (Parramatta)"],
+  ["Another campus", "Another campus"]];
+/* Moving in three to six months from now: the first of each month, with semester starts marked. */
+function moveInOptions(){
+  var now = new Date(), out = [];
+  for (var k = 3; k <= 6; k++){
+    var d = new Date(now.getFullYear(), now.getMonth() + k, 1);
+    out.push([d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-01",
+      d.toLocaleDateString("en-AU", {month: "long", year: "numeric"}) + (d.getMonth() === 1 ? " (start of Semester 1)" : d.getMonth() === 6 ? " (start of Semester 2)" : "")]);
+  }
+  return out;
+}
 var Q_PAGES = [
   {title:"Your placement and home", intro:"Two short pages of the details we match on. Most answers are a tap.", fields:[
     {id:"age", path:"student.age", type:"num", label:"Age", req:true, min:18, max:99, hint:"You need to be 18 or over to join a homeshare."},
     {id:"gender", path:"student.gender", type:"select", label:"Gender", req:true, opts:["Female","Male","Non-binary","Another identity","Prefer not to say"]},
-    {id:"campus", path:"placement.campus", type:"text", label:"Campus you attend most", req:true, full:true, ph:"e.g. UTS City campus, Ultimo"},
-    {id:"moveInDate", path:"placement.moveInDate", type:"date", label:"Earliest move-in date", req:true},
+    {id:"campus", path:"placement.campus", type:"select", label:"Campus you attend most", req:true, full:true, opts:CAMPUS_OPTIONS},
+    {id:"moveInDate", path:"placement.moveInDate", type:"select", label:"When you’d like to move in", req:true, opts:moveInOptions},
     {id:"stayMonths", path:"placement.stayMonths", type:"select", label:"How long you’d like to stay", req:true, num:true, opts:[["3","3 months"],["6","6 months"],["9","9 months"],["12","12 months"],["18","18 months"],["24","2 years"]]},
     {id:"rentBudgetWeekly", path:"support.rentBudgetWeekly", type:"num", label:"Most you can pay in rent each week (AUD)", req:true, min:0, max:2000, full:true},
     {id:"homeownerGender", path:"household.homeownerGender", type:"select", label:"I’d be comfortable living with a homeowner who is", req:true, full:true, opts:[["female","A woman"],["male","A man"],["any","Either is fine"]]},
@@ -1326,7 +1394,7 @@ var Q_PAGES = [
     {id:"hobbies", path:"interests.hobbies", type:"chips", label:"Hobbies and interests", full:true, opts:["Gardening","Cooking and baking","Reading","Music","Sport and fitness","Walking","Crafts","Board games and puzzles","Films and TV","Art"]},
     {id:"wantsToLearn", path:"interests.wantsToLearn", type:"chips", label:"Something you’d like to learn", full:true, opts:["Gardening","Family recipes","Local history","Life advice","Crafts","Card games"]},
     {id:"hoursPerWeek", path:"support.hoursPerWeek", type:"range", label:"Hours a week you can give to shared household life", req:true, full:true, opts:[["6-8","6–8 hours"],["8-10","8–10 hours"],["10-12","10–12 hours"],["12-15","12–15 hours"]]},
-    {id:"helpTypes", path:"support.helpTypes", type:"chips", label:"Happy to help with", req:true, full:true, opts:["Company and conversation","Cooking shared meals","Tech and phone help","Gardening","Bins and light chores","Shopping and errands","Lifts in the homeowner’s car","Pet care"]},
+    {id:"helpTypes", path:"support.helpTypes", type:"chips", label:"Happy to help with", req:true, full:true, opts:["Company and conversation","Cooking shared meals","Tech and phone help","Gardening","Bins and light chores","Shopping and errands","Lifts in the homeowner’s car","Pet care","Appointments and outings","Being home in the evenings"]},
     {id:"notOffered", path:"support.notOffered", type:"chips", label:"Not comfortable offering", full:true, opts:["Personal care","Managing medication","Overnight care","Heavy lifting","Cleaning the whole house"]}
   ]}
 ];
@@ -1412,6 +1480,7 @@ function qFieldHTML(f){
 
 function renderQuestionnaire(){
   prefillFromGame();
+  prepareMatch();
   var page = Q_PAGES[S.qPage], last = S.qPage === Q_PAGES.length - 1;
   app.innerHTML = '<div class="topbar"><div class="toprow"><span class="daylabel">Matching questions · ' + (S.qPage + 1) + ' of ' + Q_PAGES.length + '</span>'
     + '<span class="clock">About a minute</span></div></div>'
@@ -1464,9 +1533,14 @@ function renderQuestionnaire(){
     if (!last){ S.qPage++; save(); render(); el("#qscroll").scrollTop = 0; return; }
     scanQuestionnaire();
     S.submittedAt = nowISO();
-    S.view = "results";
+    S.view = "results"; S.matchPending = true;
     save(); render();
-    deliverProfile();
+    findDemoMatch().then(function(m){
+      S.demoMatch = m; S.matchPending = false;
+      save();
+      if (S.view === "results") drawMatchCard();
+      deliverProfile();
+    });
   };
 }
 
@@ -1551,8 +1625,11 @@ function screeningPart(){
       .concat(answerChecks().length ? ["answers_to_check"] : [])
       .concat(S.choices.some(function(c){ return c.timedOut; }) ? ["missed_timer"] : []),
     watchPoint: autoWatchPoint(),
+    /* every choice made, so the matching can weigh each day's answers (not only the landmarks) */
+    choices: S.choices.filter(function(c){ return c.tag; }).map(function(c){ return {day: c.day, tag: c.tag}; }),
     landmarks: [6, 9, 11, 14].map(function(day){
-      return {day: day, response: S.choices.filter(function(c){ return c.day === day; }).map(function(c){ return c.chosen; }).join(" · ")};
+      var made = S.choices.filter(function(c){ return c.day === day; });
+      return {day: day, response: made.map(function(c){ return c.chosen; }).join(" · "), tags: made.map(function(c){ return c.tag; })};
     }).filter(function(x){ return x.response; })
   };
 }
@@ -1575,9 +1652,10 @@ function buildProfile(){
 }
 
 /* ---------- storage: the artifact's record store, behind access rules ----------
-   profiles/<applicant id>             latest profile + a list of runs (staff read all; each applicant writes only their own)
-   profiles/<applicant id>/runs/<run>  every run, kept so staff can compare replays
-   reviews/<applicant id>              staff-only: pairing status, homeowner, checks, watch-point */
+   profiles/<account id>             the account's latest profile (staff read all; each account writes only its own)
+   profiles/<account id>/runs/<run>  every run, with its fictional match. On market day the stand's tablets
+                                     share one signed-in account, so each run is a different participant
+   reviews/<run>                     staff-only: pairing status, homeowner, checks, watch-point */
 function getCap(name){
   try {
     if (!window.claude || typeof window.claude.use !== "function") return Promise.resolve(null);
@@ -1601,7 +1679,7 @@ function indexFields(profile, extra){
 
 var syncChain = Promise.resolve();
 function syncProfile(){
-  var snap = {pid: S.pid, at: nowISO(), profile: buildProfile()};
+  var snap = {pid: S.pid, at: nowISO(), profile: buildProfile(), demoMatch: S.demoMatch || null};
   var attempt = function(){
     return writeProfile(snap).then(function(r){
       if (r.ok || (r.code !== "unavailable" && r.code !== "resource_exhausted")) return r;
@@ -1620,13 +1698,10 @@ function writeProfile(snap){
       if (!uid) return {ok: false, reason: "no_store"};
       var parent = db.doc("profiles/" + uid);
       var complete = !!snap.profile.meta.stages.postGame;
-      return parent.collection("runs").doc(snap.pid).set({pid: snap.pid, savedAt: snap.at, complete: complete, profile: snap.profile})
-        .then(function(){ return parent.get(); })
-        .then(function(doc){
-          var runs = (doc.exists && doc.data().runs || []).filter(function(r){ return r.pid !== snap.pid; });
-          runs.push({pid: snap.pid, savedAt: snap.at, complete: complete, screeningProfile: snap.profile.screening ? snap.profile.screening.profile : null});
-          return parent.set(indexFields(snap.profile, {updatedAt: snap.at, runs: runs}));
-        })
+      /* No list of runs in the account document: one shared stand account would grow it without limit,
+         and tablets writing at once would overwrite each other's lists. The desk reads the runs directly. */
+      return parent.collection("runs").doc(snap.pid).set({pid: snap.pid, savedAt: snap.at, complete: complete, profile: snap.profile, demoMatch: snap.demoMatch})
+        .then(function(){ return parent.set(indexFields(snap.profile, {updatedAt: snap.at, latestRun: snap.pid})); })
         .then(function(){ return {ok: true}; });
     });
   }).then(null, function(err){ return {ok: false, reason: "error", code: (err && err.code) || "unavailable"}; });
@@ -1726,9 +1801,10 @@ function renderResults(){
     + '<div class="scroll"><div class="pad">'
     + '<div><div class="kicker">Quick demo · complete</div>'
     + '<h1 style="font-size:29px;margin-top:6px">' + esc(S.name.split(" ")[0] || "You") + ' and Marg: ' + daysInWords() + ' days</h1></div>'
+    + '<div id="matchcard"></div>'
     + '<div><span class="band" style="background:' + type.colour + '">' + esc(type.title) + '</span></div>'
     + '<p class="line">' + esc(type.text) + '</p>'
-    + '<div class="notice">This is a reflection on the path you took, not a pass-or-fail result. It comes from the quick demo; the full screening is fourteen days with written answers. A person at the placement service makes any placement decision.</div>'
+    + '<div class="notice" id="resultnote">' + resultNote() + '</div>'
     + (moments ? '<div><div class="who narr" style="margin-bottom:8px">The big moments</div><div class="rows">' + moments + '</div></div>' : '')
     + (S.concerns.some(function(c){ return c.id === "welfare_concern"; })
         ? '<div class="notice"><b>If things feel hard right now,</b> you can talk to someone any time. Lifeline: <span class="mono">13 11 14</span>. Beyond Blue: <span class="mono">1300 22 4636</span>.</div>'
@@ -1759,6 +1835,111 @@ function renderResults(){
   el("#showtext").onclick = function(){ showProfileText(); };
   el("#done").onclick = function(){ if (S.synced) clearSaved(); S = freshState(); render(); };
   if (S.synced) setStatus("savestat", "ok", "Your profile has reached the placement service. You can close this page.");
+  drawMatchCard();
+}
+
+/* ---------- the market-day pairing: a fictional homeowner ----------
+   Each participant is matched with the best of the fictional hosts in
+   genstay-hosts.sample.json, published beside this page, by the same
+   matching the staff desk uses (genstay-matching.js). Everyone gets
+   their own best match: hosts aren't used up. The pairing is saved with
+   the run, so the staff desk's live board shows what the participant saw. */
+var DEMO_HOSTS_URL = "genstay-hosts.sample.json";
+var demoHostsLoading = null;
+function loadDemoHosts(){
+  if (!demoHostsLoading) demoHostsLoading = fetch(DEMO_HOSTS_URL)
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function(text){ return loadMatcher().then(function(M){
+      if (!M) return null;
+      var generated = null;
+      try { generated = JSON.parse(text).generated; } catch (e) { /* a host list without a date keeps its dates */ }
+      return freshDates(M.parseHosts(text).hosts, generated);
+    }); })
+    .then(null, function(){ demoHostsLoading = null; return null; });
+  return demoHostsLoading;
+}
+/* The sample rooms come free a few months after the file was written
+   ("generated"). On a later market day every date moves forward by the
+   months since, so the rooms are still coming free when people play. */
+function freshDates(hosts, generated){
+  var from = /^(\d{4})-(\d{2})/.exec(generated || ""), now = new Date();
+  var months = from ? (now.getFullYear() - +from[1]) * 12 + now.getMonth() + 1 - +from[2] : 0;
+  if (months > 0) hosts.forEach(function(h){
+    var pl = h.placement || {}, m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(pl.availableFrom || "");
+    if (!m) return;
+    var d = new Date(+m[1], +m[2] - 1 + months, +m[3]);
+    pl.availableFrom = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  });
+  return hosts;
+}
+function prepareMatch(){ loadDemoHosts(); }
+/* Resolves the match summary, or null if the hosts or the matcher couldn't load in time. */
+/* Resolves the outcome, or null. A screen-out (and its reasons) needs only
+   the matcher, so it still shows when the hosts file can't load. */
+function findDemoMatch(){
+  var late = new Promise(function(done){ setTimeout(function(){ done(null); }, 6000); });
+  return Promise.race([Promise.all([loadDemoHosts(), loadMatcher()]), late]).then(function(got){
+    var M = window.GenStayMatch;
+    if (!M) return null;
+    return matchSummary(M.bestMatch({id: S.pid, name: S.name, profile: buildProfile()}, (got && got[0]) || []));
+  }, function(){ return null; });
+}
+function capFirst(t){ t = String(t || ""); return t.charAt(0).toUpperCase() + t.slice(1); }
+/* Why the reasons below rule a placement out: one unsafe choice, or several concerning ones together. */
+function screenIntro(basis){
+  return basis.indexOf("unsafe") !== -1 ? "Safety comes first in a homeshare, and some choices rule a placement out on their own."
+    : basis.indexOf("pattern") !== -1 ? "No single choice ruled it out, but together these did."
+    : "Your choices across the game rule out a placement for now.";
+}
+/* The note under the profile type. A run that was screened out isn't told there's no pass or fail. */
+function resultNote(){
+  return (outcomeOf(S.demoMatch) === "screened_out"
+    ? "Most of the game is a reflection on the path you took, but the choices above rule a placement out."
+    : "This is a reflection on the path you took, not a pass-or-fail result.")
+    + " It comes from the quick demo; the full screening is fourteen days with written answers. A person at the placement service makes any placement decision.";
+}
+/* The participant's outcome: their homeowner; shortlisted and waiting for a
+   suitable host (no match strong enough yet); or no placement, when an answer
+   in the game rules one out. */
+function drawMatchCard(){
+  var box = el("#matchcard");
+  if (!box) return;
+  var m = S.demoMatch, o = outcomeOf(m);
+  if (el("#resultnote")) el("#resultnote").textContent = resultNote();
+  if (S.matchPending){ box.innerHTML = '<div class="matchcard"><div class="mc-kicker">Your demo match</div><p class="sub">Finding your homeowner…</p></div>'; return; }
+  if (!m){ box.innerHTML = ""; return; }
+  if (o === "screened_out"){
+    box.innerHTML = '<div class="matchcard mc-out"><div class="mc-kicker">No placement this time</div>'
+      + '<div class="mc-name">We can’t offer you a homeowner from this run</div>'
+      + '<p class="mc-talk">' + esc(screenIntro(m.basis || ["unsafe"])) + '</p>'
+      + '<ul class="mc-list">' + (m.reasons || []).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>'
+      + '<p class="mc-note">In a real application, a coordinator would talk this through with you. You’re welcome to play again.</p></div>';
+    return;
+  }
+  if (o === "waiting"){
+    var bar = m.minScore || 65;
+    box.innerHTML = '<div class="matchcard mc-wait"><div class="mc-kicker">Shortlisted</div>'
+      + '<div class="mc-name">Waiting for a suitable host</div>'
+      + '<p class="mc-talk">You’re on our shortlist, but none of our current homeowners is a strong enough match for you yet. '
+      + (m.closest ? esc("None passes every check" + (m.standsInWay && m.standsInWay[0] ? " (for the closest, " + m.standsInWay[0] + ")" : "") + ".")
+          : esc("Your closest scored " + m.score + ", and we only place pairings of " + bar + " or more.")) + '</p>'
+      + (!m.closest && m.shortfall && m.shortfall.length ? '<p class="mc-talk"><b>What held it back:</b> ' + esc(m.shortfall.join(" and ")) + '.</p>' : '')
+      + '<p class="mc-note">In a real placement, we’d match you when the right homeowner joins. We only place pairings that suit both people.</p></div>';
+    return;
+  }
+  var initials = m.hostName.split(/\s+/).filter(function(w){ return w !== "and"; });
+  initials = (initials[0] || "").charAt(0) + (initials.length > 1 ? initials[initials.length - 1].charAt(0) : "");
+  var couple = m.first.indexOf(" and ") !== -1;
+  box.innerHTML = '<div class="matchcard">'
+    + '<div class="mc-kicker">Your demo match</div>'
+    + '<div class="mc-head"><div class="mc-avatar" aria-hidden="true">' + esc(initials) + '</div>'
+    + '<div class="mc-who"><div class="mc-name">' + esc(m.first) + (m.age ? ", " + m.age + (m.partnerAge ? " and " + m.partnerAge : "") : "") + '</div>'
+    + '<div class="mc-sub">' + esc([m.suburb, m.career].filter(Boolean).join(" · ")) + '</div></div>'
+    + '<div class="mc-score" title="How well this pairing suits you both, out of 100"><b>' + m.score + '</b><span>match</span></div></div>'
+    + (m.highlights.length ? '<ul class="mc-why">' + m.highlights.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>' : '')
+    + (m.talkAbout.length ? '<p class="mc-talk"><b>Good to know:</b> ' + esc(capFirst(m.talkAbout.join("; "))) + '.</p>' : '')
+    + '<p class="mc-note">' + esc(m.first) + (couple ? " are" : " is") + ' made up for this demo. Real pairings are always made by people at the placement service.</p>'
+    + '</div>';
 }
 </script>
 <script>
@@ -1806,9 +1987,10 @@ function mergedProfile(item, profile){
 }
 
 function renderStaff(){
+  stopLive();
   app.className = "wide";
-  desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, run: null, frame: null, ready: false, pending: null,
-          hosts: [], match: null, hostSel: null, tab: "app"};
+  desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, frame: null, ready: false, pending: null,
+          hosts: [], match: null, hostSel: null, tab: "app", live: [], byAccount: {}, stamps: {}, reads: {}, loaded: {}};
   app.innerHTML =
     '<div class="topbar"><div class="toprow"><span class="daylabel">Pepaws Porch demo · staff review</span>'
     + '<span class="clock" id="acount">loading…</span></div>' + tabsHTML() + '</div>'
@@ -1829,7 +2011,6 @@ function renderStaff(){
     + '<div class="viewer"><div class="vbar">'
     + '<button class="cont small" id="prev" aria-label="Previous applicant">‹ Prev</button><button class="cont small" id="next" aria-label="Next applicant">Next ›</button>'
     + '<b class="grow" id="vname">No profile open</b>'
-    + '<select id="vrun" hidden aria-label="Choose a run"></select>'
     + '<button class="cont small" id="pdfone" disabled>Download PDF</button>'
     + '<button class="cont ghost small" id="dlone" disabled>Download JSON</button>'
     + '<span class="status" id="fstat"></span></div>'
@@ -1858,7 +2039,7 @@ function renderStaff(){
   };
   el("#pdfone").onclick = function(){
     var it = currentItem(); if (!it) return;
-    makePdfFile([mergedProfile(it, desk.run && desk.run.profile)], "genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".pdf", "fstat");
+    makePdfFile([mergedProfile(it)], "genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".pdf", "fstat");
   };
   el("#pdfall").onclick = function(){
     var list = visibleItems();
@@ -1867,10 +2048,9 @@ function renderStaff(){
   };
   el("#dlone").onclick = function(){
     var it = currentItem(); if (!it) return;
-    var p = mergedProfile(it, desk.run && desk.run.profile);
+    var p = mergedProfile(it);
     offerDownload("genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".json", JSON.stringify(p, null, 2), "fstat");
   };
-  el("#vrun").onchange = function(){ openRun(this.value); };
   bindHostDesk();
   Promise.all([getCap("db"), getCap("user")]).then(function(caps){
     desk.db = caps[0]; desk.user = caps[1];
@@ -1976,7 +2156,7 @@ function makePdfFile(profiles, filename, statusId){
   });
 }
 
-/* ---------- queue ---------- */
+/* ---------- queue: live from the record store ---------- */
 function loadQueue(openId){
   if (!desk.db){
     setStatus("astat", "wait", "The placement record isn’t available in this view. Profile files you add are shown here but not saved.");
@@ -1986,22 +2166,71 @@ function loadQueue(openId){
     if (openId) openItem(openId);
     return Promise.resolve();
   }
+  stopQueue();
+  desk.byAccount = {}; desk.stamps = {}; desk.openId = openId || null; desk.loaded = {};
   setStatus("astat", "wait", "Reading the placement record…");
-  return Promise.all([
-    desk.db.collection("profiles").orderBy("updatedAt", "desc").limit(1000).get(),
-    desk.db.collection("reviews").limit(1000).get()
-  ]).then(function(res){
-    desk.items = res[0].docs.map(function(d){ return Object.assign({id: d.id}, d.data()); }).filter(function(it){ return it.profile; });
+  var lost = function(err){ setStatus("astat", "no", "Lost the live link to the placement record (" + ((err && err.code) || "unavailable") + "). Press Refresh."); };
+  desk.live.push(desk.db.collection("profiles").limit(1000).onSnapshot(function(snap){
+    if (!desk) return;
+    var seen = {};
+    snap.docs.forEach(function(d){
+      var data = d.data() || {};
+      seen[d.id] = 1;
+      if (data.imported){ desk.byAccount[d.id] = data.profile ? [Object.assign({id: d.id}, data)] : []; return; }
+      /* every save touches the account's index doc, so a changed stamp means new or changed runs */
+      var stamp = (data.updatedAt || "") + "|" + (data.latestRun || "");
+      if (desk.stamps[d.id] !== stamp){ desk.stamps[d.id] = stamp; readRuns(d.id, lost); }
+    });
+    Object.keys(desk.byAccount).forEach(function(id){
+      if (!seen[id]){ delete desk.byAccount[id]; delete desk.stamps[id]; }
+    });
+    desk.loaded.profiles = true;
+    queueChanged();
+  }, lost));
+  desk.live.push(desk.db.collection("reviews").limit(1000).onSnapshot(function(snap){
+    if (!desk) return;
     desk.reviews = {};
-    res[1].docs.forEach(function(d){ desk.reviews[d.id] = d.data(); });
-    setStatus("astat", "ok", "Read " + desk.items.length + " profile" + (desk.items.length === 1 ? "" : "s") + ".");
-    drawQueue();
-    refreshMatches();
-    var target = openId || (!desk.current && visibleItems().length ? visibleItems()[0].id : null);
-    if (target) openItem(target);
-  }, function(err){
-    setStatus("astat", "no", "Couldn’t read the placement record (" + ((err && err.code) || "unavailable") + "). Try Refresh.");
-  });
+    snap.docs.forEach(function(d){ desk.reviews[d.id] = d.data(); });
+    desk.loaded.reviews = true;
+    queueChanged();
+  }, lost));
+  return Promise.resolve();
+}
+/* Every run on an account is a participant of its own: on market day the
+   stand's tablets share one signed-in account. */
+function readRuns(account, lost){
+  var d0 = desk, ticket = (desk.reads[account] || 0) + 1;
+  desk.reads[account] = ticket;
+  desk.byAccount[account] = desk.byAccount[account] || [];
+  desk.db.collection("profiles/" + account + "/runs").orderBy("savedAt", "desc").limit(1000).get().then(function(snap){
+    if (desk !== d0 || desk.reads[account] !== ticket || !desk.stamps[account]) return;
+    desk.byAccount[account] = snap.docs.map(function(d){
+      var r = d.data() || {};
+      return r.profile ? indexFields(r.profile, {id: d.id, account: account, updatedAt: r.savedAt, complete: !!r.complete, demoMatch: r.demoMatch || null}) : null;
+    }).filter(Boolean);
+    queueChanged();
+  }, lost);
+}
+/* Redraws after any live change, keeping the open profile open. */
+function queueChanged(){
+  if (!desk || !desk.loaded.profiles || !desk.loaded.reviews) return;
+  desk.items = [].concat.apply([], Object.keys(desk.byAccount).map(function(k){ return desk.byAccount[k]; }))
+    .sort(function(a, b){ return String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")); });
+  setStatus("astat", "ok", count(desk.items.length, "profile") + ". New ones appear here as people finish.");
+  drawQueue();
+  refreshMatches();
+  var target = desk.openId && itemById(desk.openId) ? desk.openId : !desk.current && visibleItems().length ? visibleItems()[0].id : null;
+  if (target){ desk.openId = null; openItem(target); }
+}
+function stopQueue(){
+  (desk.live || []).forEach(function(stop){ stop(); });
+  desk.live = [];
+}
+function stopLive(){
+  if (!desk) return;
+  stopQueue();
+  if (desk.hostsLive){ desk.hostsLive(); desk.hostsLive = null; }
+  clearInterval(desk.boardTick);
 }
 function visibleItems(){
   return desk.items.filter(function(it){
@@ -2025,9 +2254,9 @@ function drawQueue(){
       + (it.attention ? '<span class="pill dark" style="background:var(--bad)">Needs attention</span>' : '')
       + '<span class="pill">' + esc(label(PAIRING, r.pairingStatus)) + '</span>'
       + (it.complete ? '' : '<span class="pill">Questions unfinished</span>')
-      + ((it.runs || []).length > 1 ? '<span class="pill">' + it.runs.length + ' runs</span>' : '')
       + (it.imported ? '<span class="pill">From file</span>' : '')
       + (/^DEMO-/.test(it.pid || "") ? '<span class="pill">Quick demo</span>' : '')
+      + (it.demoMatch ? '<span class="pill">' + esc(outcomeLabel(it.demoMatch)) + '</span>' : '')
       + '</span></button></li>';
   }).join("") : '<li class="empty-state">' + (desk.items.length ? "No applicants match this filter." : "No profiles yet. They appear here when applicants finish the demo, or when you add profile files.") + '</li>';
   Array.prototype.forEach.call(app.querySelectorAll(".qitem"), function(b){ b.onclick = function(){ openItem(b.getAttribute("data-id")); }; });
@@ -2041,32 +2270,15 @@ function step(dir){
 
 /* ---------- one applicant ---------- */
 function openItem(id){
-  desk.current = id; desk.run = null;
+  desk.current = id;
   var it = currentItem(); if (!it) return;
   drawQueue();
   el("#vname").textContent = it.name || "Unnamed applicant";
   el("#dlone").disabled = false;
   el("#pdfone").disabled = !!desk.pdfBusy;
-  var runs = (it.runs || []).slice().sort(function(a, b){ return String(b.savedAt).localeCompare(String(a.savedAt)); });
-  var sel = el("#vrun");
-  sel.hidden = runs.length < 2;
-  sel.innerHTML = runs.map(function(r, i){
-    var t = PROFILE_TYPES[r.screeningProfile];
-    return '<option value="' + esc(r.pid) + '">' + (i === 0 ? "Latest run" : "Run of " + esc(String(r.savedAt).slice(0, 10))) + (t ? " · " + esc(t.title.replace(/^The /, "")) : "") + '</option>';
-  }).join("");
   setStatus("fstat", "wait", "Opening profile…");
   sendToFrame(mergedProfile(it));
   drawReview(it);
-}
-function openRun(pid){
-  var it = currentItem(); if (!it || !desk.db) return;
-  if (pid === it.pid){ desk.run = null; sendToFrame(mergedProfile(it)); return; }
-  setStatus("fstat", "wait", "Opening earlier run…");
-  desk.db.doc("profiles/" + it.id + "/runs/" + pid).get().then(function(doc){
-    if (!doc.exists){ setStatus("fstat", "no", "That run isn’t in the record."); return; }
-    desk.run = doc.data();
-    sendToFrame(mergedProfile(it, desk.run.profile));
-  });
 }
 function drawReview(it){
   var r = reviewFor(it), checks = r.checks;
@@ -2092,7 +2304,7 @@ function saveReview(it){
     desk.reviews[it.id] = review;
     drawQueue();
     refreshMatches();
-    sendToFrame(mergedProfile(it, desk.run && desk.run.profile));
+    sendToFrame(mergedProfile(it));
   };
   if (!desk.db){ done(); setStatus("rvstat", "wait", "Shown here only. The placement record isn’t available in this view."); return; }
   setStatus("rvstat", "wait", "Saving…");
@@ -2121,8 +2333,7 @@ function importTexts(texts){
   var at = nowISO();
   var items = profiles.map(function(p){
     var pid = (p.meta && p.meta.profileId) || ("import-" + Date.now().toString(36));
-    return indexFields(p, {id: "import-" + cleanId(pid), updatedAt: at, imported: true,
-      runs: [{pid: pid, savedAt: at, complete: !!(p.meta && p.meta.stages && p.meta.stages.postGame), screeningProfile: p.screening ? p.screening.profile : null}]});
+    return indexFields(p, {id: "import-" + cleanId(pid), updatedAt: at, imported: true});
   });
   if (!desk.db){
     items.forEach(function(it){ desk.items = desk.items.filter(function(x){ return x.id !== it.id; }); desk.items.unshift(it); });
@@ -2139,15 +2350,18 @@ function importTexts(texts){
 <script>
 "use strict";
 /* ============================================================
-   HOSTS AND MATCHES  (the staff desk's second tab)
-   Host profiles, for the older people offering a room, come from the
-   host spreadsheet (a saved CSV, or rows pasted from it) or JSON files.
-   They're kept in hosts/<host id>, which only Editors and the owner can
-   read. genstay-matching.js, published beside this page, compares every
-   host with every applicant whenever either side changes and suggests
-   the best pairings, with its reasons. Suggesting a pairing shortlists
-   the applicant for that homeowner in their review, so it shows in
-   their profile. Nobody is contacted.
+   HOSTS AND MATCHES  (the staff desk's second and third tabs)
+   Host profiles, for the older people offering a room, come from
+   JSON files (genstay-hosts.sample.json is the format) or the host
+   spreadsheet (a saved CSV, or rows pasted from it). They're kept in
+   hosts/<host id>, which only Editors and the owner can read.
+   genstay-matching.js, published beside this page, judges every host
+   and applicant from both sides whenever either changes, and suggests
+   the best overall allocation with its reasons. Suggesting a pairing
+   shortlists the applicant for that homeowner in their review, so it
+   shows in their profile. Nobody is contacted.
+   The live board shows each finished applicant with their best match:
+   on market day, the fictional pairing the participant was shown.
    This block is the same in pepaws-porch.html and pepaws-porch.demo.html.
    ============================================================ */
 var MATCHER_URL = "genstay-matching.js";
@@ -2170,7 +2384,8 @@ function loadMatcher(){
 function tabsHTML(){
   return '<div class="tabs" role="tablist" aria-label="Staff desk">'
     + '<button class="tab" role="tab" id="tab-app" aria-controls="deskapp" aria-selected="true">Applicants</button>'
-    + '<button class="tab" role="tab" id="tab-hosts" aria-controls="deskhosts" aria-selected="false">Hosts and matches</button></div>';
+    + '<button class="tab" role="tab" id="tab-hosts" aria-controls="deskhosts" aria-selected="false">Hosts and matches</button>'
+    + '<button class="tab" role="tab" id="tab-board" aria-controls="deskboard" aria-selected="false">Live board</button></div>';
 }
 function hostDeskHTML(){
   return '<div class="desk" id="deskhosts" role="tabpanel" aria-labelledby="tab-hosts" hidden>'
@@ -2186,12 +2401,17 @@ function hostDeskHTML(){
     + '</div><ul class="qlist" id="hlist"></ul></div>'
     + '<div class="viewer"><div class="vbar"><b class="grow" id="hname">Suggested pairings</b>'
     + '<button class="cont small" id="hoverview" hidden>All pairings</button><span class="status" id="mstat"></span></div>'
-    + '<div class="matchbody" id="mbody"></div></div></div>';
+    + '<div class="matchbody" id="mbody"></div></div></div>'
+    + '<div class="board" id="deskboard" role="tabpanel" aria-labelledby="tab-board" hidden>'
+    + '<div class="board-head"><div class="grow"><div class="secthead">Live</div><h2>Who matched with whom</h2></div>'
+    + '<div class="board-stats" id="board-stats"></div><button class="cont ghost small" id="board-full">Full screen</button></div>'
+    + '<div class="board-grid" id="board-grid" aria-live="polite"></div></div>';
 }
 
 function bindHostDesk(){
   el("#tab-app").onclick = function(){ showTab("app"); };
   el("#tab-hosts").onclick = function(){ showTab("hosts"); };
+  el("#tab-board").onclick = function(){ showTab("board"); };
   el("#hostimporter").onchange = function(){ importHostFiles(this.files); this.value = ""; };
   el("#hostpastebtn").onclick = function(){ el("#hostpastebox").hidden = false; el("#hostpastein").focus(); };
   el("#hostpastecancel").onclick = function(){ el("#hostpastebox").hidden = true; el("#hostpastein").value = ""; };
@@ -2215,6 +2435,9 @@ function bindHostDesk(){
   el("#hlist").addEventListener("click", matchClick);
   el("#mbody").addEventListener("click", matchClick);
   el("#mbody").addEventListener("change", function(e){ if (e.target.id === "hst-status") setHostStatus(desk.hostSel, e.target.value); });
+  var full = el("#board-full");
+  full.hidden = !document.fullscreenEnabled;
+  full.onclick = function(){ var b = el("#deskboard"); if (b.requestFullscreen) b.requestFullscreen().then(null, function(){}); };
 }
 function matchClick(e){
   var b = e.target.closest && e.target.closest("button");
@@ -2226,11 +2449,13 @@ function matchClick(e){
 }
 function showTab(name){
   desk.tab = name;
-  el("#deskapp").hidden = name !== "app";
-  el("#deskhosts").hidden = name !== "hosts";
-  el("#tab-app").setAttribute("aria-selected", String(name === "app"));
-  el("#tab-hosts").setAttribute("aria-selected", String(name === "hosts"));
+  ["app", "hosts", "board"].forEach(function(t){
+    el("#desk" + t).hidden = t !== name;
+    el("#tab-" + t).setAttribute("aria-selected", String(t === name));
+  });
+  clearInterval(desk.boardTick);
   if (name === "hosts") drawHosts();
+  if (name === "board"){ drawBoard(); desk.boardTick = setInterval(drawBoard, 20000); }
 }
 
 /* ---------- reading, saving and removing hosts ---------- */
@@ -2243,13 +2468,18 @@ function loadHosts(){
       refreshMatches();
       return;
     }
+    if (desk.hostsLive){ desk.hostsLive(); desk.hostsLive = null; }
+    var first = true;
     setStatus("hstat", "wait", "Reading host profiles…");
-    return desk.db.collection("hosts").limit(1000).get().then(function(res){
-      desk.hosts = res.docs.map(function(d){ return d.data(); }).filter(function(h){ return h && h.meta && h.meta.hostId; });
-      setStatus("hstat", "ok", "Read " + count(desk.hosts.length, "host profile") + ".");
+    /* live: another staff screen adding or changing a host shows up here too */
+    desk.hostsLive = desk.db.collection("hosts").limit(1000).onSnapshot(function(snap){
+      if (!desk) return;
+      desk.hosts = snap.docs.map(function(d){ return d.data(); }).filter(function(h){ return h && h.meta && h.meta.hostId; });
+      if (first) setStatus("hstat", "ok", "Read " + count(desk.hosts.length, "host profile") + ". Changes appear here as they’re made.");
+      first = false;
       refreshMatches();
     }, function(err){
-      setStatus("hstat", "no", "Couldn’t read the host profiles (" + ((err && err.code) || "unavailable") + "). Try Refresh.");
+      setStatus("hstat", "no", "Lost the live link to the host profiles (" + ((err && err.code) || "unavailable") + "). Press Refresh.");
     });
   });
 }
@@ -2294,8 +2524,8 @@ function saveHosts(list, statusId, okText){
 function setHostStatus(id, status){
   var h = hostById(id); if (!h) return;
   var copy = JSON.parse(JSON.stringify(h));
-  copy.meta.status = status; copy.meta.updatedAt = nowISO().slice(0, 10);
-  saveHosts([copy], "mstat", hostLabel(h) + ": " + GenStayMatch.HOST_STATUS[status].toLowerCase() + ".");
+  copy.meta.pairingStatus = status; copy.meta.updatedAt = nowISO().slice(0, 10);
+  saveHosts([copy], "mstat", hostLabel(h) + ": " + GenStayMatch.hostStatus(copy).label.toLowerCase() + ".");
 }
 /* Two clicks, because the viewer blocks confirm(). */
 function removeHost(b){
@@ -2325,12 +2555,14 @@ function refreshMatches(){
     return {id: it.id, name: it.name || "Unnamed applicant", profile: mergedProfile(it), suggestedHostId: (desk.reviews[it.id] || {}).suggestedHostId || ""};
   }), desk.hosts);
   if (desk.tab === "hosts") drawHosts();
+  if (desk.tab === "board") drawBoard();
   var it = currentItem();
   if (it) drawBestHosts(it);
 }
 function hostById(id){ return desk.hosts.filter(function(h){ return h.meta.hostId === id; })[0] || null; }
 function itemById(id){ return desk.items.filter(function(it){ return it.id === id; })[0] || null; }
 function hostLabel(h){ return window.GenStayMatch ? GenStayMatch.hostName(h) : (h.meta && h.meta.hostId) || "Host"; }
+function hostFirstOf(id){ var h = hostById(id); return h && window.GenStayMatch ? GenStayMatch.hostFirst(h) : "the host"; }
 function resultFor(hostId, studentId){
   var r = desk.match && desk.match.hosts[hostId];
   return r ? r.ranked.concat(r.ruledOut).filter(function(x){ return x.studentId === studentId; })[0] || null : null;
@@ -2344,6 +2576,7 @@ function linkedNames(hostId){
   }).map(function(x){ return x.studentName; }) : [];
 }
 function count(n, word){ return n + " " + word + (n === 1 ? "" : "s"); }
+function ordinal(n){ return n + (n % 10 === 1 && n % 100 !== 11 ? "st" : n % 10 === 2 && n % 100 !== 12 ? "nd" : n % 10 === 3 && n % 100 !== 13 ? "rd" : "th"); }
 function emptyHTML(text){ return '<div class="empty-state">' + esc(text) + '</div>'; }
 
 /* The applicant's review: shortlisted (unless already further along) for this homeowner. */
@@ -2379,21 +2612,21 @@ function hostIdFor(name, it){
   return before.suggestedFor && before.suggestedFor.trim().toLowerCase() === n ? before.suggestedHostId || null : null;
 }
 
-/* ---------- drawing ---------- */
+/* ---------- drawing the Hosts and matches tab ---------- */
 function drawHosts(){
   if (!desk || !el("#hlist")) return;
   var M = window.GenStayMatch, mt = desk.match;
   if (desk.hostSel && !hostById(desk.hostSel)) desk.hostSel = null;
   var hosts = desk.hosts.slice().sort(function(a, b){ return hostLabel(a).localeCompare(hostLabel(b)); });
   el("#hlist").innerHTML = hosts.length ? hosts.map(function(h){
-    var id = h.meta.hostId, r = mt && mt.hosts[id], best = r && r.ranked[0], linked = linkedNames(id), x = h.host || {};
+    var id = h.meta.hostId, r = mt && mt.hosts[id], best = r && r.ranked[0], linked = linkedNames(id), st = M ? M.hostStatus(h) : {label: "", available: true};
     return '<li><button class="qitem" data-host="' + esc(id) + '" aria-current="' + (desk.hostSel === id) + '">'
       + '<span class="nm">' + esc(hostLabel(h)) + '</span>'
-      + '<span class="when">' + esc([x.age, x.suburb].filter(Boolean).join(" · ")) + '</span>'
-      + '<span class="meta"><span class="pill">' + esc((M && M.HOST_STATUS[h.meta.status]) || h.meta.status || "") + '</span>'
+      + '<span class="when">' + esc([(h.host || {}).age, (h.home || {}).suburb].filter(Boolean).join(" · ")) + '</span>'
+      + '<span class="meta"><span class="pill">' + esc(st.label) + '</span>'
       + (linked.length ? '<span class="pill dark" style="background:var(--slate)">' + esc(linked.length > 1 ? linked.length + " paired by staff" : "Paired: " + linked[0]) + '</span>' : '')
-      + (best && !best.linked ? '<span class="pill dark" style="background:' + BAND[best.band][1] + '">Best: ' + esc(best.studentName) + ' · ' + best.score + '</span>'
-          : r && h.meta.status === "active" && !linked.length ? '<span class="pill">No suitable applicant yet</span>' : '')
+      + (best && !best.linked && st.available ? '<span class="pill dark" style="background:' + BAND[best.band][1] + '">Best: ' + esc(best.studentName) + ' · ' + best.score + '</span>'
+          : r && st.available && !linked.length ? '<span class="pill">No suitable applicant yet</span>' : '')
       + '</span></button></li>';
   }).join("") : '<li class="empty-state">No host profiles yet.</li>';
   var h = desk.hostSel && hostById(desk.hostSel);
@@ -2404,19 +2637,21 @@ function drawHosts(){
 
 function overviewHTML(){
   var mt = desk.match;
-  if (!desk.hosts.length) return emptyHTML("No host profiles yet. Download the host template, fill in one row per homeowner in Excel or Google Sheets, "
-    + "then add the saved CSV with Add host files, or copy the rows (heading row first) and use Paste hosts. Suggested pairings appear here as soon as hosts are added.");
+  if (!desk.hosts.length) return emptyHTML("No host profiles yet. Add the hosts file (JSON), or download the host template, fill in one row per homeowner "
+    + "in Excel or Google Sheets, and add the saved CSV, or copy the rows (heading row first) and use Paste hosts. Suggested pairings appear here as soon as hosts are added.");
   if (!mt) return emptyHTML("Working out the pairings…");
   var ids = Object.keys(mt.students);
-  if (!ids.length) return emptyHTML("No applicants to match yet. Pairings appear here when applicants finish, or when you add their profile files on the Applicants tab.");
+  if (!ids.length) return emptyHTML("No applicants to match yet. Pairings appear here as applicants finish, or when you add their profile files on the Applicants tab.");
   var pool = ids.filter(function(id){ return !mt.students[id].excluded.length; }).length;
-  var looking = desk.hosts.filter(function(h){ return h.meta.status === "active"; }).length;
-  var html = '<p class="sub">' + count(desk.hosts.length, "host") + ' (' + looking + ' looking) · ' + pool + ' of ' + count(ids.length, "applicant")
+  var looking = desk.hosts.filter(function(h){ return GenStayMatch.hostStatus(h).available; }).length;
+  var html = '<p class="sub">' + count(desk.hosts.length, "host") + ' (' + looking + ' available) · ' + pool + ' of ' + count(ids.length, "applicant")
     + ' in the matching pool · ' + count(mt.pairings.length, "pairing") + ' suggested.</p>'
-    + '<p class="sub" style="font-size:12.5px">Each suggestion uses one applicant and one room, best scores first, and keeps the pairings staff have already made. '
-    + 'Suggesting a pairing shortlists the applicant for that homeowner in their review. Nobody is contacted.</p>'
+    + '<p class="sub" style="font-size:12.5px">Each pairing is scored from both sides: how well the applicant meets the host’s needs, and how well the home suits the applicant. '
+    + 'The suggestions use one applicant per room and make the most suitable pairings overall, so someone may be suggested for their second-best host when their best suits another applicant much better. '
+    + 'Only pairings scoring ' + mt.minScore + ' or more are suggested: an applicant whose best is lower waits on the shortlist for a suitable host. '
+    + 'Pairings staff have made are kept. Suggesting a pairing shortlists the applicant for that homeowner in their review. Nobody is contacted.</p>'
     + '<div class="secthead">Suggested pairings</div>'
-    + (mt.pairings.length ? mt.pairings.map(function(p){ var r = resultFor(p.hostId, p.studentId); return r ? matchCardHTML(r, true) : ""; }).join("")
+    + (mt.pairings.length ? mt.pairings.map(function(p){ var r = resultFor(p.hostId, p.studentId); return r ? matchCardHTML(r, true, p) : ""; }).join("")
         : emptyHTML("No pairing passes every filter yet. Open a host to see who was ruled out, and why."));
   if (mt.alsoPaired.length) html += '<div class="secthead">Also paired by staff</div><ul class="why">' + mt.alsoPaired.map(function(a){
     return '<li class="' + (a.eligible ? "ok" : "no") + '"><button class="linkbtn" data-open="' + esc(a.studentId) + '">' + esc(a.studentName) + '</button> with '
@@ -2425,27 +2660,39 @@ function overviewHTML(){
   }).join("") + '</ul>';
   if (mt.unmatchedHosts.length) html += '<div class="secthead">Hosts still waiting</div><ul class="why">' + mt.unmatchedHosts.map(function(u){
     return '<li class="warn"><button class="linkbtn" data-host="' + esc(u.id) + '">' + esc(u.name) + '</button>: '
-      + esc(u.eligible ? count(u.eligible, "suitable applicant") + ", already suggested for other hosts"
+      + esc(u.eligible ? count(u.eligible, "suitable applicant") + ", each placed with a host that suits them better overall"
         : "no suitable applicant yet" + (u.reasons.length ? "; most were ruled out by " + u.reasons.join(", ") : "")) + '.</li>';
   }).join("") + '</ul>';
-  if (mt.unmatchedStudents.length) html += '<div class="secthead">Applicants without a suggestion</div><p class="sub">'
-    + esc(mt.unmatchedStudents.map(function(u){ return u.name + (u.eligible ? " (" + count(u.eligible, "possible host") + ")" : " (no suitable host yet)"); }).join(", ")) + '.</p>';
+  if (mt.unmatchedStudents.length) html += '<div class="secthead">Shortlisted: waiting for a suitable host</div><p class="sub">'
+    + esc(mt.unmatchedStudents.map(function(u){
+        return u.name + (u.strongEnough ? " (" + count(u.strongEnough, "strong enough host") + ", each placed with someone who suits them better overall)"
+          : u.eligible ? " (best so far " + u.best + ")" : " (no host passes every check yet)");
+      }).join(", ")) + '.</p>';
   return html;
 }
 
-function matchCardHTML(r, pairMode){
+function partsHTML(parts){
+  return parts.map(function(p){
+    return '<span class="mpart" title="' + esc(p.label + (p.note ? ": " + p.note : "")) + '">' + esc(p.label) + ' ' + Math.round(p.points) + '/' + p.weight
+      + '<i><b style="width:' + Math.round(p.value * 100) + '%"></b></i></span>';
+  }).join("");
+}
+/* One pairing: the overall score, each side's fit, the reasons, the actions. p (optional) is the allocation entry. */
+function matchCardHTML(r, pairMode, p){
   var it = itemById(r.studentId), type = it && PROFILE_TYPES[it.screeningProfile], status = it ? reviewFor(it).pairingStatus : "new";
-  var paired = r.linked && STAFF_PAIRED.indexOf(status) !== -1;
+  var paired = r.linked && STAFF_PAIRED.indexOf(status) !== -1, who = String(r.studentName).split(" ")[0], host = hostFirstOf(r.hostId);
   return '<div class="mcard"><div class="mhead">'
     + '<span class="score" style="background:' + (r.eligible ? BAND[r.band][1] : "var(--bad)") + '" title="' + esc(r.eligible ? BAND[r.band][0] : "Ruled out") + '">' + r.score + '</span>'
     + (pairMode ? '<b>' + esc(r.hostName) + '</b><span class="amp">and</span>' : '') + '<b>' + esc(r.studentName) + '</b>'
     + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '')
     + (paired ? '<span class="pill dark" style="background:var(--slate)">' + esc(label(PAIRING, status)) + ' by staff</span>' : '')
-    + '</div><div class="mparts">' + r.parts.map(function(p){
-        return '<span class="mpart" title="' + esc(p.label + ": " + p.note) + '">' + esc(p.label) + ' ' + Math.round(p.points) + '/' + p.weight
-          + '<i><b style="width:' + Math.round(p.value * 100) + '%"></b></i></span>';
-      }).join("") + '</div>'
+    + (p && !p.locked && p.studentRank > 1 ? '<span class="pill">' + esc(who + "’s " + ordinal(p.studentRank) + " choice") + '</span>' : '')
+    + (r.eligible && desk.match && r.score < desk.match.minScore ? '<span class="pill">Under ' + desk.match.minScore + ': not suggested automatically</span>' : '')
+    + '</div>'
+    + '<div class="sides"><span>For ' + esc(host) + ' <b>' + r.hostFit + '</b></span><span>For ' + esc(who) + ' <b>' + r.studentFit + '</b></span></div>'
     + whyHTML(r)
+    + '<details class="parts"><summary>Score breakdown</summary><div class="secthead">How well ' + esc(who) + ' meets ' + esc(host) + '’s needs</div><div class="mparts">' + partsHTML(r.parts.host) + '</div>'
+    + '<div class="secthead">How well the home suits ' + esc(who) + '</div><div class="mparts">' + partsHTML(r.parts.student) + '</div></details>'
     + '<div class="btnrow">'
     + (paired ? '' : '<button class="cont primary small" data-suggest="' + esc(r.studentId) + '" data-for="' + esc(r.hostId) + '"' + (r.eligible ? '' : ' disabled') + '>Suggest this pairing</button>')
     + '<button class="cont ghost small" data-open="' + esc(r.studentId) + '">Open applicant</button>'
@@ -2462,10 +2709,13 @@ function whyHTML(r){
 
 function hostDetailHTML(h){
   var M = GenStayMatch, r = desk.match && desk.match.hosts[h.meta.hostId], x = h.host || {}, ranked = r ? r.ranked : [];
+  var code = M.hostStatus(h).code, codes = Object.keys(M.HOST_STATUS);
+  if (codes.indexOf(code) === -1) codes.push(code);
   var html = '<div class="mcard"><div class="mhead"><b>' + esc(M.hostFullName(h)) + '</b>'
-    + (x.age ? '<span class="pill">' + esc(x.age) + '</span>' : '') + (x.suburb ? '<span class="pill">' + esc(x.suburb) + '</span>' : '')
-    + '<span class="grow"></span><label>Status <select id="hst-status">' + Object.keys(M.HOST_STATUS).map(function(k){
-        return '<option value="' + k + '"' + (h.meta.status === k ? " selected" : "") + '>' + esc(M.HOST_STATUS[k]) + '</option>';
+    + (x.age ? '<span class="pill">' + esc(x.age) + '</span>' : '') + ((h.home || {}).suburb ? '<span class="pill">' + esc(h.home.suburb) + '</span>' : '')
+    + ((h.meta || {}).hostFit ? '<span class="pill">' + esc(h.meta.hostFit) + ' fit</span>' : '')
+    + '<span class="grow"></span><label>Status <select id="hst-status">' + codes.map(function(k){
+        return '<option value="' + esc(k) + '"' + (code === k ? " selected" : "") + '>' + esc(M.HOST_STATUS[k] || k.replace(/_/g, " ")) + '</option>';
       }).join("") + '</select></label>'
     + '<button class="cont ghost small" id="hremove">Remove host</button></div>'
     + '<div class="hfacts">' + M.hostFacts(h).map(function(f){ return '<div><span>' + esc(f[0]) + '</span>' + esc(f[1]) + '</div>'; }).join("") + '</div></div>'
@@ -2488,15 +2738,16 @@ function drawBestHosts(it){
   if (!s){ box.innerHTML = ""; return; }
   if (s.excluded.length){ box.innerHTML = head + '<p class="sub" style="font-size:12.5px">Not matched automatically: ' + esc(s.excluded.join("; ")) + '.</p>'; return; }
   if (!s.ranked.length){
-    var near = s.ruledOut.slice().sort(function(a, b){ return a.blockers.length - b.blockers.length || b.score - a.score; })[0];
+    var near = s.ruledOut[0];
     box.innerHTML = head + '<p class="sub" style="font-size:12.5px">No suitable homeowner yet.'
       + (near ? ' Closest: ' + esc(near.hostName) + ' (' + esc(near.blockers.map(function(b){ return b.text; }).join("; ")) + ').' : '') + '</p>';
     return;
   }
-  box.innerHTML = head + s.ranked.slice(0, 3).map(function(r){
+  box.innerHTML = head + (s.ranked[0].score < desk.match.minScore ? '<p class="sub" style="font-size:12.5px">None reaches ' + desk.match.minScore + ' yet, so the applicant waits on the shortlist for a suitable host.</p>' : '')
+    + s.ranked.slice(0, 3).map(function(r){
     var h = hostById(r.hostId);
     return '<div class="hrow"><span class="score" style="background:' + BAND[r.band][1] + '" title="' + esc(BAND[r.band][0]) + '">' + r.score + '</span>'
-      + '<span class="grow"><b>' + esc(r.hostName) + '</b><small>' + esc([h && h.host && h.host.suburb, BAND[r.band][0]].filter(Boolean).join(" · ")) + '</small></span>'
+      + '<span class="grow"><b>' + esc(r.hostName) + '</b><small>' + esc([h && (h.home || {}).suburb, BAND[r.band][0]].filter(Boolean).join(" · ")) + '</small></span>'
       + '<button class="cont ghost small" data-use="' + esc(r.hostId) + '">Use</button></div>';
   }).join("");
   Array.prototype.forEach.call(box.querySelectorAll("[data-use]"), function(b){
@@ -2507,6 +2758,78 @@ function drawBestHosts(it){
       setStatus("rvstat", "wait", "Press Save review to keep this.");
     };
   });
+}
+
+/* ---------- the live board ---------- */
+/* A participant's outcome, as the results screen and this board show it: matched
+   with a host, shortlisted and waiting for a suitable host, or not placed. */
+function matchSummary(best){
+  if (!best) return null;
+  var M = GenStayMatch, out = {status: best.status, minScore: best.minScore, at: nowISO()};
+  if (best.status === "screened_out"){
+    out.reasons = [].concat.apply([], best.screenedOut.map(function(b){ return b.points; }));
+    out.basis = best.screenedOut.map(function(b){ return b.basis; });
+    return out;
+  }
+  var h = best.host, x = h.host || {}, r = best.result;
+  return Object.assign(out, {hostId: M.hostId(h), hostName: M.hostName(h), first: M.hostFirst(h), age: x.age || null,
+          partnerAge: x.householdType === "couple" && x.partner ? x.partner.age || null : null,
+          suburb: (h.home || {}).suburb || "", career: String(x.formerCareer || "").split(",")[0],
+          score: r.score, hostFit: r.hostFit, studentFit: r.studentFit, band: r.band,
+          highlights: r.forStudent, talkAbout: r.talkAbout, closest: best.closest, standsInWay: best.standsInWay,
+          shortfall: best.shortfall, setAside: best.setAside});
+}
+/* The outcome of a summary, including ones saved before outcomes had names. */
+function outcomeOf(m){ return !m ? null : m.status || (m.heldBack ? "screened_out" : m.closest ? "waiting" : "matched"); }
+function outcomeLabel(m){
+  var o = outcomeOf(m);
+  return o === "matched" ? "Demo match: " + m.first + " · " + m.score : o === "waiting" ? "Shortlisted: waiting for a host" : o === "screened_out" ? "Not placed: screening" : "";
+}
+/* The outcome the participant saw, or (for applicants who never saw one) their outcome against the hosts here. */
+function boardMatch(it){
+  if (it.demoMatch) return it.demoMatch;
+  if (!window.GenStayMatch || !desk.hosts.length) return null;
+  desk.boardCache = desk.boardCache || {};
+  var key = it.id + "@" + it.updatedAt + "@" + desk.hosts.length, c = desk.boardCache[key];
+  if (c === undefined) c = desk.boardCache[key] = matchSummary(GenStayMatch.bestMatch({id: it.id, name: it.name, profile: mergedProfile(it)}, desk.hosts));
+  return c;
+}
+function ago(iso){
+  var s = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000));
+  return !isFinite(s) ? "" : s < 60 ? "just now" : s < 3600 ? Math.floor(s / 60) + " min ago" : s < 86400 ? Math.floor(s / 3600) + " h ago" : String(iso).slice(0, 10);
+}
+function drawBoard(){
+  if (!desk || !el("#board-grid")) return;
+  var done = desk.items.filter(function(it){ return it.complete; });
+  var rows = done.map(function(it){ return {it: it, m: boardMatch(it)}; });
+  var tally = {}, n = {matched: 0, waiting: 0, screened_out: 0};
+  rows.forEach(function(r){ var o = outcomeOf(r.m); if (o) n[o]++; if (o === "matched") tally[r.m.first] = (tally[r.m.first] || 0) + 1; });
+  var top = Object.keys(tally).sort(function(a, b){ return tally[b] - tally[a]; }).slice(0, 3);
+  el("#board-stats").innerHTML = '<span><b>' + done.length + '</b> played</span><span><b>' + n.matched + '</b> placed</span>'
+    + '<span><b>' + n.waiting + '</b> on the shortlist</span><span><b>' + n.screened_out + '</b> not placed</span>'
+    + (top.length ? '<span>Most matched: ' + esc(top.map(function(k){ return k + " (" + tally[k] + ")"; }).join(", ")) + '</span>' : '');
+  /* a new arrival animates in once, and stays highlighted for 20 seconds */
+  var seen = desk.boardSeen, firstDraw = !seen, now = Date.now();
+  desk.boardSeen = seen = seen || {};
+  el("#board-grid").innerHTML = rows.length ? rows.slice(0, 60).map(function(r){
+    var it = r.it, m = r.m, o = outcomeOf(m), arrive = !firstDraw && !seen[it.id];
+    if (!seen[it.id]) seen[it.id] = firstDraw ? 1 : now;
+    var fresh = seen[it.id] > 1 && now - seen[it.id] < 20000;
+    var initials = o === "matched" ? m.hostName.split(/\s+/).filter(function(w){ return w !== "and"; }) : [];
+    initials = initials.length ? initials[0].charAt(0) + (initials.length > 1 ? initials[initials.length - 1].charAt(0) : "") : "";
+    return '<article class="bcard' + (o === "waiting" ? " waiting" : o === "screened_out" ? " out" : "") + (fresh ? " fresh" : "") + (arrive ? " arrive" : "") + '">'
+      + '<div class="b-top"><span class="b-person">' + esc(String(it.name || "Someone").split(" ")[0]) + '</span><span class="b-when">' + esc(ago(it.updatedAt)) + '</span></div>'
+      + (o === "matched" ? '<div class="b-arrow">matched with</div>'
+          + '<div class="b-host"><span class="b-avatar" aria-hidden="true">' + esc(initials) + '</span><span class="b-name">' + esc(m.first) + (m.age ? ", " + m.age + (m.partnerAge ? " and " + m.partnerAge : "") : "") + '</span>'
+          + '<span class="b-score">' + m.score + '</span></div>'
+          + '<div class="b-sub">' + esc([m.suburb, m.career].filter(Boolean).join(" · ")) + '</div>'
+          + (m.highlights && m.highlights.length ? '<ul class="b-why">' + m.highlights.slice(0, 2).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>' : '')
+        : o === "waiting" ? '<div class="b-arrow">shortlisted</div><div class="b-state">Waiting for a suitable host</div>'
+          + '<div class="b-sub">' + (m.closest ? "No current host passes every check yet" : "Best so far " + m.score + "; we place at " + (m.minScore || 65) + " or more") + '</div>'
+        : o === "screened_out" ? '<div class="b-arrow">not placed this time</div><div class="b-sub">Safety and screening come first</div>'
+        : '<div class="b-arrow">' + (desk.hosts.length ? "no match yet" : "add hosts to see matches") + '</div>')
+      + '</article>';
+  }).join("") : '<div class="empty-state">Matches appear here, newest first, as people finish.</div>';
 }
 </script>
 <script>
@@ -2529,7 +2852,7 @@ window.addEventListener("hashchange", function(){
     if (S && S.pid && !S.submittedAt) save();
     S = freshState(); S.view = "staff"; render();
   } else if (S && S.view === "staff"){
-    desk = null; S = freshState(); render();
+    stopLive(); desk = null; S = freshState(); render();
   }
 });
 boot();
