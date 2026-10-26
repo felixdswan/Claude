@@ -95,4 +95,33 @@ function newPageFactory(errors, file) {
   };
 }
 
-module.exports = { chromium, serve, MOCK, newPageFactory };
+/* Story-data checks that don't depend on the path a player takes (both pages):
+   the step has one name, and a choice on the days before the fall that mentions
+   it names it, because the line introducing it is on the screen before. */
+async function storyDataProblems(page) {
+  return page.evaluate(() => {
+    const out = [], all = [];
+    const walk = (x, where) => {
+      if (typeof x === "string") all.push([where, x]);
+      else if (Array.isArray(x)) x.forEach((y, i) => walk(y, where + "[" + i + "]"));
+      else if (x && typeof x === "object") Object.keys(x).forEach((k) => walk(x[k], where + "." + k));
+    };
+    walk(DAYS, "DAYS");
+    if (typeof SCENARIO_POOLS !== "undefined") walk(SCENARIO_POOLS, "SCENARIO_POOLS");
+    if (typeof REDEMPTION_STORIES !== "undefined") walk(REDEMPTION_STORIES, "REDEMPTION_STORIES");
+    all.forEach(([where, text]) => { if (/\bback step\b/i.test(text)) out.push(where + ': says "back step"; the story calls it the brick step'); });
+    DAYS.forEach((d) => d.steps.filter((s) => s.t === "choice").forEach((s) => {
+      [s.prompt].concat(s.options.map((o) => o.text)).forEach((text) => {
+        if (/\bthe neighbour\b/i.test(text)) out.push("Day " + d.n + ': "' + text + '" says "the neighbour" although no neighbour has appeared on every path to it; say "a neighbour"');
+      });
+    }));
+    DAYS.filter((d) => d.n < 11).forEach((d) => d.steps.filter((s) => s.t === "choice").forEach((s) => {
+      [s.prompt].concat(s.options.map((o) => o.text)).forEach((text) => {
+        if (/\bstep\b/i.test(text) && !/brick step/i.test(text)) out.push("Day " + d.n + ': "' + text + '" mentions the step without naming it, so it has nothing to refer to on its own screen');
+      });
+    }));
+    return out;
+  });
+}
+
+module.exports = { chromium, serve, MOCK, newPageFactory, storyDataProblems };
