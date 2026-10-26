@@ -191,6 +191,17 @@ The screening game (`game/pepaws-porch.html`) builds the profile itself. There i
 | Post | Five short pages after Day 14 | every other Pre and Post field above; `meta.stages.postGame` |
 | Staff | Staff desk (`#staff`) | `meta.pairingStatus`, `meta.suggestedFor`, `checks.*`, `screening.watchPoint` |
 
+### Quick demo
+
+`game/pepaws-porch.demo.html` builds the same profile from eight days of timed multiple choice and two pages of key matching questions, so it fills fewer fields. Differences:
+
+- `meta.profileId` starts with `DEMO-`.
+- `screening.pathByDay` is `[{day, path}]` for the eight days played. Days keep their full-fortnight numbers (1, 2, 4, 6, 8, 9, 11, 14), so `screening.landmarks` uses 6, 9, 11 and 14 like the full game.
+- `screening.flags` includes `quick_demo`, plus `missed_timer` when a 25-second timer ran out.
+- `screening.watchPoint` always opens with a quick-demo note and lists any timed-out questions.
+- No `screening.answers`, `finalWords` or `redemption` (there are no written answers and no Day 13), and no contact details beyond the email.
+- `interests.homeownerBackground` comes from the area of study, as in the full game's pre-fill.
+
 ### Automatic checks
 
 Everything the applicant writes, in the game and in the final questions, is checked against plain word lists. Each hit is quoted for staff, and the profile is marked **Needs attention** on the staff desk.
