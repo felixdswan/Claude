@@ -161,6 +161,45 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 .review textarea{min-height:76px}
 .empty-state{padding:28px 20px;display:flex;flex-direction:column;gap:8px;color:var(--ink-2);font-size:14px}
 .cont.small{padding:7px 12px;font-size:13px}
+/* hosts and matches */
+.tabs{display:flex;gap:6px;margin-top:9px}
+.tab{background:transparent;border:1px solid var(--line-2);border-radius:8px;padding:6px 12px;font:600 13px/1.2 var(--body);color:var(--ink-2)}
+.tab:hover{background:var(--field)}
+.tab[aria-selected="true"]{background:var(--slate);border-color:var(--slate);color:var(--on-dark)}
+.matchbody{flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.secthead{font:600 11px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin-top:4px}
+.mcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 13px;display:flex;flex-direction:column;gap:9px}
+.mhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.mhead b{font-size:15px}
+.mhead .amp{font-size:13px;color:var(--ink-3)}
+.mhead .grow{flex:1}
+.mhead label{flex-direction:row;align-items:center;gap:6px;font-size:12px}
+.mhead select{width:auto;padding:6px 8px;font-size:13px}
+.score{font:700 13px/1 var(--mono);min-width:36px;text-align:center;padding:7px 6px;border-radius:8px;color:var(--on-dark);background:var(--slate)}
+.mparts{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px 12px}
+.mpart{font:500 11px/1.3 var(--mono);color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
+.mpart i{display:block;height:4px;border-radius:2px;background:var(--sunk);overflow:hidden}
+.mpart i b{display:block;height:100%;background:var(--sage)}
+.why{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13.5px;line-height:1.4;color:var(--ink)}
+.why li{padding-left:19px;position:relative}
+.why li::before{position:absolute;left:2px;top:0;font-weight:700}
+.why .ok::before{content:"✓";color:var(--good)}
+.why .warn::before{content:"!";color:var(--warn)}
+.why .no::before{content:"✕";color:var(--bad)}
+.mcard details summary,details.out summary{cursor:pointer;font-size:13px;color:var(--ink-2)}
+.mcard details .why{margin-top:6px}
+details.out{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 13px}
+details.out .why{margin-top:8px}
+.hfacts{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px 16px;font-size:13.5px;line-height:1.4}
+.hfacts div{display:flex;flex-direction:column;gap:1px}
+.hfacts span{font:600 10.5px/1.4 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.linkbtn{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--slate);text-decoration:underline;cursor:pointer}
+.bestfor{display:flex;flex-direction:column;gap:7px}
+.bestfor:empty{display:none}
+.bestfor .hrow{display:flex;align-items:center;gap:8px;font-size:13px;line-height:1.3}
+.bestfor .hrow .grow{flex:1;min-width:0;display:flex;flex-direction:column}
+.bestfor .hrow small{color:var(--ink-3);font-size:11.5px}
+.bestfor .score{min-width:32px;padding:6px 4px;font-size:12px}
 @media (max-width:900px){
   #app.wide{height:auto;min-height:94vh}
   .desk{grid-template-columns:1fr}
@@ -689,8 +728,8 @@ var DAYS = [
    steps:[
     {t:"say", narr:true, text:"Margaret “Marg” Hollis, 78, welcomes you into the Hollis family home. She has just come in from the garden. The kettle is on and a cake is set on the table. The spare room is yours for a third of the usual rent, in exchange for about ten hours a week of shared household life."},
     {t:"choice", prompt:"What do you do first?", options:[
-      {text:"Have a tea, sit down and ask about some photographs.", fx:impact(1,1,0,0), tag:"arrival_connected", reply:"Marg tells you who is in each photograph on the fridge, then asks what you’re studying."},
-      {text:"Have a tea and ask for a quick tour and the house routines.", fx:impact(0,1,1,0), tag:"arrival_tour", reply:"You learn which door sticks and where the spare key lives. Marg likes that you asked."},
+      {text:"Have a tea, sit down and ask about some photographs.", fx:impact(1,1,0,0), tag:"arrival_connected", reply:"Marg tells you who is in each photograph on the fridge."},
+      {text:"Have a tea and ask for a quick tour of the house.", fx:impact(0,1,1,0), tag:"arrival_tour", reply:"You learn which door sticks and where the spare key lives. Marg likes that you asked."},
       {text:"Thank Marg, say you’re exhausted, and go and unpack first.", fx:impact(-1,0,0,0), tag:"arrival_alone", reply:"Marg says the tea will keep. When you come back out, she has saved you a slice of cake."},
       {text:"Ask for the Wi-Fi password and where you can keep your groceries.", fx:impact(-1,0,1,0), tag:"arrival_practical", reply:"Marg points to the card by the phone and clears you a shelf. The welcome stays polite."}
     ]},
@@ -747,7 +786,7 @@ var DAYS = [
   {n:4, title:"Generational gap", time:"6:20 pm", zone:"yard", light:"dusk",
    scene:{marg:{pose:"stand", x:250, y:320, s:0.8, hold:"phone", mood:"neutral"}, stepLoose:true},
    steps:[
-    {t:"say", narr:true, opening:true, text:"Marg is looking at her phone when she receives a text from her bank. It asks her to reset her password urgently, and she is about to tap the link. As she steps out the back door, you glimpse the uneven brick step to the granny flat again."},
+    {t:"say", narr:true, opening:true, text:"Marg is looking at her phone when she receives a text from her bank. It asks her to reset her password urgently, and she is about to tap the link. As she steps out the back door, you notice the uneven brick step to the granny flat that Marg warned you about."},
     {t:"choice", prompt:"What do you do about the text?", options:[
       {text:"Ask if you can look at it together, point out the warning signs, and offer to call the bank on the number from her card.", fx:impact(1,1,0,1), tag:"scam_taught", reply:"Marg spots the odd sender address herself. You ring the number on the back of her card, not the one in the message."},
       {text:"Take the phone and delete the message yourself.", fx:impact(0,-1,0,1), tag:"phone_taken", reply:"The message is gone. Marg takes her phone back: “I can learn this, you know.”"},
@@ -984,7 +1023,7 @@ var DAYS = [
     {t:"say", narr:true, pathText:{
       warm:"At the hospital, Marg is stable and recovering. She asks for you by name, takes your hand and says, “Thank you for staying.” She mentions she has a new idea for the spare room.",
       steady:"At the hospital, Marg is stable and recovering. She thanks you, a little formally, and seems surprised by how you showed up.",
-      distant:"At the hospital, Marg is stable and recovering. She thanks you, then quietly asks whether you’d like her to speak to the program coordinator about how things have gone."
+      distant:"At the hospital, Marg is stable and recovering. She thanks you, then quietly asks whether you’d like her to speak to the placement service about how things have gone."
     }, text:"At the hospital, Marg is stable and recovering."}
    ]}
 ];
@@ -993,7 +1032,7 @@ var DAYS = [
    matching variant replaces that day's opening text. */
 var SCENARIO_POOLS = {
   2: [
-    {id:"d2-connection", requiresAnyTags:["arrival_connected","motivation_company","motivation_learning"], opening:"After yesterday’s tea, Marg has saved you a seat. The radio is on quietly in the corner."},
+    {id:"d2-connection", requiresAnyTags:["arrival_connected","motivation_company","motivation_learning"], opening:"Marg has saved you a seat in the lounge. The radio is on quietly in the corner."},
     {id:"d2-independent", requiresAnyTags:["arrival_alone","arrival_practical","motivation_study","motivation_saving"], opening:"A list of house routines is stuck to the fridge. Marg finds you in the lounge to talk it through."}
   ],
   3: [
@@ -1001,8 +1040,8 @@ var SCENARIO_POOLS = {
     {id:"d3-own-rhythm", requiresAnyTags:["courteous_independence","dinner_avoided"], opening:"Marg asks about your course before getting on with her morning. She mentions she spent thirty-five years as {{career}}. A box of {{papers}} sits in the hallway."}
   ],
   4: [
-    {id:"d4-curious", requiresAnyTags:["asked_about_career","career_curiosity","career_exchange"], opening:"Marg is looking at her phone when she receives a text from her bank. After yesterday’s chat, she turns the screen towards you. It asks her to reset her password urgently, and her thumb is over the link. As she steps out the back door, you glimpse the uneven brick step again."},
-    {id:"d4-surface", requiresAnyTags:["career_one_way","career_deferred"], opening:"Marg is looking at her phone when she receives a text from her bank. It looks urgent: reset your password now. She is about to tap the link. As she steps out the back door, you glimpse the uneven brick step again."}
+    {id:"d4-curious", requiresAnyTags:["asked_about_career","career_curiosity","career_exchange"], opening:"Marg is looking at her phone when she receives a text from her bank. After yesterday’s chat, she turns the screen towards you. It asks her to reset her password urgently, and her thumb is over the link. As she steps out the back door, you notice the uneven brick step Marg warned you about."},
+    {id:"d4-surface", requiresAnyTags:["career_one_way","career_deferred"], opening:"Marg is looking at her phone when she receives a text from her bank. It looks urgent: reset your password now. She is about to tap the link. As she steps out the back door, you notice the uneven brick step Marg warned you about."}
   ],
   5: [
     {id:"d5-confident", requiresAnyTags:["scam_taught","scam_escalated"], opening:"After yesterday’s bank scare, Marg is in good spirits. She has been invited to a community garden morning, and asks if you’d like to come and meet the neighbours. You have a big assignment due tomorrow, and a classmate has texted about a study session on campus."},
@@ -1017,8 +1056,10 @@ var SCENARIO_POOLS = {
     {id:"d10-boundary-strained", requiresAnyTags:["boundary_avoided","boundary_sharp","boundary_lecture","boundary_laughed"], opening:"Breakfast is quiet after last night. There’s a plate of biscuits on the table, and Marg seems unsure whether you want to talk."}
   ],
   12: [
-    {id:"d12-followthrough", requiresAnyTags:["fall_supported","step_reported","step_plan"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings to ask how the repair and the follow-up are going, and asks to speak with you."},
-    {id:"d12-unresolved", requiresAnyTags:["fall_secret","fall_told_behind_back","step_ignored","step_diy","fall_dismissed"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings after hearing about it from a neighbour, and asks to speak with you."}
+    {id:"d12-followthrough", requiresAnyTags:["step_reported","step_plan"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings to ask how the repair and the follow-up are going, and asks to speak with you."},
+    {id:"d12-told", requiresAnyTags:["fall_supported"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings after Marg’s call to him, and asks to speak with you."},
+    {id:"d12-called", requiresAnyTags:["fall_told_behind_back"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings back after your call, and asks to speak with you."},
+    {id:"d12-unresolved", requiresAnyTags:["fall_secret","step_ignored","step_diy","fall_dismissed"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings after hearing about it from a neighbour, and asks to speak with you."}
   ]
 };
 
@@ -1036,7 +1077,7 @@ var REDEMPTION_STORIES = {
   boundary_laughed:"A similar remark comes up again. This time there is room to say what you actually think.",
   boundary_sharp:"The conversation from the other night is still unfinished. Marg asks whether you want to talk about how it ended.",
   boundary_lecture:"Marg remembers the other night, and asks if you can explain your view without it turning into an argument.",
-  fall_dismissed:"The repair plan for the back step is still open. Marg asks whether you’d like to help see it through.",
+  fall_dismissed:"Marg is still sore from the fall. She asks whether you’d help her make a plan in case it happens again.",
   step_ignored:"The back step still hasn’t been fixed. You have another chance to raise it and agree on what happens next.",
   fall_lifted:"Marg’s hip is still sore from the fall. She asks for a hand getting something down from a high shelf, and how you help this time is up to you.",
   fall_told_behind_back:"Marg brings up the call you made to David behind her back. She isn’t angry, but she wants to talk about it.",
@@ -1660,6 +1701,7 @@ var Q_PAGES = [
     {id:"canOffer", path:"interests.canOffer", type:"chips", label:"Something you could share or teach", full:true, other:true, opts:["Tech and phone help","Cooking","Conversation","Gardening","Music","Language practice","Help with forms and paperwork"]},
     {id:"wantsToLearn", path:"interests.wantsToLearn", type:"chips", label:"Something you’d like to learn", full:true, other:true, opts:["Gardening","Family recipes","Local history","Life advice","Crafts","Card games"]},
     {id:"homeownerBackground", path:"interests.homeownerBackground", type:"text", label:"A homeowner background that would suit you", full:true, ph:"e.g. retired nurse or carer"},
+    {id:"fieldMentor", path:"interests.fieldMentor", type:"select", label:"Would you like a homeowner who worked in your field?", req:true, full:true, opts:[["keen","Yes, I’d love that"],["open","It would be nice"],["no","It doesn’t matter to me"]]},
     {id:"lifeGoals", path:"interests.lifeGoals", type:"list", label:"Goals for the next few years", full:true, hint:"Separate with commas."}
   ]}
 ];
@@ -1996,7 +2038,7 @@ function offerDownload(filename, text, statusId, onFail){
 }
 /* Outside claude.ai (a local copy of the page) the browser can download directly. */
 function browserDownload(filename, data){
-  var type = /\.pdf$/.test(filename) ? "application/pdf" : "application/json";
+  var type = /\.pdf$/.test(filename) ? "application/pdf" : /\.csv$/.test(filename) ? "text/csv" : "application/json";
   var url = URL.createObjectURL(new Blob([data], {type: type}));
   var a = document.createElement("a");
   a.href = url; a.download = filename;
@@ -2146,11 +2188,12 @@ function mergedProfile(item, profile){
 
 function renderStaff(){
   app.className = "wide";
-  desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, run: null, frame: null, ready: false, pending: null};
+  desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, run: null, frame: null, ready: false, pending: null,
+          hosts: [], match: null, hostSel: null, tab: "app"};
   app.innerHTML =
     '<div class="topbar"><div class="toprow"><span class="daylabel">Pepaws Porch · staff review</span>'
-    + '<span class="clock" id="acount">loading…</span></div></div>'
-    + '<div class="desk">'
+    + '<span class="clock" id="acount">loading…</span></div>' + tabsHTML() + '</div>'
+    + '<div class="desk" id="deskapp" role="tabpanel" aria-labelledby="tab-app">'
     + '<div class="queue"><div class="qtools">'
     + '<input type="text" id="qsearch" placeholder="Search by name or email" aria-label="Search applicants">'
     + '<select id="qfilter" aria-label="Filter by pairing status"><option value="all">All applicants</option><option value="attention">Needs attention</option>'
@@ -2173,11 +2216,11 @@ function renderStaff(){
     + '<span class="status" id="fstat"></span></div>'
     + '<div class="vbody"><iframe id="pframe" title="GenStay matching profile" src="' + TEMPLATE_URL + '?embed"></iframe>'
     + '<aside class="review" id="review"><div class="empty-state">Pick an applicant from the queue to review their profile.</div></aside></div>'
-    + '</div></div>';
+    + '</div></div>' + hostDeskHTML();
 
   desk.frame = el("#pframe");
   setTimeout(function(){ if (desk && !desk.ready) frameFallback(); }, 5000);
-  el("#refresh").onclick = function(){ loadQueue(); };
+  el("#refresh").onclick = function(){ loadQueue(); loadHosts(); };
   el("#qsearch").oninput = function(){ desk.search = this.value.trim().toLowerCase(); drawQueue(); };
   el("#qfilter").onchange = function(){ desk.filter = this.value; drawQueue(); };
   el("#prev").onclick = function(){ step(-1); };
@@ -2209,18 +2252,21 @@ function renderStaff(){
     offerDownload("genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".json", JSON.stringify(p, null, 2), "fstat");
   };
   el("#vrun").onchange = function(){ openRun(this.value); };
+  bindHostDesk();
   Promise.all([getCap("db"), getCap("user")]).then(function(caps){
     desk.db = caps[0]; desk.user = caps[1];
-    if (!desk.user) return loadQueue();
+    if (!desk.user){ loadHosts(); return loadQueue(); }
     return Promise.all([desk.user.canEdit(), desk.user.id()]).then(function(r){
       desk.uid = r[1];
       if (!r[0]){
         desk.db = null;
         setStatus("astat", "no", "This page is for placement staff. Ask the owner of this artifact to give you Editor access.");
+        setStatus("hstat", "no", "Host profiles are for placement staff only.");
         el("#acount").textContent = "staff only";
         return;
       }
       loadQueue();
+      loadHosts();
     });
   });
 }
@@ -2317,6 +2363,7 @@ function loadQueue(openId){
     setStatus("astat", "wait", "The placement record isn’t available in this view. Profile files you add are shown here but not saved.");
     el("#acount").textContent = desk.items.length + " in queue";
     drawQueue();
+    refreshMatches();
     if (openId) openItem(openId);
     return Promise.resolve();
   }
@@ -2330,6 +2377,7 @@ function loadQueue(openId){
     res[1].docs.forEach(function(d){ desk.reviews[d.id] = d.data(); });
     setStatus("astat", "ok", "Read " + desk.items.length + " profile" + (desk.items.length === 1 ? "" : "s") + ".");
     drawQueue();
+    refreshMatches();
     var target = openId || (!desk.current && visibleItems().length ? visibleItems()[0].id : null);
     if (target) openItem(target);
   }, function(err){
@@ -2407,19 +2455,23 @@ function drawReview(it){
     + '<p class="sub" style="font-size:12.5px">Saved separately from the applicant’s answers, and shown in the profile.</p>'
     + '<label>Pairing status<select id="rv-status">' + opts(PAIRING, r.pairingStatus) + '</select></label>'
     + '<label>Suggested homeowner<input type="text" id="rv-for" maxlength="120" value="' + esc(r.suggestedFor) + '" placeholder="e.g. Margaret Hollis"></label>'
+    + '<div class="bestfor" id="rv-best"></div>'
     + CHECKS.map(function(c){ return '<label>' + c[1] + '<select id="rv-' + c[0] + '">' + opts(CHECK_STATES, checks[c[0]]) + '</select></label>'; }).join("")
     + '<label>Watch-point<textarea id="rv-watch" maxlength="2000" placeholder="e.g. Reliability is the lowest meter. Agree a weekly help schedule at the intro call.">' + esc(r.watchPoint) + '</textarea></label>'
     + '<button class="cont primary small" id="rv-save">Save review</button>'
     + '<div class="status" id="rvstat"></div>';
   el("#rv-save").onclick = function(){ saveReview(it); };
+  drawBestHosts(it);
 }
 function saveReview(it){
   var review = {pairingStatus: el("#rv-status").value, suggestedFor: el("#rv-for").value.trim(), watchPoint: el("#rv-watch").value.trim(),
                 checks: {}, reviewedAt: nowISO(), reviewedBy: desk.uid || null};
   CHECKS.forEach(function(c){ var v = el("#rv-" + c[0]).value; if (v) review.checks[c[0]] = v; });
+  review.suggestedHostId = hostIdFor(review.suggestedFor, it);
   var done = function(){
     desk.reviews[it.id] = review;
     drawQueue();
+    refreshMatches();
     sendToFrame(mergedProfile(it, desk.run && desk.run.profile));
   };
   if (!desk.db){ done(); setStatus("rvstat", "wait", "Shown here only. The placement record isn’t available in this view."); return; }
@@ -2463,7 +2515,382 @@ function importTexts(texts){
   }, Promise.resolve()).then(function(){ loadQueue(items[0].id); },
     function(err){ setStatus("astat", "no", "Couldn’t add the profiles (" + ((err && err.code) || "unavailable") + ")."); });
 }
+</script>
+<script>
+"use strict";
+/* ============================================================
+   HOSTS AND MATCHES  (the staff desk's second tab)
+   Host profiles, for the older people offering a room, come from the
+   host spreadsheet (a saved CSV, or rows pasted from it) or JSON files.
+   They're kept in hosts/<host id>, which only Editors and the owner can
+   read. genstay-matching.js, published beside this page, compares every
+   host with every applicant whenever either side changes and suggests
+   the best pairings, with its reasons. Suggesting a pairing shortlists
+   the applicant for that homeowner in their review, so it shows in
+   their profile. Nobody is contacted.
+   This block is the same in pepaws-porch.html and pepaws-porch.demo.html.
+   ============================================================ */
+var MATCHER_URL = "genstay-matching.js";
+var MATCHER_MISSING = "The matching script (genstay-matching.js) didn’t load. It must be published next to this page.";
+var BAND = {strong: ["Strong match", "var(--good)"], good: ["Good match", "var(--sage)"], possible: ["Possible match", "var(--warn)"], weak: ["Weak match", "var(--clay)"]};
+var STAFF_PAIRED = ["shortlisted", "intro_booked", "matched"];
+var matcherLoading = null;
+function loadMatcher(){
+  if (window.GenStayMatch) return Promise.resolve(window.GenStayMatch);
+  if (!matcherLoading) matcherLoading = new Promise(function(resolve){
+    var s = document.createElement("script");
+    s.src = MATCHER_URL;
+    s.onload = function(){ resolve(window.GenStayMatch || null); };
+    s.onerror = function(){ matcherLoading = null; s.remove(); resolve(null); };
+    document.head.appendChild(s);
+  });
+  return matcherLoading;
+}
 
+function tabsHTML(){
+  return '<div class="tabs" role="tablist" aria-label="Staff desk">'
+    + '<button class="tab" role="tab" id="tab-app" aria-controls="deskapp" aria-selected="true">Applicants</button>'
+    + '<button class="tab" role="tab" id="tab-hosts" aria-controls="deskhosts" aria-selected="false">Hosts and matches</button></div>';
+}
+function hostDeskHTML(){
+  return '<div class="desk" id="deskhosts" role="tabpanel" aria-labelledby="tab-hosts" hidden>'
+    + '<div class="queue"><div class="qtools">'
+    + '<div class="btnrow"><label class="cont small" style="display:inline-flex;flex-direction:row;cursor:pointer">Add host files<input type="file" id="hostimporter" accept=".csv,.tsv,.txt,.json,text/csv,text/plain,application/json" multiple hidden></label>'
+    + '<button class="cont ghost small" id="hostpastebtn">Paste hosts</button>'
+    + '<button class="cont ghost small" id="hrefresh">Refresh</button></div>'
+    + '<div class="btnrow"><button class="cont ghost small" id="hosttemplate">Host template (CSV)</button>'
+    + '<button class="cont ghost small" id="hostexport">Download hosts (CSV)</button></div>'
+    + '<div id="hostpastebox" hidden style="display:flex;flex-direction:column;gap:6px"><textarea id="hostpastein" aria-label="Paste hosts" placeholder="Paste rows copied from the host spreadsheet, heading row first, or host profile JSON" style="min-height:110px;font:400 12px/1.4 var(--mono)"></textarea>'
+    + '<div class="btnrow"><button class="cont primary small" id="hostpasteadd">Add hosts</button><button class="cont ghost small" id="hostpastecancel">Cancel</button></div></div>'
+    + '<div class="status" id="hstat"><span class="dotled wait"></span><span>Reading host profiles…</span></div>'
+    + '</div><ul class="qlist" id="hlist"></ul></div>'
+    + '<div class="viewer"><div class="vbar"><b class="grow" id="hname">Suggested pairings</b>'
+    + '<button class="cont small" id="hoverview" hidden>All pairings</button><span class="status" id="mstat"></span></div>'
+    + '<div class="matchbody" id="mbody"></div></div></div>';
+}
+
+function bindHostDesk(){
+  el("#tab-app").onclick = function(){ showTab("app"); };
+  el("#tab-hosts").onclick = function(){ showTab("hosts"); };
+  el("#hostimporter").onchange = function(){ importHostFiles(this.files); this.value = ""; };
+  el("#hostpastebtn").onclick = function(){ el("#hostpastebox").hidden = false; el("#hostpastein").focus(); };
+  el("#hostpastecancel").onclick = function(){ el("#hostpastebox").hidden = true; el("#hostpastein").value = ""; };
+  el("#hostpasteadd").onclick = function(){
+    var text = el("#hostpastein").value.trim(); if (!text) return;
+    importHostTexts([text]); el("#hostpastein").value = ""; el("#hostpastebox").hidden = true;
+  };
+  el("#hrefresh").onclick = function(){ loadQueue(); loadHosts(); };
+  /* CSVs start with a byte-order mark so Excel reads the curly apostrophes as UTF-8. */
+  el("#hosttemplate").onclick = function(){
+    loadMatcher().then(function(M){
+      if (!M){ setStatus("hstat", "no", MATCHER_MISSING); return; }
+      offerDownload("genstay-host-template.csv", "﻿" + M.hostCsvTemplate(), "hstat");
+    });
+  };
+  el("#hostexport").onclick = function(){
+    if (!desk.hosts.length || !window.GenStayMatch){ setStatus("hstat", "wait", "No host profiles to download yet."); return; }
+    offerDownload("genstay-hosts-" + nowISO().slice(0, 10) + ".csv", "﻿" + GenStayMatch.hostsToCsv(desk.hosts), "hstat");
+  };
+  el("#hoverview").onclick = function(){ desk.hostSel = null; drawHosts(); };
+  el("#hlist").addEventListener("click", matchClick);
+  el("#mbody").addEventListener("click", matchClick);
+  el("#mbody").addEventListener("change", function(e){ if (e.target.id === "hst-status") setHostStatus(desk.hostSel, e.target.value); });
+}
+function matchClick(e){
+  var b = e.target.closest && e.target.closest("button");
+  if (!b || b.disabled) return;
+  if (b.hasAttribute("data-suggest")) suggestPairing(b.getAttribute("data-suggest"), b.getAttribute("data-for"), b);
+  else if (b.hasAttribute("data-open")){ showTab("app"); openItem(b.getAttribute("data-open")); }
+  else if (b.hasAttribute("data-host")){ desk.hostSel = b.getAttribute("data-host"); drawHosts(); el("#mbody").scrollTop = 0; }
+  else if (b.id === "hremove") removeHost(b);
+}
+function showTab(name){
+  desk.tab = name;
+  el("#deskapp").hidden = name !== "app";
+  el("#deskhosts").hidden = name !== "hosts";
+  el("#tab-app").setAttribute("aria-selected", String(name === "app"));
+  el("#tab-hosts").setAttribute("aria-selected", String(name === "hosts"));
+  if (name === "hosts") drawHosts();
+}
+
+/* ---------- reading, saving and removing hosts ---------- */
+function loadHosts(){
+  return loadMatcher().then(function(M){
+    if (!desk) return;
+    if (!M){ setStatus("hstat", "no", MATCHER_MISSING); drawHosts(); return; }
+    if (!desk.db){
+      setStatus("hstat", "wait", "The placement record isn’t available in this view. Host profiles you add are shown here but not saved.");
+      refreshMatches();
+      return;
+    }
+    setStatus("hstat", "wait", "Reading host profiles…");
+    return desk.db.collection("hosts").limit(1000).get().then(function(res){
+      desk.hosts = res.docs.map(function(d){ return d.data(); }).filter(function(h){ return h && h.meta && h.meta.hostId; });
+      setStatus("hstat", "ok", "Read " + count(desk.hosts.length, "host profile") + ".");
+      refreshMatches();
+    }, function(err){
+      setStatus("hstat", "no", "Couldn’t read the host profiles (" + ((err && err.code) || "unavailable") + "). Try Refresh.");
+    });
+  });
+}
+function importHostFiles(files){
+  var list = Array.prototype.slice.call(files || []);
+  if (!list.length) return;
+  Promise.all(list.map(function(f){ return f.text().then(null, function(){ return ""; }); })).then(importHostTexts);
+}
+function importHostTexts(texts){
+  loadMatcher().then(function(M){
+    if (!M){ setStatus("hstat", "no", MATCHER_MISSING); return; }
+    var found = [], notes = [];
+    texts.forEach(function(t){ var r = M.parseHosts(t); found = found.concat(r.hosts); notes = notes.concat(r.problems); });
+    if (!found.length){ setStatus("hstat", "no", notes[0] || "No host profiles found."); return; }
+    var today = nowISO().slice(0, 10);
+    found.forEach(function(h){ if (!h.meta.updatedAt) h.meta.updatedAt = today; });
+    desk.hostSel = found.length === 1 ? found[0].meta.hostId : null;
+    showTab("hosts");
+    saveHosts(found, "hstat", "Added " + count(found.length, "host profile") + "." + (notes.length ? " Note: " + notes.slice(0, 2).join(" ") : ""));
+  });
+}
+/* Saves hosts (a new one, or a changed one replacing the old), then rematches. */
+function saveHosts(list, statusId, okText){
+  var done = function(){
+    list.forEach(function(h){
+      desk.hosts = desk.hosts.filter(function(x){ return x.meta.hostId !== h.meta.hostId; });
+      desk.hosts.push(h);
+    });
+    refreshMatches();
+    drawHosts();
+    if (desk.db) setStatus(statusId, "ok", okText);
+    else setStatus(statusId, "wait", okText + " Shown here only: the placement record isn’t available in this view.");
+  };
+  if (!desk.db){ done(); return Promise.resolve(); }
+  setStatus(statusId, "wait", "Saving…");
+  return list.reduce(function(chain, h){
+    return chain.then(function(){ return desk.db.doc("hosts/" + cleanId(h.meta.hostId)).set(h); });
+  }, Promise.resolve()).then(done, function(err){
+    setStatus(statusId, "no", "Couldn’t save (" + ((err && err.code) || "unavailable") + ").");
+  });
+}
+function setHostStatus(id, status){
+  var h = hostById(id); if (!h) return;
+  var copy = JSON.parse(JSON.stringify(h));
+  copy.meta.status = status; copy.meta.updatedAt = nowISO().slice(0, 10);
+  saveHosts([copy], "mstat", hostLabel(h) + ": " + GenStayMatch.HOST_STATUS[status].toLowerCase() + ".");
+}
+/* Two clicks, because the viewer blocks confirm(). */
+function removeHost(b){
+  var h = hostById(desk.hostSel); if (!h) return;
+  if (!b.getAttribute("data-armed")){
+    b.setAttribute("data-armed", "1"); b.textContent = "Click again to remove";
+    setTimeout(function(){ if (b.isConnected){ b.removeAttribute("data-armed"); b.textContent = "Remove host"; } }, 4000);
+    return;
+  }
+  var id = h.meta.hostId;
+  var done = function(){
+    desk.hosts = desk.hosts.filter(function(x){ return x.meta.hostId !== id; });
+    desk.hostSel = null;
+    refreshMatches(); drawHosts();
+    setStatus("mstat", "ok", "Removed " + hostLabel(h) + ".");
+  };
+  if (!desk.db){ done(); return; }
+  desk.db.doc("hosts/" + cleanId(id)).delete().then(done, function(err){
+    setStatus("mstat", "no", "Couldn’t remove (" + ((err && err.code) || "unavailable") + ").");
+  });
+}
+
+/* ---------- matching ---------- */
+function refreshMatches(){
+  if (!desk || !window.GenStayMatch) return;
+  desk.match = GenStayMatch.matchAll(desk.items.map(function(it){
+    return {id: it.id, name: it.name || "Unnamed applicant", profile: mergedProfile(it), suggestedHostId: (desk.reviews[it.id] || {}).suggestedHostId || ""};
+  }), desk.hosts);
+  if (desk.tab === "hosts") drawHosts();
+  var it = currentItem();
+  if (it) drawBestHosts(it);
+}
+function hostById(id){ return desk.hosts.filter(function(h){ return h.meta.hostId === id; })[0] || null; }
+function itemById(id){ return desk.items.filter(function(it){ return it.id === id; })[0] || null; }
+function hostLabel(h){ return window.GenStayMatch ? GenStayMatch.hostName(h) : (h.meta && h.meta.hostId) || "Host"; }
+function resultFor(hostId, studentId){
+  var r = desk.match && desk.match.hosts[hostId];
+  return r ? r.ranked.concat(r.ruledOut).filter(function(x){ return x.studentId === studentId; })[0] || null : null;
+}
+/* Applicants staff have already paired with this host. */
+function linkedNames(hostId){
+  var r = desk.match && desk.match.hosts[hostId];
+  return r ? r.ranked.concat(r.ruledOut).filter(function(x){
+    var it = itemById(x.studentId);
+    return x.linked && it && STAFF_PAIRED.indexOf(reviewFor(it).pairingStatus) !== -1;
+  }).map(function(x){ return x.studentName; }) : [];
+}
+function count(n, word){ return n + " " + word + (n === 1 ? "" : "s"); }
+function emptyHTML(text){ return '<div class="empty-state">' + esc(text) + '</div>'; }
+
+/* The applicant's review: shortlisted (unless already further along) for this homeowner. */
+function suggestPairing(studentId, hostId, b){
+  var it = itemById(studentId), h = hostById(hostId);
+  if (!it || !h || !window.GenStayMatch) return;
+  var cur = reviewFor(it);
+  var review = {pairingStatus: ["new", "screening"].indexOf(cur.pairingStatus) !== -1 ? "shortlisted" : cur.pairingStatus,
+                suggestedFor: GenStayMatch.hostFullName(h), suggestedHostId: hostId, watchPoint: cur.watchPoint, checks: cur.checks,
+                reviewedAt: nowISO(), reviewedBy: desk.uid || null};
+  var done = function(){
+    desk.reviews[it.id] = review;
+    drawQueue();
+    refreshMatches();
+    if (desk.current === it.id){ drawReview(it); sendToFrame(mergedProfile(it, desk.run && desk.run.profile)); }
+    setStatus("mstat", desk.db ? "ok" : "wait", (it.name || "The applicant") + " is " + label(PAIRING, review.pairingStatus).toLowerCase()
+      + " for " + hostLabel(h) + "." + (desk.db ? "" : " Shown here only: the placement record isn’t available in this view."));
+  };
+  if (b) b.disabled = true;
+  if (!desk.db){ done(); return; }
+  desk.db.doc("reviews/" + it.id).set(review).then(done, function(err){
+    if (b) b.disabled = false;
+    setStatus("mstat", "no", "Couldn’t save (" + ((err && err.code) || "unavailable") + ").");
+  });
+}
+/* The host a typed homeowner name refers to, so a pairing made by hand counts in the matching too. */
+function hostIdFor(name, it){
+  var n = String(name || "").trim().toLowerCase();
+  if (!n || !window.GenStayMatch) return null;
+  var h = desk.hosts.filter(function(x){ return GenStayMatch.hostFullName(x).toLowerCase() === n || GenStayMatch.hostName(x).toLowerCase() === n; })[0];
+  if (h) return h.meta.hostId;
+  var before = desk.reviews[it.id] || {};
+  return before.suggestedFor && before.suggestedFor.trim().toLowerCase() === n ? before.suggestedHostId || null : null;
+}
+
+/* ---------- drawing ---------- */
+function drawHosts(){
+  if (!desk || !el("#hlist")) return;
+  var M = window.GenStayMatch, mt = desk.match;
+  if (desk.hostSel && !hostById(desk.hostSel)) desk.hostSel = null;
+  var hosts = desk.hosts.slice().sort(function(a, b){ return hostLabel(a).localeCompare(hostLabel(b)); });
+  el("#hlist").innerHTML = hosts.length ? hosts.map(function(h){
+    var id = h.meta.hostId, r = mt && mt.hosts[id], best = r && r.ranked[0], linked = linkedNames(id), x = h.host || {};
+    return '<li><button class="qitem" data-host="' + esc(id) + '" aria-current="' + (desk.hostSel === id) + '">'
+      + '<span class="nm">' + esc(hostLabel(h)) + '</span>'
+      + '<span class="when">' + esc([x.age, x.suburb].filter(Boolean).join(" · ")) + '</span>'
+      + '<span class="meta"><span class="pill">' + esc((M && M.HOST_STATUS[h.meta.status]) || h.meta.status || "") + '</span>'
+      + (linked.length ? '<span class="pill dark" style="background:var(--slate)">' + esc(linked.length > 1 ? linked.length + " paired by staff" : "Paired: " + linked[0]) + '</span>' : '')
+      + (best && !best.linked ? '<span class="pill dark" style="background:' + BAND[best.band][1] + '">Best: ' + esc(best.studentName) + ' · ' + best.score + '</span>'
+          : r && h.meta.status === "active" && !linked.length ? '<span class="pill">No suitable applicant yet</span>' : '')
+      + '</span></button></li>';
+  }).join("") : '<li class="empty-state">No host profiles yet.</li>';
+  var h = desk.hostSel && hostById(desk.hostSel);
+  el("#hname").textContent = h ? hostLabel(h) : "Suggested pairings";
+  el("#hoverview").hidden = !h;
+  el("#mbody").innerHTML = !M ? emptyHTML(MATCHER_MISSING) : h ? hostDetailHTML(h) : overviewHTML();
+}
+
+function overviewHTML(){
+  var mt = desk.match;
+  if (!desk.hosts.length) return emptyHTML("No host profiles yet. Download the host template, fill in one row per homeowner in Excel or Google Sheets, "
+    + "then add the saved CSV with Add host files, or copy the rows (heading row first) and use Paste hosts. Suggested pairings appear here as soon as hosts are added.");
+  if (!mt) return emptyHTML("Working out the pairings…");
+  var ids = Object.keys(mt.students);
+  if (!ids.length) return emptyHTML("No applicants to match yet. Pairings appear here when applicants finish, or when you add their profile files on the Applicants tab.");
+  var pool = ids.filter(function(id){ return !mt.students[id].excluded.length; }).length;
+  var looking = desk.hosts.filter(function(h){ return h.meta.status === "active"; }).length;
+  var html = '<p class="sub">' + count(desk.hosts.length, "host") + ' (' + looking + ' looking) · ' + pool + ' of ' + count(ids.length, "applicant")
+    + ' in the matching pool · ' + count(mt.pairings.length, "pairing") + ' suggested.</p>'
+    + '<p class="sub" style="font-size:12.5px">Each suggestion uses one applicant and one room, best scores first, and keeps the pairings staff have already made. '
+    + 'Suggesting a pairing shortlists the applicant for that homeowner in their review. Nobody is contacted.</p>'
+    + '<div class="secthead">Suggested pairings</div>'
+    + (mt.pairings.length ? mt.pairings.map(function(p){ var r = resultFor(p.hostId, p.studentId); return r ? matchCardHTML(r, true) : ""; }).join("")
+        : emptyHTML("No pairing passes every filter yet. Open a host to see who was ruled out, and why."));
+  if (mt.alsoPaired.length) html += '<div class="secthead">Also paired by staff</div><ul class="why">' + mt.alsoPaired.map(function(a){
+    return '<li class="' + (a.eligible ? "ok" : "no") + '"><button class="linkbtn" data-open="' + esc(a.studentId) + '">' + esc(a.studentName) + '</button> with '
+      + esc(a.hostName + " (" + label(PAIRING, a.status).toLowerCase() + ")") + (a.eligible ? ", scoring " + a.score
+        : ", but: " + esc(a.blockers.map(function(b){ return b.text; }).join("; "))) + '.</li>';
+  }).join("") + '</ul>';
+  if (mt.unmatchedHosts.length) html += '<div class="secthead">Hosts still waiting</div><ul class="why">' + mt.unmatchedHosts.map(function(u){
+    return '<li class="warn"><button class="linkbtn" data-host="' + esc(u.id) + '">' + esc(u.name) + '</button>: '
+      + esc(u.eligible ? count(u.eligible, "suitable applicant") + ", already suggested for other hosts"
+        : "no suitable applicant yet" + (u.reasons.length ? "; most were ruled out by " + u.reasons.join(", ") : "")) + '.</li>';
+  }).join("") + '</ul>';
+  if (mt.unmatchedStudents.length) html += '<div class="secthead">Applicants without a suggestion</div><p class="sub">'
+    + esc(mt.unmatchedStudents.map(function(u){ return u.name + (u.eligible ? " (" + count(u.eligible, "possible host") + ")" : " (no suitable host yet)"); }).join(", ")) + '.</p>';
+  return html;
+}
+
+function matchCardHTML(r, pairMode){
+  var it = itemById(r.studentId), type = it && PROFILE_TYPES[it.screeningProfile], status = it ? reviewFor(it).pairingStatus : "new";
+  var paired = r.linked && STAFF_PAIRED.indexOf(status) !== -1;
+  return '<div class="mcard"><div class="mhead">'
+    + '<span class="score" style="background:' + (r.eligible ? BAND[r.band][1] : "var(--bad)") + '" title="' + esc(r.eligible ? BAND[r.band][0] : "Ruled out") + '">' + r.score + '</span>'
+    + (pairMode ? '<b>' + esc(r.hostName) + '</b><span class="amp">and</span>' : '') + '<b>' + esc(r.studentName) + '</b>'
+    + (type ? '<span class="pill dark" style="background:' + type.colour + '">' + esc(type.title.replace(/^The /, "")) + '</span>' : '')
+    + (paired ? '<span class="pill dark" style="background:var(--slate)">' + esc(label(PAIRING, status)) + ' by staff</span>' : '')
+    + '</div><div class="mparts">' + r.parts.map(function(p){
+        return '<span class="mpart" title="' + esc(p.label + ": " + p.note) + '">' + esc(p.label) + ' ' + Math.round(p.points) + '/' + p.weight
+          + '<i><b style="width:' + Math.round(p.value * 100) + '%"></b></i></span>';
+      }).join("") + '</div>'
+    + whyHTML(r)
+    + '<div class="btnrow">'
+    + (paired ? '' : '<button class="cont primary small" data-suggest="' + esc(r.studentId) + '" data-for="' + esc(r.hostId) + '"' + (r.eligible ? '' : ' disabled') + '>Suggest this pairing</button>')
+    + '<button class="cont ghost small" data-open="' + esc(r.studentId) + '">Open applicant</button>'
+    + (pairMode ? '<button class="cont ghost small" data-host="' + esc(r.hostId) + '">View host</button>' : '')
+    + '</div></div>';
+}
+function whyHTML(r){
+  var li = function(cls){ return function(t){ return '<li class="' + cls + '">' + esc(t) + '</li>'; }; };
+  var first = r.blockers.map(function(b){ return b.text; }).map(li("no")).concat(r.strengths.slice(0, 4).map(li("ok")), r.cautions.slice(0, 3).map(li("warn")));
+  var rest = r.strengths.slice(4).map(li("ok")).concat(r.cautions.slice(3).map(li("warn")));
+  return (first.length ? '<ul class="why">' + first.join("") + '</ul>' : '')
+    + (rest.length ? '<details><summary>' + rest.length + ' more</summary><ul class="why">' + rest.join("") + '</ul></details>' : '');
+}
+
+function hostDetailHTML(h){
+  var M = GenStayMatch, r = desk.match && desk.match.hosts[h.meta.hostId], x = h.host || {}, ranked = r ? r.ranked : [];
+  var html = '<div class="mcard"><div class="mhead"><b>' + esc(M.hostFullName(h)) + '</b>'
+    + (x.age ? '<span class="pill">' + esc(x.age) + '</span>' : '') + (x.suburb ? '<span class="pill">' + esc(x.suburb) + '</span>' : '')
+    + '<span class="grow"></span><label>Status <select id="hst-status">' + Object.keys(M.HOST_STATUS).map(function(k){
+        return '<option value="' + k + '"' + (h.meta.status === k ? " selected" : "") + '>' + esc(M.HOST_STATUS[k]) + '</option>';
+      }).join("") + '</select></label>'
+    + '<button class="cont ghost small" id="hremove">Remove host</button></div>'
+    + '<div class="hfacts">' + M.hostFacts(h).map(function(f){ return '<div><span>' + esc(f[0]) + '</span>' + esc(f[1]) + '</div>'; }).join("") + '</div></div>'
+    + '<div class="secthead">Best applicants for ' + esc(hostLabel(h)) + (ranked.length > 10 ? ' (top 10 of ' + ranked.length + ')' : '') + '</div>'
+    + (ranked.length ? ranked.slice(0, 10).map(function(m){ return matchCardHTML(m, false); }).join("")
+        : emptyHTML(desk.items.length ? "No applicant passes this homeowner’s filters yet." : "No applicants to match yet."));
+  if (r && r.ruledOut.length) html += '<details class="out"><summary>Ruled out (' + r.ruledOut.length + ')</summary><ul class="why">'
+    + r.ruledOut.map(function(o){ return '<li class="no"><b>' + esc(o.studentName) + ':</b> ' + esc(o.blockers.map(function(b){ return b.text; }).join("; ")) + '</li>'; }).join("")
+    + '</ul></details>';
+  return html;
+}
+
+/* The applicant review panel's shortlist of homeowners. */
+function drawBestHosts(it){
+  var box = el("#rv-best");
+  if (!box) return;
+  var s = window.GenStayMatch && desk.match && desk.match.students[it.id];
+  var head = '<div class="secthead">Best homeowners</div>';
+  if (!desk.hosts.length){ box.innerHTML = head + '<p class="sub" style="font-size:12.5px">Add host profiles on the Hosts and matches tab to see the best homeowners here.</p>'; return; }
+  if (!s){ box.innerHTML = ""; return; }
+  if (s.excluded.length){ box.innerHTML = head + '<p class="sub" style="font-size:12.5px">Not matched automatically: ' + esc(s.excluded.join("; ")) + '.</p>'; return; }
+  if (!s.ranked.length){
+    var near = s.ruledOut.slice().sort(function(a, b){ return a.blockers.length - b.blockers.length || b.score - a.score; })[0];
+    box.innerHTML = head + '<p class="sub" style="font-size:12.5px">No suitable homeowner yet.'
+      + (near ? ' Closest: ' + esc(near.hostName) + ' (' + esc(near.blockers.map(function(b){ return b.text; }).join("; ")) + ').' : '') + '</p>';
+    return;
+  }
+  box.innerHTML = head + s.ranked.slice(0, 3).map(function(r){
+    var h = hostById(r.hostId);
+    return '<div class="hrow"><span class="score" style="background:' + BAND[r.band][1] + '" title="' + esc(BAND[r.band][0]) + '">' + r.score + '</span>'
+      + '<span class="grow"><b>' + esc(r.hostName) + '</b><small>' + esc([h && h.host && h.host.suburb, BAND[r.band][0]].filter(Boolean).join(" · ")) + '</small></span>'
+      + '<button class="cont ghost small" data-use="' + esc(r.hostId) + '">Use</button></div>';
+  }).join("");
+  Array.prototype.forEach.call(box.querySelectorAll("[data-use]"), function(b){
+    b.onclick = function(){
+      var h = hostById(b.getAttribute("data-use")); if (!h) return;
+      el("#rv-for").value = GenStayMatch.hostFullName(h);
+      if (["new", "screening"].indexOf(el("#rv-status").value) !== -1) el("#rv-status").value = "shortlisted";
+      setStatus("rvstat", "wait", "Press Save review to keep this.");
+    };
+  });
+}
+</script>
+<script>
+"use strict";
 /* ============================================================
    BOOT
    ============================================================ */

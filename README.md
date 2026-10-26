@@ -6,7 +6,7 @@ Applicants spend fourteen days living with Margaret "Marg" Hollis, 78, in her we
 cottage. There are no right or wrong answers. Four hidden meters (Connection, Respect,
 Reliability, Awareness) record what the applicant values, and five short pages of questions at
 the end fill in the rest of a **GenStay matching profile**. Staff review the profiles one after
-another on a built-in review desk.
+another on a built-in review desk, add the homeowners' profiles, and get suggested pairings.
 
 | Day | Landmark | Content note |
 |----|-----------|-------|
@@ -18,7 +18,7 @@ another on a built-in review desk.
 The other days branch on earlier choices. Day 13 brings back the applicant's lowest moment in a
 new form.
 
-A **quick demo** (`game/pepaws-porch.demo.html`) plays the same story in three to four minutes.
+A **quick demo** (`game/pepaws-porch.demo.html`) plays the same story in four to five minutes.
 See [Quick demo](#quick-demo) below.
 
 ## What's here
@@ -26,16 +26,20 @@ See [Quick demo](#quick-demo) below.
     game/pepaws-porch.html               the game and the staff review desk, one file, no build step
     game/pepaws-porch.demo.html          the quick demo, with its own staff desk, one file
     game/genstay-profile-template.html   the GenStay profile template the desk shows each profile in
+    game/genstay-matching.js             the matching: reads host profiles, filters and scores pairings, suggests the best
     genstay/genstay-profile-fields.md    the profile data contract, and how the game fills and stores it
     genstay/genstay-profile.sample.json  a complete example profile
+    genstay/genstay-host-fields.md       the host profile format, the host spreadsheet, and how matching works
+    genstay/genstay-host.sample.json     a complete example host profile
     scripts/test-playthrough.js          automated runs of the full game in a real browser
-    scripts/test-demo.js                 automated runs of the quick demo
+    scripts/test-demo.js                 automated runs of the quick demo, and of the Hosts and matches tab
+    scripts/test-matching.js             checks for the matching (no browser needed)
     scripts/browser-harness.js           shared test setup: a local server and a stand-in for the artifact runtime
     design/pepaws-porch.html             the original design bible (from the earlier Bruce version, kept for reference)
 
-The game and the template are published together as one artifact, and the demo and the template
-as another. Each finds the template by the relative address `genstay-profile-template.html`, so
-keep them side by side.
+The game, the template and the matching script are published together as one artifact, and the
+demo with the same two files as another. Each page finds them by the relative addresses
+`genstay-profile-template.html` and `genstay-matching.js`, so keep them side by side.
 
 ## For applicants
 
@@ -77,36 +81,67 @@ answers and shown in the profile.
   its own has the same **Download PDF** and **Print** buttons.
 - If an applicant played more than once, a run picker appears. The latest run opens first.
 
+### Hosts and matches
+
+The desk's second tab holds the homeowners' profiles and suggests pairings.
+`genstay/genstay-host-fields.md` describes every field and exactly how pairings are judged.
+
+- **Adding hosts.** **Host template (CSV)** downloads a spreadsheet with every column and an example
+  row. Fill in one row per homeowner, then add the saved CSV with **Add host files**, or copy the
+  rows (heading row first) and use **Paste hosts**. JSON host files work too. Adding a host again
+  with the same Host ID updates them. **Download hosts (CSV)** saves them all for editing.
+- **Suggested pairings** appear as soon as hosts are added, and update whenever a host, an
+  applicant or a review changes. Each is scored out of 100, with what's good about it (✓), what to
+  check (!) and anything that rules it out (✕): gender preferences both ways, smoking, pets, rent,
+  length of stay, hours, essential help, language, safety with a falls risk, commute and dates.
+  Applicants screened as The Transactional Guest, or with threatening language or drug references,
+  are never suggested. One applicant per room, best scores first, keeping pairings staff have made.
+- **Select a host** to see their details, every applicant ranked for them, and who was ruled out
+  and why. Change their status (looking, paused, has a student) or remove them there.
+- **Suggest this pairing** shortlists the applicant for that homeowner in their review, which shows
+  in their profile. Nobody is contacted. On the Applicants tab, each review also lists the
+  applicant's **best homeowners**, and **Use** fills in the suggested homeowner.
+
 ## Quick demo
 
 `game/pepaws-porch.demo.html` is a separate, shorter version for demonstrations and quick trials.
 The full game is unchanged.
 
-- **Eight days, four big moments.** Arrival, house routines, the bank text and the noisy night
-  are the everyday days; loss, the biased remark, the fall and the emergency are the big moments.
+- **Nine days, four big moments.** Arrival, house routines, shared ground, the bank text and the
+  noisy night are the everyday days; loss, the biased remark, the fall and the emergency are the
+  big moments. Anything a later day mentions (the loose step, the dinner invitation, the community
+  garden, the medical folder) is set up on an earlier day that every applicant sees.
 - **Multiple choice only, 25 seconds a question.** Each day opens with an untimed scene, then one
   timed question (two on Day 1), then Marg's reaction. Pausing pauses the timer. The longest
   question is about 35 words, roughly 14 seconds' reading at a slow pace. A timed-out question
   counts as no answer: it nudges the meters down a little and is reported to staff.
-- **Two pages of matching questions** cover the hard filters and main scoring points: age,
-  gender, campus, move-in date, length of stay, rent, homeowner gender, smoking, pets, other
-  students, hours a week, help offered and not offered, and hobbies.
-- **About 3 to 4 minutes in all.** The eight days take about 2½ to 3½ minutes depending on
-  reading speed, and the questions about a minute.
+- **Day 3 feeds the profile.** Marg talks about her career (the applicant's own field) and asks
+  what they'd like to do together: hear about her work, help at the community garden, bake, or
+  keep the week for study. The answer pre-fills the matching questions below.
+- **Two pages of matching questions.** The first covers the hard filters: age, gender, campus,
+  move-in date, length of stay, rent, homeowner gender, other students, smoking and pets (one tap
+  each). The second covers the scoring points: the career they're heading for (options for their
+  area of study), whether they'd like a homeowner from their field, how much time they'd like to
+  spend together, languages, hobbies, something they'd like to learn, hours a week, and help
+  offered and not offered.
+- **About 4 to 5 minutes in all.** The nine days take about 3 to 4 minutes depending on reading
+  speed, and the questions about a minute.
 - **The same GenStay profile.** It fills fewer fields (no written answers, no contact details).
   Profile ids start with `DEMO-`, the flags include `quick_demo` (and `missed_timer` if a timer
   ran out), and the watch-point says it was the quick demo. Days keep their numbers from the full
-  fortnight (1, 2, 4, 6, 8, 9, 11 and 14) so the template's landmark rows line up.
-- **Its own artifact, desk and record store.** Publish the demo with the same capabilities and the
-  template beside it. Its `#staff` desk shows only demo profiles, so they never mix with real
-  applicants. PDF and JSON downloads work the same way.
+  fortnight (1, 2, 3, 4, 6, 8, 9, 11 and 14) so the template's landmark rows line up.
+- **Its own artifact, desk and record store.** Publish the demo with the same capabilities, and the
+  template and matching script beside it. Its `#staff` desk shows only demo profiles and its own
+  hosts, so they never mix with real applicants. PDF and JSON downloads and the Hosts and matches
+  tab work the same way.
 
 ## Access and storage
 
 Profiles are stored in the artifact's record store under access rules, not in the page:
 
 - Applicants need **Contributor** access. Each can write only their own profile.
-- Staff need **Editor** access. Only Editors and the owner can read profiles or reviews.
+- Staff need **Editor** access. Only Editors and the owner can read profiles, reviews or host
+  profiles.
 - Anyone else who opens `#staff` sees an empty desk with a staff-only message.
 
 Publish with these capabilities (the rules are what keep profiles private):
@@ -124,7 +159,8 @@ Publish with these capabilities (the rules are what keep profiles private):
 }
 ```
 
-The full path layout is in `genstay/genstay-profile-fields.md`.
+Host profiles are kept at `hosts/<host id>`. No rule opens that path, so the first rule keeps it to
+Editors and the owner. The full path layout is in `genstay/genstay-profile-fields.md`.
 
 An artifact record store is organisation-internal: applicants must be signed in to the workspace.
 That suits a pilot with a known cohort. Public applicants need a hosted deployment with its own
@@ -147,9 +183,16 @@ downloads, and saves screenshots of every scene.
 
     node scripts/test-demo.js /tmp/pepaws-demo-out
 
-does the same for the quick demo: best, worst and timed-out runs, the two pages of questions, the
-staff desk's PDF and JSON downloads, the applicant's own profile download, and a reading-time
-estimate.
+does the same for the quick demo: best, worst and timed-out runs, checks that no screen mentions
+something the story hasn't set up, the two pages of questions, the staff desk's PDF and JSON
+downloads, the Hosts and matches tab (hosts from the CSV template, pasted spreadsheet rows and JSON,
+the suggested pairings and their reasons, suggesting one, status and removal), the applicant's own
+profile download, and a reading-time estimate.
+
+    node scripts/test-matching.js
+
+checks the matching on its own: every filter, the scoring, the suggested pairings, reading host
+spreadsheets, and that both staff desks carry the same Hosts and matches code.
 
 The PDF checks load html2canvas 1.4.1 and jsPDF 2.5.1 from cdnjs. Where cdnjs is blocked, put
 `html2canvas.min.js` and `jspdf.umd.min.js` (from the npm packages' `dist/` folders) in a folder
@@ -162,3 +205,6 @@ and set `PDF_LIBS=/that/folder`.
 - **First aid accuracy.** Have Days 11 and 14 checked by a first-aid trainer or nurse against
   current Australian guidance.
 - **Validation.** Run the scenarios past placement coordinators and current homeshare residents.
+- **Matching.** The filters and weights are a starting point. Check the suggestions against
+  pairings coordinators know worked, and against ones that didn't, and adjust `WEIGHTS` and the
+  filters in `game/genstay-matching.js`.
