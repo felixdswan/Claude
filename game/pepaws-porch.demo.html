@@ -753,10 +753,6 @@ var DISCIPLINES = {
   social_work:   {label:"Social work and community services",           career:"a social worker"},
   psychology:    {label:"Psychology and counselling",                   career:"a counsellor"},
   education:     {label:"Education and teaching",                       career:"a primary school teacher"},
-  law:           {label:"Law",                                          career:"a family lawyer"},
-  engineering:   {label:"Engineering and IT",                           career:"a civil engineer"},
-  business:      {label:"Business",                                     career:"a small-business owner"},
-  design:        {label:"Design, architecture and the arts",            career:"an architect"},
   other:         {label:"Other",                                        career:"a nurse"}
 };
 function discipline(){ return DISCIPLINES[S.studyArea] || DISCIPLINES.other; }
@@ -1346,11 +1342,7 @@ var CAREER_GOALS = {
   social_work:   ["Social work", "Community services", "Youth work"],
   psychology:    ["Psychology", "Counselling"],
   education:     ["Early childhood teaching", "Primary teaching", "Secondary teaching", "Special education"],
-  law:           ["Legal practice", "Policy and government", "Corporate law"],
-  engineering:   ["Civil engineering", "Mechanical and aerospace", "Electrical engineering", "Software and IT"],
-  business:      ["Accounting", "Marketing", "Management", "Finance"],
-  design:        ["Architecture", "Graphic and digital design", "Fashion", "Fine arts"],
-  other:         ["Science", "Something else"]
+  other:         ["Something else"]
 };
 /* Campuses as the host profiles name them (placement.campusCommuteMins). */
 var CAMPUS_OPTIONS = [["UTS City Campus", "UTS City Campus (Ultimo)"], ["USyd Camperdown", "University of Sydney (Camperdown)"],

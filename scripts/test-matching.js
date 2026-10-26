@@ -52,15 +52,15 @@ function persona(o) {
 const P = {
   Ivy: { expect: "GH-2027-002", first: "Ivy", gender: "Female", age: 22, discipline: "health", goal: "Medicine", campus: "UNSW Kensington",
     help: ["Company and conversation", "Being home in the evenings", "Cooking shared meals", "Shopping and errands", "Appointments and outings"], hobbies: ["Board games and puzzles", "Sport and fitness"] },
-  Tom: { expect: "GH-2027-003", first: "Tom", gender: "Male", age: 21, discipline: "engineering", goal: "Mechanical and aerospace", campus: "USyd Camperdown", social: 4, lodgers: "prefer",
+  Tom: { expect: "GH-2027-003", first: "Tom", gender: "Male", age: 21, discipline: "education", goal: "Secondary teaching", campus: "UTS City Campus", hg: "male", social: 4, lodgers: "prefer",
     help: ["Company and conversation", "Pet care", "Tech and phone help", "Cooking shared meals"], hobbies: ["Sport and fitness", "Music"], hours: { min: 6, max: 8 } },
-  Ana: { expect: "GH-2027-004", first: "Ana", gender: "Female", age: 23, discipline: "law", goal: "Legal practice", campus: "Macquarie Uni", languages: ["English", "French"],
+  Ana: { expect: "GH-2027-004", first: "Ana", gender: "Female", age: 23, discipline: "health", goal: "Nursing", campus: "UTS City Campus", hg: "female", languages: ["English", "French"],
     help: ["Company and conversation", "Being home in the evenings", "Cooking shared meals", "Appointments and outings", "Shopping and errands"], hobbies: ["Films and TV", "Gardening"], hours: { min: 12, max: 15 } },
-  Mei: { expect: "GH-2027-005", first: "Mei", gender: "Female", age: 24, discipline: "design", goal: "Architecture", campus: "USyd Camperdown", social: 2, motivation: "quiet_space",
+  Mei: { expect: "GH-2027-005", first: "Mei", gender: "Female", age: 24, discipline: "allied_health", goal: "Occupational therapy", campus: "USyd Camperdown", social: 2, motivation: "quiet_space",
     help: ["Gardening", "Tech and phone help", "Shopping and errands", "Pet care"], hobbies: ["Art", "Gardening"], hours: { min: 6, max: 8 }, stay: 6 },
-  Sam: { expect: "GH-2027-006", first: "Sam", gender: "Male", age: 20, discipline: "business", goal: "Management", campus: "Macquarie Uni", social: 5, languages: ["English", "Greek"],
+  Sam: { expect: "GH-2027-006", first: "Sam", gender: "Male", age: 20, discipline: "health", goal: "Paramedicine", campus: "Macquarie Uni", social: 5, languages: ["English", "Greek"],
     help: ["Lifts in the homeowner’s car", "Gardening", "Shopping and errands", "Tech and phone help", "Cooking shared meals"], hobbies: ["Cooking and baking", "Sport and fitness"], moveIn: "2027-03-01" },
-  Zoe: { expect: "GH-2027-007", first: "Zoe", gender: "Female", age: 20, discipline: "design", goal: "Fashion", campus: "UTS City Campus", social: 5,
+  Zoe: { expect: "GH-2027-007", first: "Zoe", gender: "Female", age: 20, discipline: "social_work", goal: "Youth work", campus: "UTS City Campus", social: 5,
     help: ["Company and conversation", "Tech and phone help", "Appointments and outings", "Pet care"], hobbies: ["Films and TV", "Art"], hours: { min: 6, max: 8 } },
   Hoa: { expect: "GH-2027-008", first: "Hoa", gender: "Female", age: 29, discipline: "education", goal: "Primary teaching", campus: "WSU Parramatta", languages: ["English", "Vietnamese"],
     help: ["Company and conversation", "Cooking shared meals", "Shopping and errands", "Tech and phone help"], hobbies: ["Cooking and baking", "Gardening"], moveIn: "2027-03-01" },
@@ -68,12 +68,12 @@ const P = {
     help: ["Company and conversation", "Cooking shared meals", "Appointments and outings", "Tech and phone help"], hobbies: ["Sport and fitness", "Cooking and baking"], grief: "grief_invited", hours: { min: 6, max: 8 } },
   Ella: { expect: "GH-2027-001", first: "Ella", gender: "Female", age: 21, discipline: "education", goal: "Secondary teaching", campus: "UTS City Campus", social: 4, languages: ["English", "Italian"],
     help: ["Company and conversation", "Cooking shared meals", "Tech and phone help", "Shopping and errands"], hobbies: ["Reading", "Walking"], learn: ["Local history"], hours: { min: 6, max: 8 } },
-  /* the five hosts added to spread the crowd: the study areas no other host covered */
+  /* the five hosts added to spread the crowd: program study areas no other host covered */
   Kemi: { expect: "GH-2027-011", first: "Kemi", gender: "Female", age: 22, discipline: "social_work", goal: "Social work", campus: "UTS City Campus", languages: ["English", "Yoruba"],
     help: ["Company and conversation", "Shopping and errands", "Appointments and outings", "Tech and phone help"], hobbies: ["Music", "Crafts"], hours: { min: 6, max: 8 } },
   Luca: { expect: "GH-2027-012", first: "Luca", gender: "Male", age: 21, discipline: "allied_health", goal: "Physiotherapy", campus: "USyd Camperdown", social: 4, languages: ["English", "Italian"],
     help: ["Company and conversation", "Gardening", "Cooking shared meals", "Shopping and errands"], hobbies: ["Gardening", "Sport and fitness"], learn: ["Gardening"], hours: { min: 6, max: 8 } },
-  Arjun: { expect: "GH-2027-013", first: "Arjun", gender: "Male", age: 23, discipline: "other", goal: "Science", campus: "UNSW Kensington", social: 4, languages: ["English", "Hindi"],
+  Arjun: { expect: "GH-2027-013", first: "Arjun", gender: "Male", age: 23, discipline: "health", goal: "Medicine", campus: "UNSW Kensington", social: 4, languages: ["English", "Hindi"],
     help: ["Company and conversation", "Tech and phone help", "Shopping and errands", "Appointments and outings"], hobbies: ["Sport and fitness", "Films and TV"] },
   Bree: { expect: "GH-2027-014", first: "Bree", gender: "Female", age: 24, discipline: "carework", goal: "Aged care", campus: "WSU Parramatta",
     help: ["Company and conversation", "Being home in the evenings", "Shopping and errands", "Bins and light chores", "Appointments and outings"], hobbies: ["Crafts", "Cooking and baking"] },
@@ -189,6 +189,9 @@ filters.forEach(([name, hostId, kind, change], i) => {
     "lifting a fallen homeowner didn't count against a match with Frank, who has a falls risk");
   check(M.score(who("Kemi"), byId("GH-2027-011")).talkAbout.some((t) => /share a bathroom with her/.test(t)), "Joyce's shared bathroom isn't a talking point");
   check(M.score(who("Arjun"), byId("GH-2027-013")).talkAbout.some((t) => /draw the line at meat cooked at home/.test(t)), "the Mehtas' vegetarian kitchen isn't a talking point");
+  const peter = M.score(who("Tom"), byId("GH-2027-003"));
+  check(peter.parts.host.find((x) => x.key === "field").value === 0.6 && !peter.cautions.some((c) => /hoped for/.test(c)),
+    "Peter's preference for engineering and design students (outside the program) cost a program student points");
   const leo = (langs) => M.score(who("Leo", (p) => { p.student.languages = langs; }), byId("GH-2027-010")).score;
   check(leo(["English", "Mandarin"]) > leo(["English"]), "speaking Mandarin didn't help a match with Ray");
   const social = (n) => M.score(who("Zoe", (p) => { p.lifestyle.socialLevel = n; }), byId("GH-2027-007")).score;
@@ -321,8 +324,7 @@ filters.forEach(([name, hostId, kind, change], i) => {
     const campuses = JSON.parse((s.match(/var CAMPUS_OPTIONS = (\[[\s\S]*?\]\]);/) || [, "[]"])[1]).map((x) => x[0]);
     check(JSON.stringify(campuses) === JSON.stringify(M.VOCAB.campuses.concat(["Another campus"])), file + ": campus options aren't the hosts' campuses: " + campuses.join(", "));
     const disciplines = [...(s.match(/var DISCIPLINES = \{([\s\S]*?)\n\};/) || [, ""])[1].matchAll(/^\s+(\w+):/gm)].map((m) => m[1]);
-    const unknown = disciplines.filter((d) => !M.FIELDS[d]);
-    check(disciplines.length >= 10 && !unknown.length, file + ": areas of study the matcher doesn't know: " + unknown.join(", "));
+    check(JSON.stringify(disciplines) === JSON.stringify(M.PROGRAM_FIELDS.concat(["other"])), file + ": areas of study aren't the program's: " + disciplines.join(", "));
   }
   for (const [name, items] of Object.entries(M.VOCAB)) {
     if (name === "campuses" || name === "bestTimes") continue;

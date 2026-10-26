@@ -4,7 +4,7 @@ The receiving template (`genstay-profile-template.html`) is blank until it gets 
 
 Unknown keys are ignored and logged to the console (`[GenStay] Unknown field "studnet"…`), so typos show up while you're wiring it in.
 
-v1.1 adds `interests.fieldMentor`, `screening.landmarks[].tags`, four more study areas (`law`, `engineering`, `business`, `design`) and the five campus keys. Host profiles (the homeowners) and the matching on the staff desk are described in `genstay-host-fields.md`.
+v1.1 adds `interests.fieldMentor`, `screening.landmarks[].tags` and the five campus keys. Host profiles (the homeowners) and the matching on the staff desk are described in `genstay-host-fields.md`.
 
 ## Sending data in
 
@@ -94,7 +94,7 @@ The Source column is a suggestion for which stage captures each field. Pre = que
 | `languages` | string[] | Pre | Score |
 | `studentType` | `domestic` `international` | Pre | Review (visa work-hour limits) |
 | `university`, `course`, `yearOfStudy` | string / number | Pre | Display |
-| `discipline` | `health` `carework` `allied_health` `social_work` `psychology` `education` `law` `engineering` `business` `design` `other` | Pre | Score (selects the homeowner's career template) |
+| `discipline` | `health` `carework` `allied_health` `social_work` `psychology` `education` `other` (the program takes students from these fields only) | Pre | Score (selects the homeowner's career template) |
 | `work.role`, `work.hoursPerWeek`, `work.schedule` | string / number | Pre | Score (time available) |
 | `emergencyContact.name` / `.relationship` / `.phone` | string (staff only) | Pre | Display |
 

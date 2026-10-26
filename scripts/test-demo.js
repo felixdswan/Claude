@@ -330,6 +330,9 @@ async function pdfFrom(page, nameFragment) {
     (await storyDataProblems(page)).forEach((p) => errors.push("story: " + p));
     const day2 = await page.evaluate(() => DAYS[1].steps.filter((s) => s.t === "choice")[0].options.map((o) => o.text));
     if (!day2.some((t) => /loose brick step/.test(t))) errors.push("story: Day 2's step option doesn't describe the step: " + day2.join(" | "));
+    /* the program takes students from six fields only */
+    const areas = await page.$$eval("#study-area option", (o) => o.map((x) => x.value).filter(Boolean));
+    if (areas.join() !== "health,carework,allied_health,social_work,psychology,education,other") errors.push("start: study areas aren't the program's: " + areas.join(", "));
     /* on a later market day the sample rooms' dates move forward with the calendar */
     const months = (() => { const n = new Date(); return (n.getFullYear() - 2026) * 12 + n.getMonth() + 1 - 8; })();
     const moved = await page.evaluate(() => [freshDates([{ placement: { availableFrom: "2027-02-01" } }], "2026-08-01")[0].placement.availableFrom,
@@ -483,7 +486,7 @@ async function pdfFrom(page, nameFragment) {
     tablet.on("pageerror", (e) => errors.push("tablet pageerror: " + e.message));
     tablet.on("console", (m) => { if (m.type() === "error" && !/fonts\.(googleapis|gstatic)\.com|ERR_/.test(m.text())) errors.push("tablet console: " + m.text()); });
     const seen = [];
-    for (const [name, area] of [["Ava", "health"], ["Ben", "engineering"]]) {
+    for (const [name, area] of [["Ava", "health"], ["Ben", "allied_health"]]) {
       await tablet.goto(base + "/pepaws-porch.demo.html");
       await tablet.waitForSelector("#begin");
       await start(tablet, name, area);

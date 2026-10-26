@@ -69,6 +69,9 @@
 
   /* Study areas and careers, for both sides. Hosts' former fields include
      law, design, engineering and business; so do students' areas. */
+  /* The study areas the program takes students from. FIELDS also names
+     other fields, for hosts' former careers. */
+  var PROGRAM_FIELDS = ["health", "carework", "allied_health", "social_work", "psychology", "education"];
   var FIELDS = {
     health: "Health", carework: "Carework", allied_health: "Allied health", social_work: "Social work",
     psychology: "Psychology and counselling", education: "Education", law: "Law", engineering: "Engineering and IT",
@@ -395,7 +398,8 @@
       hobbies: concepts(it.hobbies), canOffer: concepts(it.canOffer), wantsToLearn: concepts(it.wantsToLearn),
       canOfferText: list(it.canOffer), settles: list(it.canOffer).some(function (t) { return /settl/i.test(t); }),
       wantsGender: genderPref(pr.sharerGender), ageMin: age.min == null ? null : age.min, ageMax: age.max == null ? null : age.max,
-      disciplines: list(pr.preferredDisciplines).map(fieldOf).filter(Boolean), studentTypes: list(pr.studentTypes).map(norm),
+      /* a preference for a study area outside the program can never be met, so it counts as no preference */
+      disciplines: list(pr.preferredDisciplines).map(fieldOf).filter(function (f) { return PROGRAM_FIELDS.indexOf(f) !== -1; }), studentTypes: list(pr.studentTypes).map(norm),
       otherLodgers: norm(pr.otherLodgers) || null, languagesWelcome: list(pr.languagesWelcome),
       smoker: bool(hh.smoker), smokeFree: bool(hh.smokeFreeHome), diet: hh.diet || "", dealbreakers: list(hh.dealbreakers),
       pets: list(hh.pets).filter(function (p) { return !/^(none|no|nil|no pets)$/i.test(String(p).trim()); }),
@@ -1158,7 +1162,7 @@
   }
 
   return {
-    version: VERSION, HOST_COLUMNS: HOST_COLUMNS, HOST_STATUS: HOST_STATUS, CAMPUSES: CAMPUSES, FIELDS: FIELDS, VOCAB: VOCAB,
+    version: VERSION, HOST_COLUMNS: HOST_COLUMNS, HOST_STATUS: HOST_STATUS, CAMPUSES: CAMPUSES, FIELDS: FIELDS, PROGRAM_FIELDS: PROGRAM_FIELDS, VOCAB: VOCAB,
     HOST_WEIGHTS: HOST_WEIGHTS, STUDENT_WEIGHTS: STUDENT_WEIGHTS, PART_LABELS: PART_LABELS, EXAMPLE_HOST: EXAMPLE_HOST, TAG_QUALITY: TAG_QUALITY,
     score: score, matchAll: matchAll, bestMatch: bestMatch, assign: assign, hostStatus: hostStatus,
     parseHosts: parseHosts, hostsToCsv: hostsToCsv, hostCsvTemplate: hostCsvTemplate, blankHost: blankHost, hostFacts: hostFacts,

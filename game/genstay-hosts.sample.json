@@ -854,7 +854,7 @@
         "updatedAt": "2026-10-26",
         "pairingStatus": "screening",
         "hostFit": "strong",
-        "testPurpose": ["Science career matching", "Couple: both genders count for the student's homeowner preference", "Vegetarian kitchen talking point", "Second UNSW option (Bob asks for 12 months)"]
+        "testPurpose": ["Health students welcome; a former career outside the program's fields", "Couple: both genders count for the student's homeowner preference", "Vegetarian kitchen talking point", "Second UNSW option (Bob asks for 12 months)"]
       },
       "host": {
         "firstName": "Sunil", "lastName": "Mehta", "preferredName": "Sunil",
@@ -887,7 +887,7 @@
       },
       "preferences": {
         "sharerGender": "any", "sharerAgeRange": { "min": 18, "max": 35 },
-        "preferredDisciplines": ["science", "engineering", "health"],
+        "preferredDisciplines": ["health", "allied_health"],
         "studentTypes": ["domestic", "international"],
         "otherLodgers": "none", "languagesWelcome": ["Hindi", "Gujarati"]
       },

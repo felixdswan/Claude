@@ -40,7 +40,7 @@ Spreadsheet conventions:
 | Country of origin, Income support | `host.countryOfOrigin`, `host.incomeSupport` | text | D |
 | Languages | `host.languages` | list | D |
 | Former career | `host.formerCareer` | text | S: career link |
-| Career field | `host.discipline` | `health` `carework` `allied_health` `social_work` `psychology` `education` `law` `engineering` `business` `design` `science` | S: career link (worked out from the former career if blank) |
+| Career field | `host.discipline` | `health` `carework` `allied_health` `social_work` `psychology` `education`, or a field outside the program (`law` `engineering` `business` `design` `science`) | S: career link (worked out from the former career if blank) |
 | Nominee, relationship, location, pays | `familyNominee.*` | text, yes/no | D |
 | Suburb, Postcode, Home type | `home.suburb`, `home.postcode`, `home.homeType` | text | D |
 | Rooms offered | `home.roomsOffered` | number (default 1) | How many students one host can be paired with |
@@ -54,7 +54,7 @@ Spreadsheet conventions:
 | Hobbies, Can offer, Wants to learn | `interests.*` | list | S: shared interests, what the host can teach, what the student can help the host learn |
 | Sharer gender | `preferences.sharerGender` | `female` `male` `any` | F |
 | Sharer age | `preferences.sharerAgeRange` | range | F |
-| Preferred study areas | `preferences.preferredDisciplines` | list of career fields | S |
+| Preferred study areas | `preferences.preferredDisciplines` | list of the program's six fields | S (areas outside the program count as no preference, since no student can meet them) |
 | Student types | `preferences.studentTypes` | `domestic` `international` | F |
 | Other sharers | `preferences.otherLodgers` | `none` `open` `prefer` | F: a host with two rooms who prefers two sharers, and a student who wants to be the only one |
 | Languages welcome | `preferences.languagesWelcome` | list | S |
