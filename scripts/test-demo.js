@@ -214,7 +214,11 @@ async function hostsTab(page) {
   await page.waitForFunction(() => window.__downloads.some((d) => d.filename === "genstay-host-template.csv"), null, { timeout: 5000 });
   if (!/^﻿Host ID,Status,Host fit/.test(await download("genstay-host-template.csv"))) errors.push("hosts: template CSV is missing its headings");
 
-  await page.setInputFiles("#hostimporter", { name: "genstay-hosts.sample.json", mimeType: "application/json", buffer: fs.readFileSync(HOSTS_FILE) });
+  /* the hosts published beside the page load with one click */
+  await page.waitForFunction(() => { const b = document.getElementById("hostsample"); return b && !b.hidden; }, null, { timeout: 5000 })
+    .catch(() => errors.push("hosts: no Load sample hosts button"));
+  if ((await page.textContent("#hostsample")) !== "Load sample hosts (15)") errors.push("hosts: the sample button doesn't say how many: " + (await page.textContent("#hostsample")));
+  await page.click("#hostsample");
   await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 15, null, { timeout: 5000 });
   const rows = ["First name\tLast name\tGender\tSuburb\tFormer career\tPayment a week\tAvailable from\tShortest stay (months)\tCommute minutes\tSharer gender\tHours a week\tHelp wanted\tTime together (1-5)\tHobbies\tSmoke-free home\tPets",
     "Joan\tPrice\tFemale\tAshfield\tPrimary school teacher\t140\t1/2/2027\t6\tUTS City Campus: 30; USyd Camperdown: 25\tAny\t8-10\tcompanionship; gardening\t2\tReading; Gardening\tYes\t"].join("\n");
@@ -315,6 +319,42 @@ async function hostsTab(page) {
   if (!/3 played/.test(stats) || !/1 not placed/.test(stats)) errors.push("hosts: the board doesn't count who played and who wasn't placed: " + stats);
   out.board = board;
   await page.screenshot({ path: path.join(OUT, "live-board.png") });
+
+  /* deleting: loading the sample again asks first; then all hosts, one applicant at a time, and everyone shown */
+  await page.click("#tab-hosts");
+  await page.click("#hostsample");
+  if (!/Click again to replace 15 hosts already here/.test(await page.textContent("#hostsample"))) errors.push("hosts: reloading the sample didn't ask before replacing: " + (await page.textContent("#hostsample")));
+  await page.click("#hostsample");
+  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 15 && window.__store["hosts/GH-2027-002"].meta.pairingStatus === "screening", null, { timeout: 5000 })
+    .catch(() => errors.push("hosts: reloading the sample didn't restore the hosts"));
+  await page.click("#hostdelall");
+  if (!/Click again to delete all 15/.test(await page.textContent("#hostdelall"))) errors.push("hosts: Delete all hosts didn't ask for a second click");
+  await page.click("#hostdelall");
+  await page.waitForFunction(() => !Object.keys(window.__store).some((k) => /^hosts\//.test(k)) && !document.querySelectorAll("#hlist .qitem").length, null, { timeout: 5000 })
+    .catch(() => errors.push("hosts: Delete all hosts left hosts behind"));
+  await page.click("#tab-app");
+  const del = async (name) => {
+    await page.click('#qlist .qitem:has-text("' + name + '")');
+    await page.waitForFunction((n) => document.getElementById("vname").textContent === n, name, { timeout: 5000 });
+    await page.click("#delone");
+    if (!/Click again to delete/.test(await page.textContent("#delone"))) errors.push("delete: " + name + " wasn't asked to confirm");
+    await page.click("#delone");
+    await page.waitForFunction((n) => ![...document.querySelectorAll("#qlist .qitem .nm")].some((x) => x.textContent === n), name, { timeout: 5000 })
+      .catch(() => errors.push("delete: " + name + " is still in the queue"));
+  };
+  await del("Pat Ward");
+  const patLeft = await page.evaluate(() => Object.keys(window.__store).filter((k) => /PP-pat/.test(k)));
+  if (patLeft.length) errors.push("delete: Pat's records are still stored: " + patLeft.join(", "));
+  await del("Sam Lee");
+  const samLeft = await page.evaluate(() => Object.keys(window.__store).filter((k) => /^profiles\/applicant-1/.test(k)));
+  if (samLeft.length) errors.push("delete: Sam's run, or the account's copy of it, is still stored: " + samLeft.join(", "));
+  await page.click("#delshown");
+  if (!/Click again to delete 1 applicant/.test(await page.textContent("#delshown"))) errors.push("delete: Delete shown doesn't say how many: " + (await page.textContent("#delshown")));
+  await page.click("#delshown");
+  await page.waitForFunction(() => !Object.keys(window.__store).some((k) => /^(profiles|reviews)\//.test(k)) && document.getElementById("vname").textContent === "No profile open", null, { timeout: 5000 })
+    .catch(async () => errors.push("delete: Delete shown left records behind: " + (await page.evaluate(() => Object.keys(window.__store).join(", ")))));
+  if (!(await page.isDisabled("#delone"))) errors.push("delete: Delete applicant is still enabled with no profile open");
+  out.afterDeleting = await page.textContent("#astat");
   return out;
 }
 
@@ -554,6 +594,17 @@ async function pdfFrom(page, nameFragment) {
     await staff.waitForTimeout(800);                                          // past the arrival animation
     if (!(await staff.$("#board-grid .bcard.fresh"))) errors.push("live: the newest arrival lost its highlight at the next redraw");
     await staff.screenshot({ path: path.join(OUT, "live-board-market-day.png") });
+    /* deleting the older run on the shared account: the account's copy stays on the newer one, and the board follows */
+    await staff.click("#tab-app");
+    await staff.click('#qlist .qitem:has-text("Ava")');
+    await staff.waitForFunction(() => document.getElementById("vname").textContent === "Ava", null, { timeout: 5000 });
+    await staff.click("#delone"); await staff.click("#delone");
+    await staff.waitForFunction(() => desk.items.length === 1, null, { timeout: 5000 }).catch(() => errors.push("live: deleting Ava's run didn't leave one applicant"));
+    const acct = await staff.evaluate(() => ({ parent: window.__store["profiles/applicant-1"], runs: Object.keys(window.__store).filter((k) => /\/runs\//.test(k)).map((k) => window.__store[k].profile.student.firstName) }));
+    if (JSON.stringify(acct.runs) !== '["Ben"]' || !acct.parent || acct.parent.profile.student.firstName !== "Ben" || acct.parent.latestRun !== queue.find((q) => q.name === "Ben").id)
+      errors.push("live: after deleting Ava, the account doesn't point at Ben's run alone: " + JSON.stringify({ runs: acct.runs, parent: acct.parent && acct.parent.profile.student.firstName }));
+    await staff.click("#tab-board");
+    await staff.waitForFunction(() => /1 played/.test(document.getElementById("board-stats").textContent), null, { timeout: 5000 }).catch(() => errors.push("live: the board still counts a deleted player"));
     await staff.click("#tab-app");
     await staff.evaluate(() => { location.hash = ""; });
     await staff.waitForSelector("#begin");

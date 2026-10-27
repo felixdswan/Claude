@@ -172,6 +172,8 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 .review textarea{min-height:76px}
 .empty-state{padding:28px 20px;display:flex;flex-direction:column;gap:8px;color:var(--ink-2);font-size:14px}
 .cont.small{padding:7px 12px;font-size:13px}
+.cont.ghost.danger{color:var(--bad);border-color:var(--bad)}
+.cont.ghost.danger:hover{background:var(--field)}
 /* hosts and matches */
 .tabs{display:flex;gap:6px;margin-top:9px}
 .tab{background:transparent;border:1px solid var(--line-2);border-radius:8px;padding:6px 12px;font:600 13px/1.2 var(--body);color:var(--ink-2)}
@@ -2003,7 +2005,8 @@ function renderStaff(){
     + '<label class="cont ghost small" style="display:inline-flex;flex-direction:row;cursor:pointer">Add profile files<input type="file" id="importer" accept=".json,application/json" multiple hidden></label>'
     + '<button class="cont ghost small" id="pastebtn">Paste a profile</button>'
     + '<button class="cont ghost small" id="pdfall">Download all (PDF)</button>'
-    + '<button class="cont ghost small" id="expall">Download all (JSON)</button></div>'
+    + '<button class="cont ghost small" id="expall">Download all (JSON)</button>'
+    + '<button class="cont ghost small danger" id="delshown" title="Deletes every applicant in the list as searched and filtered">Delete shown</button></div>'
     + '<div id="pastebox" hidden style="display:flex;flex-direction:column;gap:6px"><textarea id="pastein" aria-label="Paste a profile" placeholder="Paste the profile text an applicant emailed you" style="min-height:110px;font:400 12px/1.4 var(--mono)"></textarea>'
     + '<div class="btnrow"><button class="cont primary small" id="pasteadd">Add to queue</button><button class="cont ghost small" id="pastecancel">Cancel</button></div></div>'
     + '<div class="status" id="astat"><span class="dotled wait"></span><span>Reading the placement record…</span></div>'
@@ -2013,6 +2016,7 @@ function renderStaff(){
     + '<b class="grow" id="vname">No profile open</b>'
     + '<button class="cont small" id="pdfone" disabled>Download PDF</button>'
     + '<button class="cont ghost small" id="dlone" disabled>Download JSON</button>'
+    + '<button class="cont ghost small danger" id="delone" disabled>Delete applicant</button>'
     + '<span class="status" id="fstat"></span></div>'
     + '<div class="vbody"><iframe id="pframe" title="GenStay matching profile" src="' + TEMPLATE_URL + '?embed"></iframe>'
     + '<aside class="review" id="review"><div class="empty-state">Pick an applicant from the queue to review their profile.</div></aside></div>'
@@ -2045,6 +2049,15 @@ function renderStaff(){
     var list = visibleItems();
     if (!list.length){ setStatus("astat", "wait", "Nothing to export yet."); return; }
     makePdfFile(list.map(function(it){ return mergedProfile(it); }), "genstay-profiles-" + nowISO().slice(0, 10) + ".pdf", "astat");
+  };
+  el("#delone").onclick = function(){
+    var it = currentItem();
+    if (it && confirmTwice(this, "Click again to delete " + (it.name || "this applicant"))) deleteApplicants([it]);
+  };
+  el("#delshown").onclick = function(){
+    var list = visibleItems();
+    if (!list.length){ setStatus("astat", "wait", "No applicants to delete."); return; }
+    if (confirmTwice(this, "Click again to delete " + count(list.length, "applicant"))) deleteApplicants(list);
   };
   el("#dlone").onclick = function(){
     var it = currentItem(); if (!it) return;
@@ -2178,7 +2191,7 @@ function loadQueue(openId){
       seen[d.id] = 1;
       if (data.imported){ desk.byAccount[d.id] = data.profile ? [Object.assign({id: d.id}, data)] : []; return; }
       /* every save touches the account's index doc, so a changed stamp means new or changed runs */
-      var stamp = (data.updatedAt || "") + "|" + (data.latestRun || "");
+      var stamp = (data.updatedAt || "") + "|" + (data.latestRun || "") + "|" + (data.runsChangedAt || "");
       if (desk.stamps[d.id] !== stamp){ desk.stamps[d.id] = stamp; readRuns(d.id, lost); }
     });
     Object.keys(desk.byAccount).forEach(function(id){
@@ -2214,6 +2227,8 @@ function readRuns(account, lost){
 /* Redraws after any live change, keeping the open profile open. */
 function queueChanged(){
   if (!desk || !desk.loaded.profiles || !desk.loaded.reviews) return;
+  /* an applicant deleted here or on another staff screen: close their profile */
+  if (desk.current && !itemById(desk.current)) closeItem();
   desk.items = [].concat.apply([], Object.keys(desk.byAccount).map(function(k){ return desk.byAccount[k]; }))
     .sort(function(a, b){ return String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")); });
   setStatus("astat", "ok", count(desk.items.length, "profile") + ". New ones appear here as people finish.");
@@ -2269,12 +2284,37 @@ function step(dir){
 }
 
 /* ---------- one applicant ---------- */
+/* No profile open: after the open applicant was deleted. */
+function closeItem(){
+  desk.current = null;
+  el("#vname").textContent = "No profile open";
+  ["#pdfone", "#dlone", "#delone"].forEach(function(id){ el(id).disabled = true; });
+  el("#review").innerHTML = '<div class="empty-state">Pick an applicant from the queue to review their profile.</div>';
+  sendToFrame({});
+}
+/* An applicant's records: their run (or the imported profile) and the staff review.
+   The account's index keeps a copy of its latest run, so it's pointed at the
+   next newest run, or removed with the last one. Either way it changes, which
+   tells every open staff screen to read the account's runs again. */
+function eraseApplicant(it){
+  var db = desk.db;
+  if (it.imported || !it.account) return db.doc("profiles/" + it.id).delete().then(function(){ return db.doc("reviews/" + it.id).delete(); });
+  var parent = db.doc("profiles/" + it.account);
+  return db.doc("profiles/" + it.account + "/runs/" + it.id).delete()
+    .then(function(){ return db.doc("reviews/" + it.id).delete(); })
+    .then(function(){ return db.collection("profiles/" + it.account + "/runs").orderBy("savedAt", "desc").limit(1).get(); })
+    .then(function(snap){
+      var next = snap.docs[0] && snap.docs[0].data();
+      return next && next.profile ? parent.set(indexFields(next.profile, {updatedAt: next.savedAt, latestRun: next.pid, runsChangedAt: nowISO()})) : parent.delete();
+    });
+}
 function openItem(id){
   desk.current = id;
   var it = currentItem(); if (!it) return;
   drawQueue();
   el("#vname").textContent = it.name || "Unnamed applicant";
   el("#dlone").disabled = false;
+  el("#delone").disabled = false;
   el("#pdfone").disabled = !!desk.pdfBusy;
   setStatus("fstat", "wait", "Opening profile…");
   sendToFrame(mergedProfile(it));
@@ -2392,9 +2432,11 @@ function hostDeskHTML(){
     + '<div class="queue"><div class="qtools">'
     + '<div class="btnrow"><label class="cont small" style="display:inline-flex;flex-direction:row;cursor:pointer">Add host files<input type="file" id="hostimporter" accept=".csv,.tsv,.txt,.json,text/csv,text/plain,application/json" multiple hidden></label>'
     + '<button class="cont ghost small" id="hostpastebtn">Paste hosts</button>'
-    + '<button class="cont ghost small" id="hrefresh">Refresh</button></div>'
+    + '<button class="cont ghost small" id="hrefresh">Refresh</button>'
+    + '<button class="cont ghost small" id="hostsample" hidden title="Adds the fictional hosts published beside this page, replacing any with the same Host ID">Load sample hosts</button></div>'
     + '<div class="btnrow"><button class="cont ghost small" id="hosttemplate">Host template (CSV)</button>'
-    + '<button class="cont ghost small" id="hostexport">Download hosts (CSV)</button></div>'
+    + '<button class="cont ghost small" id="hostexport">Download hosts (CSV)</button>'
+    + '<button class="cont ghost small danger" id="hostdelall">Delete all hosts</button></div>'
     + '<div id="hostpastebox" hidden style="display:flex;flex-direction:column;gap:6px"><textarea id="hostpastein" aria-label="Paste hosts" placeholder="Paste rows copied from the host spreadsheet, heading row first, or host profile JSON" style="min-height:110px;font:400 12px/1.4 var(--mono)"></textarea>'
     + '<div class="btnrow"><button class="cont primary small" id="hostpasteadd">Add hosts</button><button class="cont ghost small" id="hostpastecancel">Cancel</button></div></div>'
     + '<div class="status" id="hstat"><span class="dotled wait"></span><span>Reading host profiles…</span></div>'
@@ -2432,6 +2474,12 @@ function bindHostDesk(){
     offerDownload("genstay-hosts-" + nowISO().slice(0, 10) + ".csv", "﻿" + GenStayMatch.hostsToCsv(desk.hosts), "hstat");
   };
   el("#hoverview").onclick = function(){ desk.hostSel = null; drawHosts(); };
+  el("#hostsample").onclick = function(){ loadSampleHosts(this); };
+  el("#hostdelall").onclick = function(){
+    if (!desk.hosts.length){ setStatus("hstat", "wait", "No host profiles to delete."); return; }
+    if (confirmTwice(this, "Click again to delete all " + desk.hosts.length)) deleteHosts(desk.hosts.slice(), "hstat");
+  };
+  probeSampleHosts();
   el("#hlist").addEventListener("click", matchClick);
   el("#mbody").addEventListener("click", matchClick);
   el("#mbody").addEventListener("change", function(e){ if (e.target.id === "hst-status") setHostStatus(desk.hostSel, e.target.value); });
@@ -2529,23 +2577,75 @@ function setHostStatus(id, status){
 }
 /* Two clicks, because the viewer blocks confirm(). */
 function removeHost(b){
-  var h = hostById(desk.hostSel); if (!h) return;
-  if (!b.getAttribute("data-armed")){
-    b.setAttribute("data-armed", "1"); b.textContent = "Click again to remove";
-    setTimeout(function(){ if (b.isConnected){ b.removeAttribute("data-armed"); b.textContent = "Remove host"; } }, 4000);
-    return;
+  var h = hostById(desk.hostSel);
+  if (h && confirmTwice(b, "Click again to delete")) deleteHosts([h], "mstat");
+}
+/* ---------- deleting, and the sample hosts ---------- */
+/* A destructive button asks twice: the first click arms it for four seconds. True on the second click. */
+function confirmTwice(b, again){
+  if (b.getAttribute("data-armed")){
+    clearTimeout(+b.getAttribute("data-armed")); b.removeAttribute("data-armed"); b.textContent = b.getAttribute("data-label");
+    return true;
   }
-  var id = h.meta.hostId;
+  b.setAttribute("data-label", b.textContent); b.textContent = again;
+  b.setAttribute("data-armed", String(setTimeout(function(){
+    if (b.getAttribute("data-armed")){ b.removeAttribute("data-armed"); b.textContent = b.getAttribute("data-label"); }
+  }, 4000)));
+  return false;
+}
+/* Deletes applicants for good: their profile, every run and their review (eraseApplicant knows where each game keeps them). */
+function deleteApplicants(list){
+  var ids = list.map(function(it){ return it.id; });
   var done = function(){
-    desk.hosts = desk.hosts.filter(function(x){ return x.meta.hostId !== id; });
-    desk.hostSel = null;
+    desk.items = desk.items.filter(function(it){ return ids.indexOf(it.id) === -1; });
+    if (desk.byAccount) Object.keys(desk.byAccount).forEach(function(k){
+      desk.byAccount[k] = desk.byAccount[k].filter(function(it){ return ids.indexOf(it.id) === -1; });
+    });
+    ids.forEach(function(id){ delete desk.reviews[id]; });
+    if (ids.indexOf(desk.current) !== -1) closeItem();
+    drawQueue();
+    refreshMatches();
+    if (!desk.current && visibleItems().length) openItem(visibleItems()[0].id);
+    setStatus("astat", desk.db ? "ok" : "wait", (list.length === 1 ? "Deleted " + (list[0].name || "the applicant") : "Deleted " + count(list.length, "applicant")) + "."
+      + (desk.db ? "" : " Shown here only: the placement record isn’t available in this view."));
+  };
+  if (!desk.db){ done(); return Promise.resolve(); }
+  setStatus("astat", "wait", "Deleting…");
+  return list.reduce(function(chain, it){ return chain.then(function(){ return eraseApplicant(it); }); }, Promise.resolve())
+    .then(done, function(err){ setStatus("astat", "no", "Couldn’t delete (" + ((err && err.code) || "unavailable") + "). Press Refresh to see what’s left."); });
+}
+function deleteHosts(list, statusId){
+  var ids = list.map(function(h){ return h.meta.hostId; });
+  var done = function(){
+    desk.hosts = desk.hosts.filter(function(x){ return ids.indexOf(x.meta.hostId) === -1; });
+    if (ids.indexOf(desk.hostSel) !== -1) desk.hostSel = null;
     refreshMatches(); drawHosts();
-    setStatus("mstat", "ok", "Removed " + hostLabel(h) + ".");
+    setStatus(statusId, "ok", list.length === 1 ? "Deleted " + hostLabel(list[0]) + "." : "Deleted " + count(list.length, "host profile") + ".");
   };
   if (!desk.db){ done(); return; }
-  desk.db.doc("hosts/" + cleanId(id)).delete().then(done, function(err){
-    setStatus("mstat", "no", "Couldn’t remove (" + ((err && err.code) || "unavailable") + ").");
+  setStatus(statusId, "wait", "Deleting…");
+  Promise.all(ids.map(function(id){ return desk.db.doc("hosts/" + cleanId(id)).delete(); })).then(done, function(err){
+    setStatus(statusId, "no", "Couldn’t delete (" + ((err && err.code) || "unavailable") + ").");
   });
+}
+/* The sample hosts published beside this page, if there are any (the demo's fictional homeowners). */
+var SAMPLE_HOSTS_URL = "genstay-hosts.sample.json";
+function probeSampleHosts(){
+  fetch(SAMPLE_HOSTS_URL).then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); }).then(function(text){
+    return loadMatcher().then(function(M){
+      var n = M ? M.parseHosts(text).hosts.length : 0, b = el("#hostsample");
+      if (!desk || !n || !b) return;
+      desk.sampleHosts = text;
+      b.textContent = "Load sample hosts (" + n + ")"; b.hidden = false;
+    });
+  }).then(null, function(){ /* none published beside this page */ });
+}
+function loadSampleHosts(b){
+  var M = window.GenStayMatch;
+  if (!desk.sampleHosts || !M) return;
+  var here = M.parseHosts(desk.sampleHosts).hosts.filter(function(h){ return hostById(h.meta.hostId); }).length;
+  if (here && !confirmTwice(b, "Click again to replace " + count(here, "host") + " already here")) return;
+  importHostTexts([desk.sampleHosts]);
 }
 
 /* ---------- matching ---------- */
@@ -2717,7 +2817,7 @@ function hostDetailHTML(h){
     + '<span class="grow"></span><label>Status <select id="hst-status">' + codes.map(function(k){
         return '<option value="' + esc(k) + '"' + (code === k ? " selected" : "") + '>' + esc(M.HOST_STATUS[k] || k.replace(/_/g, " ")) + '</option>';
       }).join("") + '</select></label>'
-    + '<button class="cont ghost small" id="hremove">Remove host</button></div>'
+    + '<button class="cont ghost small danger" id="hremove">Delete host</button></div>'
     + '<div class="hfacts">' + M.hostFacts(h).map(function(f){ return '<div><span>' + esc(f[0]) + '</span>' + esc(f[1]) + '</div>'; }).join("") + '</div></div>'
     + '<div class="secthead">Best applicants for ' + esc(hostLabel(h)) + (ranked.length > 10 ? ' (top 10 of ' + ranked.length + ')' : '') + '</div>'
     + (ranked.length ? ranked.slice(0, 10).map(function(m){ return matchCardHTML(m, false); }).join("")

@@ -254,6 +254,14 @@ async function checkContract(browser, base, profile, label) {
         .catch(() => errors.push("board: finished applicants aren't shown with a host"));
       report.board = await page.$$eval("#board-grid .bcard", (c) => c.map((n) => n.innerText.replace(/\s+/g, " ").slice(0, 80)));
       if (!report.board.some((t) => /^Sam .*not placed this time/i.test(t))) errors.push("board: Sam Lee, kept out by screening, is shown as paired: " + report.board.join(" | "));
+      /* deleting an applicant removes every run, the account's profile and the review */
+      await page.click("#tab-app");
+      await page.click('#qlist .qitem:has-text("Sam Lee")');
+      await page.waitForFunction(() => document.getElementById("vname").textContent === "Sam Lee", null, { timeout: 5000 });
+      await page.click("#delone"); await page.click("#delone");
+      await page.waitForFunction(() => !Object.keys(window.__store).some((k) => /^(profiles|reviews)\/applicant-1/.test(k)), null, { timeout: 5000 })
+        .catch(async () => errors.push("delete: Sam Lee's records are still stored: " + (await page.evaluate(() => Object.keys(window.__store).filter((k) => /applicant-1/.test(k)).join(", ")))));
+      if (await page.$('#qlist .qitem:has-text("Sam Lee")')) errors.push("delete: Sam Lee is still in the queue");
     }
     await ctx.close();
   }
