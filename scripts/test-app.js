@@ -1,7 +1,9 @@
 /* Automated checks for the GenStay app, in a real browser at iPhone size.
 
    Serves app/ over HTTP, then:
-     - checks Home, the Logbook tallies and filters against the demo week
+     - checks Home, the Logbook tallies and filters against the demo week:
+       Completed is only what the host confirmed, Awaiting review also holds
+       overdue tasks, and overdue tasks warn that dependents will be notified
      - logs a task (and the missing-name error), marks one done, confirms one
        as the host, removes one and undoes it, and checks the hours move
      - schedules a weekly task from the calendar and finds it next week
@@ -58,9 +60,10 @@ function check(ok, what) {
 
   console.log("Home");
   check(await text("#homeHours") === "3.5", "3.5 hours contributed this week");
-  check(await text("#homeTarget") === "18", "out of 18 hours");
+  check(await text("#homeTarget") === "12", "out of 12 hours");
   check(JSON.stringify(await names("#dayList")) === JSON.stringify(["Prepare dinner", "Take bins out", "Dust"]), "today's tasks: what's left first");
   check(JSON.stringify(await names("#overdueList")) === JSON.stringify(["Mow lawn"]), "Mow lawn is overdue");
+  check(/Dependents notified in 72 hours/.test(await text("#overdueList")), "the overdue task warns that dependents will be notified in 72 hours");
   await page.screenshot({ path: path.join(OUT, "01-home.png") });
   await tap('[data-day="2026-10-14"]');
   check(await text("#dayTitle") === "Tomorrow’s Tasks", "picking Wednesday shows tomorrow's tasks");
@@ -69,16 +72,18 @@ function check(ok, what) {
 
   console.log("Logbook");
   await tap('.tab[data-tab="logbook"]');
-  check(await text("#logHours") === "3.5" && await text("#logDone") === "2" && await text("#logTotal") === "10", "tallies read 3.5/18 hours and 2/10 tasks");
+  check(await text("#logHours") === "3.5" && await text("#logDone") === "1" && await text("#logTotal") === "10", "tallies read 3.5/12 hours and 1/10 tasks completed");
   const rows = await names("#logList");
   check(rows.length === 10 && rows[0] === "Mow lawn" && rows[1] === "Dust" && rows[3] === "Prepare dinner", "ten tasks, in the mockup's order");
   const pills = await page.locator("#logList .pill").allInnerTexts();
   check(pills.slice(0, 4).join("|") === "Overdue|Confirmed|Awaiting review|Upcoming", "status pills match");
+  check(await page.locator("#logList .ico svg.full").count() === 6, "this week's mow, dust, bins, dinner and grocery icons use the official artwork");
+  check(/Dependents notified in 72 hours/.test(await text("#logList")), "the logbook row carries the warning too");
   await page.screenshot({ path: path.join(OUT, "02-logbook.png") });
   await tap('.chip[data-filter="done"]');
-  check((await names("#logList")).length === 2, "Completed shows 2");
+  check(JSON.stringify(await names("#logList")) === JSON.stringify(["Dust"]), "Completed shows only what Margaret confirmed");
   await tap('.chip[data-filter="awaiting"]');
-  check(JSON.stringify(await names("#logList")) === JSON.stringify(["Take bins out"]), "Awaiting review shows Take bins out");
+  check(JSON.stringify(await names("#logList")) === JSON.stringify(["Mow lawn", "Take bins out"]), "Awaiting review shows the overdue task and the one Margaret hasn't reviewed");
   await tap('.chip[data-filter="all"]');
 
   console.log("Log a Task");
@@ -96,18 +101,20 @@ function check(ok, what) {
   await tap("#saveBtn");
   await page.waitForTimeout(500);
   check(/Margaret will review it/.test(await toast()), "toast: logged for review");
-  check(await text("#logHours") === "4" && await text("#logDone") === "3" && await text("#logTotal") === "11", "hours 4, tasks 3/11");
+  check(await text("#logHours") === "4" && await text("#logDone") === "1" && await text("#logTotal") === "11", "hours 4; still 1/11 completed until Margaret confirms");
 
   console.log("A task's sheet");
   await tap('#logList [data-open="s1@2026-10-12"]');
   await page.waitForTimeout(450);
+  check(/Dependents will be notified in 72 hours/.test(await text("#infoBody")), "the overdue task's sheet carries the warning");
   await page.screenshot({ path: path.join(OUT, "04-task-overdue.png") });
   await page.selectOption("#spent", "60");
   await tap('[data-act="done"]');
   check((await page.locator("#infoBody .pill").innerText()) === "Awaiting review", "Mow lawn marked done");
-  check(await text("#logHours") === "5" && await text("#logDone") === "4", "hours 5, tasks 4/11");
+  check(await text("#logHours") === "5" && await text("#logDone") === "1", "hours 5; still 1 completed");
   await tap('[data-act="confirm"]');
   check((await page.locator("#infoBody .pill").innerText()) === "Confirmed", "confirmed as Margaret");
+  check(await text("#logDone") === "2", "confirming completes it: 2/11");
   await page.screenshot({ path: path.join(OUT, "05-task-confirmed.png") });
   await tap('#infoSheet [data-act="remove"]');
   await page.waitForTimeout(400);

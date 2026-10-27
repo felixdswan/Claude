@@ -126,10 +126,14 @@ and saves screenshots of every scene.
 Task), built to demo on a phone. On a phone it fills the screen. On a laptop it sits in a phone
 frame. Add `#logbook` or `#contact` to the link to open on that tab.
 
-- **Home**: the week strip (tap a day to see its tasks), hours contributed against the 18-hour
+- **Home**: the week strip (tap a day to see its tasks), hours contributed against the 12-hour
   agreement, and overdue tasks.
 - **Logbook**: the week's hours and tasks, filters, and every task with its status. The arrows
-  step through weeks.
+  step through weeks. **Completed** counts only tasks Margaret has confirmed. **Awaiting review**
+  lists tasks waiting for her and any overdue ones. Time on a task counts toward the week's hours
+  as soon as it is marked done.
+- **Overdue tasks** carry a warning that dependents will be notified in 72 hours (`NOTICE_HOURS`
+  in the script), on their row and in their sheet.
 - **Log a Task**: a task done today or earlier goes to Margaret as **Awaiting review** and its time
   counts straight away. A future date schedules it. **Repeat** sets it daily, weekly, monthly or on
   chosen days.
@@ -138,6 +142,10 @@ frame. Add `#logbook` or `#contact` to the link to open on that tab.
 - **Contact Us**: the coordinator's number and email to copy, a message thread with a canned
   reply, common questions, and the 000 reminder. The contact details are placeholders (`CONTACT`
   at the top of the script).
+
+The logo, wordmark, avatar, tab bar icons, the hours ring and the mow, dust, bins, dinner and
+grocery icons are lifted from the official design plan (Logbook app v4). Task types the plan
+doesn't draw keep hand-drawn icons in its navy.
 
 The demo date is fixed at Tuesday 13 October 2026, the date in the mockups (`TODAY` in the
 script). Changes stay in that browser. The profile button resets the demo.
