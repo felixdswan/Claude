@@ -18,8 +18,9 @@ another on a built-in review desk, add the homeowners' profiles, and get suggest
 The other days branch on earlier choices. Day 13 brings back the applicant's lowest moment in a
 new form.
 
-A **demo** (`game/genstay-screener.demo.html`) plays four short scenarios in about two minutes,
-then pairs each player with a fictional homeowner. It's built for a live market-day stall: see
+A **demo** (`game/genstay-screener.demo.html`) plays four short scenarios and a final memory
+question, asks two short pages of questions, then pairs each player with a fictional homeowner,
+in about two minutes. It's built for a live market-day stall: see
 [Quick demo](#quick-demo) and [Market day](#market-day) below.
 
 ## What's here
@@ -28,7 +29,7 @@ then pairs each player with a fictional homeowner. It's built for a live market-
     game/genstay-screener.demo.html          the quick demo, with its own staff desk, one file
     game/genstay-profile-template.html   the GenStay profile template the desk shows each profile in
     game/genstay-matching.js             the matching: reads host profiles, filters and scores pairings from both sides, allocates the best
-    game/genstay-hosts.sample.json       fifteen fictional hosts: the demo's market-day homeowners, and examples of the host format
+    game/genstay-hosts.sample.json       eighteen fictional hosts: the demo's market-day homeowners, and examples of the host format
     genstay/genstay-profile-fields.md    the profile data contract, and how the game fills and stores it
     genstay/genstay-profile.sample.json  a complete example profile
     genstay/genstay-host-fields.md       the host profile format, the host spreadsheet, and how matching works
@@ -159,12 +160,13 @@ match the participant saw; in the full game, the applicant's best host among the
 `game/genstay-screener.demo.html` is a separate, shorter version for demonstrations and quick trials.
 The full game is unchanged.
 
-Built for a five-minute presentation slot: about a minute and a half to play, and 20 seconds of
-questions.
+Built for a market-day stand with three minutes a player: about two minutes for the scenarios
+and the questions, leaving room for slower readers.
 
 - **Four scenarios.** Each tests one thing staff care about:
-  1. **The conversation.** Over tea, Marg mentions her career (the applicant's own field). Do they
-     ask about it, swap stories, or keep to themselves?
+  1. **The conversation.** Over tea, Marg mentions her career (the applicant's own field) and one
+     detail from it: a nurse's fob watch, a teacher's brass school bell, the lemon slice a carer
+     baked for her clients every Friday. Do they ask about it, swap stories, or keep to themselves?
   2. **Agency.** A scam text. Do they walk her through the warning signs, or take her phone and
      deal with it themselves?
   3. **A dispute, in two stages.** Everyone answers the first: the morning after a loud late night.
@@ -172,20 +174,22 @@ questions.
      (do they keep the agreement?); after waiting, Marg leaves a note asking to talk; after "I pay
      rent", her son rings. All three lead on to the last scenario.
   4. **The emergency.** Marg falls and hits her head. Do they keep her still and call 000?
-- **One screen a question, 25 seconds each.** The situation sits above the question, then Marg's
-  reaction. Five questions in all. Pausing pauses the timer. A timed-out question counts as no
+- **A final question: were they listening?** A week later, Marg is home from hospital, and the
+  player is asked to recall the detail from the first evening (four options, which follow the area
+  of study). A wrong answer counts as a part fail, and staff see what was answered.
+- **A slide to set each scene, then the question.** Each scenario opens on an untimed slide, then
+  the question with a one-line reminder of the situation and 25 seconds to answer, then Marg's
+  reaction. Six questions in all. Pausing pauses the timer. A timed-out question counts as no
   answer; at the dispute, it counts as waiting, so the follow-up is Marg's note.
 - **The answers count.** Every option is graded (see Hosts and matches): moving Marg, or giving her
-  water, screens a player out on its own; taking over her phone, "I pay rent", hanging up on her son
-  and the like add up, three to a screen-out.
+  water, screens a player out on its own; taking over her phone, "I pay rent", hanging up on her son,
+  forgetting what Marg shared and the like add up, three to a screen-out.
 - **A first name and an area of study** to start. No email.
-- **One page of matching questions, mostly pre-filled.** Campus, gender, how much time they'd like
-  to spend together, the help they'd offer, and hobbies. The conversation and the scam pre-fill
-  time together, help and whether they'd like a homeowner from their field. Everything else (age,
-  move-in month, stay, rent, homeowner gender, other students, smoking, pets, career goal,
-  languages, things to learn, hours, help not offered) starts at typical answers, open to most
-  homes, under **Pre-filled answers**, where any can be changed. Staff are told which were left
-  at the defaults.
+- **Two short pages of matching questions, all answered by the player.** Nothing is filled in for
+  them. Only questions the matching uses are asked, most of them one tap. First the filters: age,
+  gender, campus, move-in month, length of stay, rent, homeowner gender, smoking and pets. Then the
+  scores: time together, hours a week, the help they'd offer, hobbies, whether they'd like a
+  homeowner from their field, things to learn and languages (the last three optional).
 - **A curated outcome, one of three.** The results screen uses the same matching as the staff
   desk, against the fictional hosts in `genstay-hosts.sample.json`:
   - **Matched:** their best homeowner, scoring 65 or more: name, age, suburb, former career, the
@@ -200,13 +204,14 @@ questions.
 
   The Live board shows the same outcome, with first names only and no reasons for anyone not
   placed. If the hosts file can't load within six seconds, the results show without an outcome.
-- **About two minutes in all.** Five questions and five reactions: 305 words, about 1.4 minutes
-  at a typical reading pace (1.7 at a slow one), plus the questions.
+- **About two minutes in all, of the three allowed.** Four scene slides, six questions and six
+  reactions (432 words), then the two pages of questions (about 17 taps). Two timed runs of the
+  earlier version took about 1 min 10 s; on the same scale, a run now takes about 2 min 5 s.
 - **The same GenStay profile.** It fills fewer fields (no written answers, no contact details).
   Profile ids start with `DEMO-`, the flags include `quick_demo` (and `missed_timer` if a timer
   ran out), and the watch-point says it was the quick demo. Each scenario keeps a day number from
-  the full fortnight (1, 4, 8, 10 and 14) and is saved as a titled landmark, so staff see every
-  answer in the template.
+  the full fortnight (1, 4, 8, 10 and 14, and 15 for the final question) and is saved as a titled
+  landmark, so staff see every answer in the template.
 - **Its own artifact, desk and record store.** Publish the demo with the same capabilities, and the
   template, matching script and sample hosts beside it. Its `#staff` desk shows only demo profiles and its own
   hosts, so they never mix with real applicants. PDF and JSON downloads and the Hosts and matches
@@ -281,16 +286,17 @@ downloads, and saves screenshots of every scene.
     node scripts/test-demo.js /tmp/genstay-screener-demo-out
 
 does the same for the quick demo: best, worst and timed-out runs, checks that no screen mentions
-something the story hasn't set up, every branch of the dispute, the pre-filled questions page, the match card and the match saved
+something the story hasn't set up, every branch of the dispute, Marg's detail and the final question for every area of study, both questions pages (nothing filled in, every answer checked), the match card and the match saved
 with the run, the staff desk's PDF and JSON downloads, the Hosts and matches tab (the sample hosts
 file, pasted spreadsheet rows, the CSV template, the suggested pairings and their reasons,
-suggesting one, status and removal), the applicant's own profile download, a reading-time
-estimate, and a market-day run: two players on one tablet account arriving on the Live board, in a
+suggesting one, status and removal), the applicant's own profile download, an estimate of a whole
+run's length against the three minutes allowed (calibrated on two timed runs of the earlier
+version), and a market-day run: two players on one tablet account arriving on the Live board, in a
 second tab, without anyone pressing Refresh.
 
     node scripts/test-matching.js
 
-checks the matching on its own: the fifteen sample hosts, fourteen market-day participants against the
+checks the matching on its own: the eighteen sample hosts, fourteen market-day participants against the
 hosts written for them, every host's test purpose as a filter, both sides of the score and the
 game's evidence, the allocation against brute force, the demo's closest match, reading and writing
 host spreadsheets, and that both staff desks carry the same Hosts and matches code.

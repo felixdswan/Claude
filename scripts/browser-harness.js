@@ -139,12 +139,12 @@ async function storyDataProblems(page) {
     if (typeof REDEMPTION_STORIES !== "undefined") walk(REDEMPTION_STORIES, "REDEMPTION_STORIES");
     all.forEach(([where, text]) => { if (/\bback step\b/i.test(text)) out.push(where + ': says "back step"; the story calls it the brick step'); });
     DAYS.forEach((d) => d.steps.filter((s) => s.t === "choice").forEach((s) => {
-      [s.prompt].concat(s.options.map((o) => o.text)).forEach((text) => {
+      [s.prompt].concat((s.options || []).map((o) => o.text)).forEach((text) => {
         if (/\bthe neighbour\b/i.test(text)) out.push("Day " + d.n + ': "' + text + '" says "the neighbour" although no neighbour has appeared on every path to it; say "a neighbour"');
       });
     }));
     DAYS.filter((d) => d.n < 11).forEach((d) => d.steps.filter((s) => s.t === "choice").forEach((s) => {
-      [s.prompt].concat(s.options.map((o) => o.text)).forEach((text) => {
+      [s.prompt].concat((s.options || []).map((o) => o.text)).forEach((text) => {
         if (/\bstep\b/i.test(text) && !/brick step/i.test(text)) out.push("Day " + d.n + ': "' + text + '" mentions the step without naming it, so it has nothing to refer to on its own screen');
       });
     }));

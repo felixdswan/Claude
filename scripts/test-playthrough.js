@@ -240,7 +240,7 @@ async function checkContract(browser, base, profile, label) {
       await page.click("#tab-hosts");
       await page.setInputFiles("#hostimporter", { name: "genstay-hosts.sample.json", mimeType: "application/json",
         buffer: fs.readFileSync(path.resolve(__dirname, "../game/genstay-hosts.sample.json")) });
-      await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 15 && desk.match, null, { timeout: 8000 });
+      await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 18 && desk.match, null, { timeout: 8000 });
       const m = await page.evaluate(() => ({ pairings: desk.match.pairings.map((p) => p.hostName + " + " + p.studentName + (p.locked ? " (staff)" : "")),
         also: desk.match.alsoPaired.map((a) => a.studentName + (a.eligible ? "" : " (ruled out)")) }));
       if (!m.pairings.some((p) => /^Helen Whitcombe \+ Jenny Graffet \(staff\)$/.test(p))) errors.push("hosts: the staff's pairing with Helen wasn't kept: " + m.pairings.join(", "));

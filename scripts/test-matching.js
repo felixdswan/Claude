@@ -90,7 +90,7 @@ function who(name, change) {
 /* 1. the sample hosts */
 {
   const r = M.parseHosts(HOSTS_TEXT);
-  check(r.hosts.length === 15 && !r.problems.length, "sample hosts: read " + r.hosts.length + ", problems: " + r.problems.join("; "));
+  check(r.hosts.length === 18 && !r.problems.length, "sample hosts: read " + r.hosts.length + ", problems: " + r.problems.join("; "));
   check(JSON.stringify(r.hosts.map((h) => h.meta.hostId)) === JSON.stringify(JSON.parse(HOSTS_TEXT).hosts.map((h) => h.meta.hostId)), "sample hosts: ids changed on reading");
   const kev = M.hostStatus(byId("GH-2027-009")), helen = M.hostStatus(byId("GH-2027-001"));
   check(!kev.available && kev.label === "On hold" && helen.available && helen.label === "Shortlisted", "host status: " + JSON.stringify([kev, helen]));
@@ -315,6 +315,8 @@ filters.forEach(([name, hostId, kind, change], i) => {
     "folder_found", "went_with_host", "followed_to_hospital", "packed_belongings",
     /* the quick demo's dispute follow-up: following through, or talking it over */
     "dispute_asked_first", "dispute_met_out", "dispute_talked", "dispute_note_back", "dispute_to_service", "dispute_owned", "dispute_mediated",
+    /* the quick demo's final question, answered right */
+    "recall_correct",
     /* keyword-matched written answers: too unreliable to screen anyone out, so staff read them */
     "asked_about_career", "career_one_way", "honest_refusal", "study_then_join", "accepted_garden", "vague_excuse", "repair_open", "repair_withdrawn",
     "redemption_attempted", "redemption_withdrawn"
@@ -370,7 +372,7 @@ filters.forEach(([name, hostId, kind, change], i) => {
 /* 8. reading host lists */
 {
   const csv1 = M.hostsToCsv(HOSTS), again = M.parseHosts(csv1);
-  check(again.hosts.length === 15 && !again.problems.length, "CSV: read back " + again.hosts.length + " hosts, problems: " + again.problems.join("; "));
+  check(again.hosts.length === 18 && !again.problems.length, "CSV: read back " + again.hosts.length + " hosts, problems: " + again.problems.join("; "));
   check(M.hostsToCsv(again.hosts) === csv1, "CSV: a second round trip changed the file");
   for (const name of Object.keys(P)) {
     const a = M.bestMatch(who(name), HOSTS), b = M.bestMatch(who(name), again.hosts);
@@ -412,13 +414,15 @@ filters.forEach(([name, hostId, kind, change], i) => {
     const s = src(file);
     for (const id of ["helpTypes", "notOffered", "hobbies", "wantsToLearn", "canOffer", "bestTimes"]) {
       const got = opts(s, id);
-      if (!got) { check(/demo/.test(file) && (id === "canOffer" || id === "bestTimes"), file + ": no options found for " + id); continue; }
+      if (!got) { check(/demo/.test(file) && (id === "canOffer" || id === "bestTimes" || id === "notOffered"), file + ": no options found for " + id); continue; }
       const missing = got.filter((x) => M.VOCAB[id].indexOf(x) === -1);
       check(!missing.length, file + ": " + id + " options the matcher doesn't list: " + missing.join(", "));
     }
     const campuses = JSON.parse((s.match(/var CAMPUS_OPTIONS = (\[[\s\S]*?\]\]);/) || [, "[]"])[1]).map((x) => x[0]);
     check(JSON.stringify(campuses) === JSON.stringify(M.VOCAB.campuses.concat(["Another campus"])), file + ": campus options aren't the hosts' campuses: " + campuses.join(", "));
-    const disciplines = [...(s.match(/var DISCIPLINES = \{([\s\S]*?)\n\};/) || [, ""])[1].matchAll(/^\s+(\w+):/gm)].map((m) => m[1]);
+    /* the areas in the list, and any added after it (the demo's "other" borrows health's story) */
+    const disciplines = [...(s.match(/var DISCIPLINES = \{([\s\S]*?)\n\};/) || [, ""])[1].matchAll(/^ {2}(\w+):/gm)].map((m) => m[1])
+      .concat([...s.matchAll(/^DISCIPLINES\.(\w+) = /gm)].map((m) => m[1]));
     check(JSON.stringify(disciplines) === JSON.stringify(M.PROGRAM_FIELDS.concat(["other"])), file + ": areas of study aren't the program's: " + disciplines.join(", "));
   }
   for (const [name, items] of Object.entries(M.VOCAB)) {

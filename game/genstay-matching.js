@@ -235,7 +235,10 @@
     dispute_hung_up: {grade: "part", staff: "hung up on Marg’s son when he asked about the noise",
       you: "When David rang about the noise, you said it was between you and Marg, and hung up. Family can help settle things: hear them out."},
     emergency_left: {grade: "part", staff: "left Marg alone to flag down the ambulance",
-      you: "While waiting for the ambulance, you left Marg alone to go outside. Stay with her, and send someone else to the door if you can."}
+      you: "While waiting for the ambulance, you left Marg alone to go outside. Stay with her, and send someone else to the door if you can."},
+    /* the quick demo's final question: recalling what Marg shared on the first evening */
+    recall_missed: {grade: "part", staff: "didn’t remember the detail Marg shared about her working life on the first evening",
+      you: "At the end, you didn’t remember what Marg told you about her working life on the first evening. Small details people share are how they know you’re listening."}
   };
   var PART_FAIL_LIMIT = 3;
   /* A placement needs at least a Good match. Below this, the applicant waits for a suitable host. */

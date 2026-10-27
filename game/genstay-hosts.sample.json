@@ -1057,6 +1057,216 @@
         "riskFlags": [],
         "watchPoint": "Values his privacy; a student hoping for lots of company would be disappointed"
       }
+    },
+    {
+      "meta": {
+        "hostId": "GH-2027-016",
+        "updatedAt": "2026-10-27",
+        "pairingStatus": "shortlisted",
+        "hostFit": "strong",
+        "testPurpose": ["Education career matching near UTS (spreads load from Helen)", "Pet filter (cat)", "Apartment with a lift", "Craft and games interests"]
+      },
+      "host": {
+        "firstName": "Anne", "lastName": "Kowalski", "preferredName": "Anne",
+        "age": 77, "gender": "female", "pronouns": "she/her",
+        "householdType": "single", "maritalStatus": "widowed",
+        "countryOfOrigin": "Poland", "languages": ["English", "Polish"],
+        "formerCareer": "Primary school teacher, then deputy principal in Glebe",
+        "discipline": "education",
+        "incomeSupport": "part_pension"
+      },
+      "familyNominee": {
+        "name": "Mark Kowalski", "relationship": "son", "location": "local",
+        "suburb": "Balmain", "isPayer": true, "involvement": "Drops in on Saturdays; pays the invoices"
+      },
+      "home": {
+        "suburb": "Pyrmont", "postcode": "2009", "homeType": "apartment with lift",
+        "bedrooms": 2, "bathrooms": 2, "roomsOffered": 1, "sharerBathroom": "private",
+        "stairs": false, "accessibilityFeatures": ["lift"], "readiness": "ready"
+      },
+      "placement": {
+        "campusCommuteMins": { "UTS City Campus": 12, "USyd Camperdown": 20, "UNSW Kensington": 40, "Macquarie Uni": 55, "WSU Parramatta": 50 },
+        "transportNearby": ["light rail", "bus"],
+        "availableFrom": "2027-02-01", "availableFlexWeeks": 3,
+        "minStayMonths": 6, "openToExtend": true
+      },
+      "interests": {
+        "hobbies": ["Scrabble", "baking", "watercolour painting", "harbour walks"],
+        "canOffer": ["teaching career advice", "Polish baking", "classroom stories"],
+        "wantsToLearn": ["online banking", "sharing photos with her grandchildren"]
+      },
+      "preferences": {
+        "sharerGender": "any", "sharerAgeRange": { "min": 18, "max": 35 },
+        "preferredDisciplines": ["education", "psychology", "carework"],
+        "studentTypes": ["domestic", "international"],
+        "otherLodgers": "none", "languagesWelcome": ["Polish"]
+      },
+      "household": {
+        "smoker": false, "smokeFreeHome": true, "pets": ["cat"],
+        "diet": "omnivore", "dealbreakers": ["smoking", "leaving the balcony door open (the cat)"]
+      },
+      "support": {
+        "hoursPerWeek": { "min": 6, "max": 8 },
+        "helpWanted": ["companionship", "cooking", "pet_care", "errands", "light_housework"],
+        "bestTimes": ["weekday evenings", "Saturday afternoon"],
+        "nightsHomePerWeek": { "min": 4, "max": 5 },
+        "needsDriver": false, "carAvailableForSharer": false,
+        "outOfScope": ["personal_care", "medication"],
+        "lodgerPaymentWeekly": 95
+      },
+      "lifestyle": {
+        "bedtime": "22:30", "wakeTime": "07:00", "quietAfter": "22:00",
+        "weekdays": "Painting class on Wednesdays, otherwise home",
+        "weekends": "Scrabble club on Saturday, family lunch on Sunday",
+        "socialLevel": 3, "socialNote": "Enjoys a game and a chat after dinner",
+        "guests": "Daytime visitors welcome, with notice", "tidiness": "tidy", "communication": "in person, or a text"
+      },
+      "checks": { "identity": "cleared", "references": "cleared", "homeVisit": "cleared", "nomineeConfirmed": "cleared", "insurance": "cleared" },
+      "screening": {
+        "motivation": ["company", "practical_help"],
+        "riskFlags": [],
+        "watchPoint": "The cat is indoor-only; agree who feeds her when Anne is away"
+      }
+    },
+    {
+      "meta": {
+        "hostId": "GH-2027-017",
+        "updatedAt": "2026-10-27",
+        "pairingStatus": "shortlisted",
+        "hostFit": "strong",
+        "testPurpose": ["Allied health career matching near UTS (spreads load from Frank)", "Male host open to any gender", "Falls risk after a hip replacement", "Sport and woodwork interests"]
+      },
+      "host": {
+        "firstName": "Graham", "lastName": "Petrie", "preferredName": "Graham",
+        "age": 81, "gender": "male", "pronouns": "he/him",
+        "householdType": "single", "maritalStatus": "widowed",
+        "countryOfOrigin": "Scotland", "languages": ["English"],
+        "formerCareer": "Occupational therapist, St Vincent's Hospital",
+        "discipline": "allied_health",
+        "incomeSupport": "self_funded"
+      },
+      "familyNominee": {
+        "name": "Fiona Petrie", "relationship": "daughter", "location": "interstate",
+        "suburb": "Brisbane", "isPayer": true, "involvement": "Calls every second day; visits each school holidays"
+      },
+      "home": {
+        "suburb": "Chippendale", "postcode": "2008", "homeType": "terrace",
+        "bedrooms": 3, "bathrooms": 2, "roomsOffered": 1, "sharerBathroom": "private",
+        "stairs": true, "accessibilityFeatures": ["grab rails", "stair rail"], "readiness": "ready"
+      },
+      "placement": {
+        "campusCommuteMins": { "UTS City Campus": 8, "USyd Camperdown": 12, "UNSW Kensington": 30, "Macquarie Uni": 55, "WSU Parramatta": 50 },
+        "transportNearby": ["train", "bus"],
+        "availableFrom": "2027-02-15", "availableFlexWeeks": 3,
+        "minStayMonths": 6, "openToExtend": true
+      },
+      "interests": {
+        "hobbies": ["cricket", "woodwork", "crime novels", "swimming"],
+        "canOffer": ["OT and physio career advice", "woodwork lessons", "Scottish shortbread"],
+        "wantsToLearn": ["reading e-books on a tablet", "video calls with his grandchildren"]
+      },
+      "preferences": {
+        "sharerGender": "any", "sharerAgeRange": { "min": 18, "max": 35 },
+        "preferredDisciplines": ["allied_health", "health", "carework"],
+        "studentTypes": ["domestic", "international"],
+        "otherLodgers": "none", "languagesWelcome": []
+      },
+      "household": {
+        "smoker": false, "smokeFreeHome": true, "pets": [],
+        "diet": "omnivore", "dealbreakers": ["smoking", "parties"]
+      },
+      "support": {
+        "hoursPerWeek": { "min": 6, "max": 8 },
+        "helpWanted": ["companionship", "tech_help", "outings", "light_housework", "grocery_shopping"],
+        "bestTimes": ["weekday evenings", "Sunday morning"],
+        "nightsHomePerWeek": { "min": 4, "max": 5 },
+        "needsDriver": false, "carAvailableForSharer": false,
+        "outOfScope": ["personal_care", "medication"],
+        "lodgerPaymentWeekly": 90
+      },
+      "lifestyle": {
+        "bedtime": "22:00", "wakeTime": "06:30", "quietAfter": "22:00",
+        "weekdays": "Swims at the pool most mornings, woodwork in the afternoons",
+        "weekends": "Cricket on the radio, a walk to the markets",
+        "socialLevel": 4, "socialNote": "Likes a yarn over dinner and the cricket scores",
+        "guests": "Fine with notice", "tidiness": "tidy", "communication": "face to face, plain speaking"
+      },
+      "checks": { "identity": "cleared", "references": "cleared", "homeVisit": "cleared", "nomineeConfirmed": "cleared", "insurance": "cleared" },
+      "screening": {
+        "motivation": ["safety", "company"],
+        "riskFlags": ["fall_risk"],
+        "watchPoint": "New hip in 2026; the sharer should know his falls plan and where the stair rail is loose"
+      }
+    },
+    {
+      "meta": {
+        "hostId": "GH-2027-018",
+        "updatedAt": "2026-10-27",
+        "pairingStatus": "shortlisted",
+        "hostFit": "strong",
+        "testPurpose": ["Carework career matching near UTS", "Pet filter (dog)", "Very social home", "Spanish language bonus"]
+      },
+      "host": {
+        "firstName": "Rosa", "lastName": "Delgado", "preferredName": "Rosa",
+        "age": 75, "gender": "female", "pronouns": "she/her",
+        "householdType": "single", "maritalStatus": "divorced",
+        "countryOfOrigin": "Chile", "languages": ["English", "Spanish"],
+        "formerCareer": "Disability support worker and team leader",
+        "discipline": "carework",
+        "incomeSupport": "full_pension"
+      },
+      "familyNominee": {
+        "name": "Camila Delgado", "relationship": "daughter", "location": "local",
+        "suburb": "Marrickville", "isPayer": false, "involvement": "Visits on Sundays; Rosa pays her own way"
+      },
+      "home": {
+        "suburb": "Waterloo", "postcode": "2017", "homeType": "apartment with lift",
+        "bedrooms": 2, "bathrooms": 1, "roomsOffered": 1, "sharerBathroom": "shared with host",
+        "stairs": false, "accessibilityFeatures": ["lift"], "readiness": "ready"
+      },
+      "placement": {
+        "campusCommuteMins": { "UTS City Campus": 15, "USyd Camperdown": 20, "UNSW Kensington": 25, "Macquarie Uni": 60, "WSU Parramatta": 50 },
+        "transportNearby": ["metro", "bus"],
+        "availableFrom": "2027-01-25", "availableFlexWeeks": 4,
+        "minStayMonths": 6, "openToExtend": true
+      },
+      "interests": {
+        "hobbies": ["salsa music", "cooking", "telenovelas", "crochet"],
+        "canOffer": ["disability support career advice", "Chilean cooking", "Spanish conversation"],
+        "wantsToLearn": ["WhatsApp video calls", "online shopping"]
+      },
+      "preferences": {
+        "sharerGender": "any", "sharerAgeRange": { "min": 18, "max": 35 },
+        "preferredDisciplines": ["carework", "social_work", "health"],
+        "studentTypes": ["domestic", "international"],
+        "otherLodgers": "none", "languagesWelcome": ["Spanish"]
+      },
+      "household": {
+        "smoker": false, "smokeFreeHome": true, "pets": ["small dog (chihuahua)"],
+        "diet": "omnivore", "dealbreakers": ["smoking inside", "not walking the dog when it's your turn"]
+      },
+      "support": {
+        "hoursPerWeek": { "min": 8, "max": 10 },
+        "helpWanted": ["companionship", "shared_meals", "pet_care", "evening_presence", "errands"],
+        "bestTimes": ["weekday evenings", "Sunday afternoon"],
+        "nightsHomePerWeek": { "min": 4, "max": 5 },
+        "needsDriver": false, "carAvailableForSharer": false,
+        "outOfScope": ["personal_care", "medication"],
+        "lodgerPaymentWeekly": 80
+      },
+      "lifestyle": {
+        "bedtime": "23:00", "wakeTime": "07:30", "quietAfter": "22:30",
+        "weekdays": "Community centre on Mondays and Thursdays, cooking most evenings",
+        "weekends": "Dancing with friends on Saturday, family lunch on Sunday",
+        "socialLevel": 5, "socialNote": "Loves company, music and a full table",
+        "guests": "Friends welcome, with notice", "tidiness": "relaxed", "communication": "chatty, voice notes"
+      },
+      "checks": { "identity": "cleared", "references": "cleared", "homeVisit": "cleared", "nomineeConfirmed": "not_required", "insurance": "cleared" },
+      "screening": {
+        "motivation": ["company", "practical_help"],
+        "riskFlags": [],
+        "watchPoint": "Shared bathroom; agree a morning routine at the intro call"
+      }
     }
   ]
 }

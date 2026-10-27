@@ -1,15 +1,17 @@
 /* Automated checks for the GenStay Screener demo, in a real browser.
 
    - plays a best run and a worst run: four scenarios (the dispute in two
-     stages, the second following from the first answer), a 25-second timer
-     on every question, no written answers, then one page of matching
-     questions with most answers pre-filled
+     stages, the second following from the first answer), each opening on an
+     untimed scene-setting slide, a 25-second timer on every question, no
+     written answers, a final question recalling the detail Marg shared on the
+     first evening (it follows the area of study), then two pages of matching
+     questions the participant answers themselves
    - every branch of the dispute's follow-up, including a timed-out first answer
    - the market-day pairing: each participant is shown their best fictional
      homeowner from genstay-hosts.sample.json, saved with their run
    - checks the story never mentions something it hasn't set up
    - checks the stored profile against the profile template's data contract,
-     including what the conversation pre-fills and the defaults left untouched
+     and that nothing in it was filled in for the participant
    - lets two timers run out and checks how that is recorded
    - opens the demo's staff desk: the profile in the template, and the PDF and
      JSON downloads
@@ -21,7 +23,8 @@
      and in the queue as their own applicant, without pressing Refresh
    - checks the applicant's own profile download, with and without the
      artifact runtime
-   - estimates how long a run takes from the words on each screen
+   - estimates how long a whole run takes (scenarios and questions) from the
+     words on each screen and the taps, against the three minutes allowed
 
    Usage: node scripts/test-demo.js [outdir]   (default: /tmp/genstay-screener-demo-out)
    Set PDF_LIBS as for test-playthrough.js where cdnjs is blocked. */
@@ -37,7 +40,7 @@ const newPage = newPageFactory(errors, "genstay-screener.demo.html");
 const words = (t) => String(t || "").split(/\s+/).filter(Boolean).length;
 const HOSTS_FILE = path.resolve(__dirname, "../game/genstay-hosts.sample.json");
 const PATTERN_TAGS = ["scam_ignored", "friction_defensive", "dispute_blamed"];
-const SCENARIO_DAYS = "[1,4,8,10,14]";
+const SCENARIO_DAYS = "[1,4,8,10,14,15]";
 
 async function start(page, name, area) {
   await page.fill("#fname", name);
@@ -55,10 +58,10 @@ async function play(page, mode, { timeOut = [], pick: choose } = {}) {
     const st = await page.evaluate(() => {
       const s = window.S;
       if (s.view !== "play") return { view: s.view };
-      const day = window.DAYS[s.di], step = day.steps[s.si];
+      const day = window.DAYS[s.di], step = day.steps[s.si], opts = step.t === "choice" ? window.stepOptions(step) : [];
       return { view: s.view, phase: s.phase, show: day.show, t: step.t, noReply: !!step.noReply,
-        scores: step.options ? step.options.map((o) => (o.fx ? o.fx.connection + o.fx.respect + o.fx.reliability + o.fx.awareness : 0)) : [],
-        tags: step.options ? step.options.map((o) => o.tag) : [],
+        scores: opts.map((o) => (o.fx ? o.fx.connection + o.fx.respect + o.fx.reliability + o.fx.awareness : 0)),
+        tags: opts.map((o) => o.tag),
         text: document.getElementById("panel").innerText, topbar: document.querySelector(".topbar").innerText };
     });
     if (st.view === "questionnaire") return trace;
@@ -90,54 +93,70 @@ async function play(page, mode, { timeOut = [], pick: choose } = {}) {
   throw new Error("run did not finish");
 }
 
-/* One page: campus, gender, time together, help and hobbies, with the rest
-   pre-filled. extra.prefill changes pre-filled answers: {pets, homeownerGender}. */
+/* Two pages, every answer given by the participant (nothing is pre-filled):
+   who they are and the home (filters), then life together (scores).
+   extra: {campus, gender, homeownerGender, pets, social, hours, help, hobby, mentor, checkAge, checkBack}. */
 async function answerQuestions(page, extra = {}) {
   await page.waitForSelector("#qnext");
+  const out = { words: 0, taps: 0 };
+  const pick = async (id, v) => { await page.click('[data-one="' + id + '"][data-v="' + v + '"]'); out.taps++; };
   if (!/four scenarios with Marg are done/.test(await page.textContent(".qhead"))) errors.push("demo: questionnaire intro doesn't count four scenarios");
-  const shown = await page.$$eval(".qgrid", (g) => [g[0].querySelectorAll(":scope > .qfield").length, document.querySelectorAll("#prefill .qfield").length]);
-  if (shown[0] !== 5 || shown[1] !== 14) errors.push("demo: expected 5 questions and 14 pre-filled answers, found " + shown.join(" and "));
-  if (await page.evaluate(() => document.getElementById("prefill").open)) errors.push("demo: the pre-filled answers open by themselves");
-  await page.click("#qnext");                                  // campus and gender left empty: must be stopped
-  for (const id of ["campus", "gender"]) if (!(await page.$("#qf-" + id + ".bad"))) errors.push("demo: empty " + id + " was accepted");
-  if (await page.$("#qf-socialLevel.bad") || await page.$("#qf-helpTypes.bad")) errors.push("demo: pre-filled time together or help was flagged");
+  if (await page.$("#prefill") || await page.evaluate(() => Object.keys(S.q).length) || await page.$('.chip[aria-pressed="true"]')) errors.push("demo: answers were filled in before the participant gave them");
+  const fields1 = await page.$$eval(".qgrid > .qfield", (f) => f.map((x) => x.id.replace("qf-", "")));
+  if (fields1.join() !== "age,gender,campus,moveInDate,stayMonths,rentBudgetWeekly,homeownerGender,smoking,pets") errors.push("demo: page 1 asks " + fields1.join(", "));
+  out.words += words(await page.innerText("#qscroll"));
+  await page.click("#qnext");                                  // nothing answered: every question must be flagged
+  for (const id of fields1) if (!(await page.$("#qf-" + id + ".bad"))) errors.push("demo: empty " + id + " was accepted");
   const campuses = await page.$$eval("#q-campus option", (o) => o.map((x) => x.value).filter(Boolean));
   if (campuses.join() !== "UTS City Campus,USyd Camperdown,UNSW Kensington,Macquarie Uni,WSU Parramatta,Another campus") errors.push("demo: campus options aren't the hosts' campuses: " + campuses.join(", "));
-  await page.selectOption("#q-campus", extra.campus || "UTS City Campus");
-  await page.click('[data-one="gender"][data-v="' + (extra.gender || "Female") + '"]');
-  if (extra.social) await page.click('[data-one="socialLevel"][data-v="' + extra.social + '"]');
-  if (extra.hobby) await page.click('[data-multi="hobbies"][data-v="' + extra.hobby + '"]');
-  /* the pre-filled answers: typical values, all valid, and changeable */
-  const moves = await page.$$eval("#q-moveInDate option", (o) => o.map((x) => x.value).filter(Boolean));
+  const moves = await page.$$eval('[data-one="moveInDate"]', (b) => b.map((x) => x.getAttribute("data-v")));
   if (moves.length !== 4 || !moves.every((v) => /^\d{4}-\d{2}-01$/.test(v)) || moves[0] <= new Date().toISOString().slice(0, 10)) errors.push("demo: move-in options aren't the next few months: " + moves.join(", "));
-  const defaults = await page.evaluate(() => ({ age: S.q.age, move: S.q.moveInDate, rent: S.q.rentBudgetWeekly, smoking: S.q.smoking, pets: S.q.pets, career: S.q.careerGoal, langs: S.q.languages }));
-  if (defaults.age !== "21" || defaults.move !== moves[1] || defaults.rent !== "150" || defaults.smoking !== "either" || defaults.pets !== "happy" || !defaults.career || defaults.langs.join() !== "English")
-    errors.push("demo: unexpected pre-filled answers: " + JSON.stringify(defaults));
-  if (extra.careers) {
-    const careers = await page.$$eval("#q-careerGoal option", (o) => o.map((x) => x.value).filter(Boolean));
-    if (JSON.stringify(careers) !== JSON.stringify(extra.careers)) errors.push("demo: career options don't follow the area of study: " + careers.join(", "));
+  if (extra.checkAge) {                                        // under 18: stopped
+    await page.fill("#q-age", "17");
+    await page.click("#qnext");
+    if (!(await page.$("#qf-age.bad"))) errors.push("demo: age 17 was accepted");
   }
-  if (extra.prefilledMentor && (await page.inputValue("#q-fieldMentor")) !== extra.prefilledMentor) errors.push("demo: the conversation didn't pre-fill the field-mentor answer");
-  if (extra.prefill || extra.checkAge) {
-    await page.click("#prefill summary");
-    if (extra.checkAge) {                                      // a pre-filled answer made invalid: stopped, and the section opens
-      await page.fill("#q-age", "17");
-      await page.evaluate(() => { document.getElementById("prefill").open = false; });
-      await page.click("#qnext");
-      if (!(await page.$("#qf-age.bad")) || !(await page.evaluate(() => document.getElementById("prefill").open))) errors.push("demo: age 17 in the pre-filled answers was accepted, or hidden");
-      await page.fill("#q-age", "21");
-    }
-    for (const [k, v] of Object.entries(extra.prefill || {})) {
-      if (k === "pets") await page.click('[data-one="pets"][data-v="' + v + '"]');
-      else await page.selectOption("#q-" + k, v);
-    }
+  await page.fill("#q-age", "21"); out.taps++;
+  await pick("gender", extra.gender || "Female");
+  await page.selectOption("#q-campus", extra.campus || "UTS City Campus"); out.taps++;
+  await pick("moveInDate", moves[1]);
+  await pick("stayMonths", "12");
+  await pick("rentBudgetWeekly", "150");
+  await pick("homeownerGender", extra.homeownerGender || "any");
+  await pick("smoking", "either");
+  await pick("pets", extra.pets || "happy");
+  if (await page.$(".qfield.bad")) errors.push("demo: error highlights stayed after every answer on page 1 was given");
+  await page.screenshot({ path: path.join(OUT, "questions-1.png"), fullPage: true });
+  await page.click("#qnext");
+  await page.waitForFunction(() => S.qPage === 1);
+  const fields2 = await page.$$eval(".qgrid > .qfield", (f) => f.map((x) => x.id.replace("qf-", "")));
+  if (fields2.join() !== "socialLevel,hoursPerWeek,helpTypes,hobbies,fieldMentor,wantsToLearn,languages") errors.push("demo: page 2 asks " + fields2.join(", "));
+  out.words += words(await page.innerText("#qscroll"));
+  await page.click("#qnext");
+  for (const id of ["socialLevel", "hoursPerWeek", "helpTypes", "fieldMentor"]) if (!(await page.$("#qf-" + id + ".bad"))) errors.push("demo: empty " + id + " was accepted");
+  for (const id of ["hobbies", "wantsToLearn", "languages"]) if (await page.$("#qf-" + id + ".bad")) errors.push("demo: optional " + id + " was flagged");
+  await pick("socialLevel", String(extra.social || 4));
+  await pick("hoursPerWeek", extra.hours || "8-10");
+  for (const h of extra.help || ["Company and conversation", "Cooking shared meals", "Shopping and errands"]) { await page.click('[data-multi="helpTypes"][data-v="' + h + '"]'); out.taps++; }
+  if (extra.hobby) { await page.click('[data-multi="hobbies"][data-v="' + extra.hobby + '"]'); out.taps++; }
+  await pick("fieldMentor", extra.mentor || "keen");
+  await page.click('[data-multi="languages"][data-v="English"]'); out.taps++;
+  if (extra.checkBack) {                                       // back to page 1 and forward again: every answer kept and shown
+    await page.click("#qback");
+    await page.waitForFunction(() => S.qPage === 0);
+    const shown = await page.$$eval('.chip[aria-pressed="true"]', (b) => b.map((x) => x.getAttribute("data-one") + "=" + x.getAttribute("data-v")));
+    if (shown.join() !== "gender=" + (extra.gender || "Female") + ",moveInDate=" + moves[1] + ",stayMonths=12,rentBudgetWeekly=150,homeownerGender=" + (extra.homeownerGender || "any") + ",smoking=either,pets=" + (extra.pets || "happy"))
+      errors.push("demo: page 1 answers aren't shown after going back: " + shown.join(", "));
+    await page.click("#qnext");
+    await page.waitForFunction(() => S.qPage === 1);
   }
-  if (await page.$(".qfield.bad")) errors.push("demo: error highlights stayed after every answer was fixed");
-  await page.screenshot({ path: path.join(OUT, "questions.png"), fullPage: true });
+  await page.screenshot({ path: path.join(OUT, "questions-2.png"), fullPage: true });
   await page.click("#qnext");
   await page.waitForSelector("#savestat");
   await page.waitForFunction(() => /reached|couldn|can’t|switched off|refused/.test(document.getElementById("savestat").textContent), null, { timeout: 12000 });
-  return matchCard(page);
+  const card = await matchCard(page);
+  card.questionWords = out.words; card.questionTaps = out.taps;
+  return card;
 }
 
 /* The participant's demo pairing, as the results screen shows it. */
@@ -175,20 +194,29 @@ function cardChecks(card, label) {
   if (!card.why.length || card.why.some((t) => /undefined|null|NaN/.test(t))) errors.push(label + ": the match card gives no reasons: " + JSON.stringify(card.why));
 }
 
-/* Nothing on screen is a placeholder or a stale count, and each scenario says what it needs. */
-function storyChecks(trace, mode) {
+/* Nothing on screen is a placeholder or a stale count, and each scenario says
+   what it needs. Marg's career, her detail from that career on the first
+   slide, and the final question all follow the area of study. */
+async function storyChecks(page, trace, mode) {
   const all = trace.text.join("\n");
   if (/\{\{|\}\}/.test(all)) errors.push(mode + ": a {{placeholder}} reached the screen");
   if (/\bDay \d+ of\b|nine days|eight days/i.test(all)) errors.push(mode + ": a screen still counts days");
   for (const n of [1, 2, 3, 4]) if (!new RegExp("Scenario " + n + " of 4", "i").test(all)) errors.push(mode + ": no screen is labelled Scenario " + n + " of 4");
+  if (!/Final question · Memory check/i.test(all) || /Scenario 5/i.test(all)) errors.push(mode + ": the final question isn't labelled as one");
   if (!/fallen on the loose brick step/.test(all) || !/hit her head/.test(all)) errors.push(mode + ": the emergency doesn’t set up the fall and the head knock");
-  if (mode === "best" && !/she was a nurse for thirty-five years/.test(all)) errors.push(mode + ": the conversation doesn’t use the health career");
+  const d = await page.evaluate(() => discipline());
+  const first = trace.text.find((t) => /Scenario 1 of 4/i.test(t)) || "";
+  if (first.indexOf("she was " + d.career + " for thirty-five years") === -1 || first.indexOf(d.detail) === -1) errors.push(mode + ": the first slide doesn't give Marg's career and her detail: " + first);
+  const recall = trace.text.find((t) => /Final question/i.test(t) && t.indexOf(d.recall.prompt) !== -1);
+  if (!recall || !d.recall.options.every((o) => recall.indexOf(o) !== -1)) errors.push(mode + ": the final question doesn't ask about " + d.career + "'s detail");
+  if (!trace.text.some((t) => t.indexOf(d.recall.reveal) !== -1)) errors.push(mode + ": Marg doesn't give the answer after the final question");
+  if (trace.screens.filter((x) => x.kind === "intro").length !== 4) errors.push(mode + ": expected a scene-setting slide before each of the four scenarios");
 }
 
 /* The Hosts and matches tab, on the store the worst run left. Sam Lee (the
    worst run) is kept out of matching by screening; Jenny Graffet (the sample
    profile, shortlisted by staff for Helen Whitcombe) and Pat Ward (a teaching
-   student) are added as files. Then the fifteen sample hosts as a JSON file, and
+   student) are added as files. Then the eighteen sample hosts as a JSON file, and
    Joan pasted as spreadsheet rows. */
 async function hostsTab(page) {
   const out = {};
@@ -217,17 +245,17 @@ async function hostsTab(page) {
   /* the hosts published beside the page load with one click */
   await page.waitForFunction(() => { const b = document.getElementById("hostsample"); return b && !b.hidden; }, null, { timeout: 5000 })
     .catch(() => errors.push("hosts: no Load sample hosts button"));
-  if ((await page.textContent("#hostsample")) !== "Load sample hosts (15)") errors.push("hosts: the sample button doesn't say how many: " + (await page.textContent("#hostsample")));
+  if ((await page.textContent("#hostsample")) !== "Load sample hosts (18)") errors.push("hosts: the sample button doesn't say how many: " + (await page.textContent("#hostsample")));
   await page.click("#hostsample");
-  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 15, null, { timeout: 5000 });
+  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 18, null, { timeout: 5000 });
   const rows = ["First name\tLast name\tGender\tSuburb\tFormer career\tPayment a week\tAvailable from\tShortest stay (months)\tCommute minutes\tSharer gender\tHours a week\tHelp wanted\tTime together (1-5)\tHobbies\tSmoke-free home\tPets",
     "Joan\tPrice\tFemale\tAshfield\tPrimary school teacher\t140\t1/2/2027\t6\tUTS City Campus: 30; USyd Camperdown: 25\tAny\t8-10\tcompanionship; gardening\t2\tReading; Gardening\tYes\t"].join("\n");
   await page.click("#hostpastebtn");
   await page.fill("#hostpastein", rows);
   await page.click("#hostpasteadd");
-  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 16, null, { timeout: 5000 });
+  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 19, null, { timeout: 5000 });
   out.stored = await page.evaluate(() => Object.keys(window.__store).filter((k) => /^hosts\//.test(k)).length);
-  if (out.stored !== 16) errors.push("hosts: " + out.stored + " host profiles stored, not 16");
+  if (out.stored !== 19) errors.push("hosts: " + out.stored + " host profiles stored, not 19");
   const joan = await page.evaluate(() => window.__store["hosts/H-joan-price-ashfield"]);
   if (!joan || joan.placement.campusCommuteMins["UTS City Campus"] !== 30 || joan.support.lodgerPaymentWeekly !== 140) errors.push("hosts: pasted row not read: " + JSON.stringify(joan && joan.placement));
   const kevPill = await page.textContent('#hlist .qitem:has-text("Kev Doyle")');
@@ -277,19 +305,19 @@ async function hostsTab(page) {
   if (!/Click again/.test(await page.textContent("#hremove"))) errors.push("hosts: removal didn't ask for a second click");
   await page.click("#hremove");
   await page.waitForFunction(() => !window.__store["hosts/H-joan-price-ashfield"], null, { timeout: 5000 });
-  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 15, null, { timeout: 5000 })
+  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 18, null, { timeout: 5000 })
     .catch(() => errors.push("hosts: removed host still listed"));
 
   /* one host file replaces Helen (same host id), and the spreadsheet export */
   const helen = JSON.parse(fs.readFileSync(HOSTS_FILE, "utf8")).hosts[0];
   await page.setInputFiles("#hostimporter", { name: "helen.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(helen)) });
   await page.waitForFunction(() => /Added 1 host profile/.test(document.getElementById("hstat").textContent), null, { timeout: 5000 });
-  if ((await page.$$("#hlist .qitem")).length !== 15) errors.push("hosts: re-importing Helen added a duplicate instead of replacing her");
+  if ((await page.$$("#hlist .qitem")).length !== 18) errors.push("hosts: re-importing Helen added a duplicate instead of replacing her");
   await page.click("#hostexport");
   await page.waitForFunction(() => window.__downloads.some((d) => /^genstay-hosts-.*\.csv$/.test(d.filename)), null, { timeout: 5000 });
   const exported = await page.evaluate(() => window.__downloads.filter((d) => /^genstay-hosts-/.test(d.filename)).pop().data);
   out.exportedRows = exported.trim().split(/\r?\n/).length - 1;
-  if (out.exportedRows !== 15) errors.push("hosts: export has " + out.exportedRows + " rows, not 15");
+  if (out.exportedRows !== 18) errors.push("hosts: export has " + out.exportedRows + " rows, not 18");
 
   /* the applicant review panel: Pat's best homeowners; Sam's reason for being left out */
   await page.click("#tab-app");
@@ -323,12 +351,12 @@ async function hostsTab(page) {
   /* deleting: loading the sample again asks first; then all hosts, one applicant at a time, and everyone shown */
   await page.click("#tab-hosts");
   await page.click("#hostsample");
-  if (!/Click again to replace 15 hosts already here/.test(await page.textContent("#hostsample"))) errors.push("hosts: reloading the sample didn't ask before replacing: " + (await page.textContent("#hostsample")));
+  if (!/Click again to replace 18 hosts already here/.test(await page.textContent("#hostsample"))) errors.push("hosts: reloading the sample didn't ask before replacing: " + (await page.textContent("#hostsample")));
   await page.click("#hostsample");
-  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 15 && window.__store["hosts/GH-2027-002"].meta.pairingStatus === "screening", null, { timeout: 5000 })
+  await page.waitForFunction(() => document.querySelectorAll("#hlist .qitem").length === 18 && window.__store["hosts/GH-2027-002"].meta.pairingStatus === "screening", null, { timeout: 5000 })
     .catch(() => errors.push("hosts: reloading the sample didn't restore the hosts"));
   await page.click("#hostdelall");
-  if (!/Click again to delete all 15/.test(await page.textContent("#hostdelall"))) errors.push("hosts: Delete all hosts didn't ask for a second click");
+  if (!/Click again to delete all 18/.test(await page.textContent("#hostdelall"))) errors.push("hosts: Delete all hosts didn't ask for a second click");
   await page.click("#hostdelall");
   await page.waitForFunction(() => !Object.keys(window.__store).some((k) => /^hosts\//.test(k)) && !document.querySelectorAll("#hlist .qitem").length, null, { timeout: 5000 })
     .catch(() => errors.push("hosts: Delete all hosts left hosts behind"));
@@ -391,8 +419,12 @@ async function pdfFrom(page, nameFragment) {
     (await storyDataProblems(page)).forEach((p) => errors.push("story: " + p));
     if (await page.$("#femail")) errors.push("start: the email field is still there");
     if (!/GenStay Screener/.test(await page.textContent("h1")) || (await page.title()) !== "GenStay Screener demo") errors.push("start: not named GenStay Screener: " + (await page.title()));
-    const shape = await page.evaluate(() => DAYS.map((d) => d.show + ":" + d.n + ":" + d.steps.filter((s) => s.t === "choice").length).join(" "));
-    if (shape !== "1:1:1 2:4:1 3:8:1 3:10:3 4:14:1") errors.push("story: the scenarios aren't conversation, agency, a two-stage dispute and the emergency: " + shape);
+    const shape = await page.evaluate(() => DAYS.map((d) => d.show + ":" + d.n + ":" + d.steps.map((s) => s.t[0]).join("")).join(" "));
+    if (shape !== "1:1:sc 2:4:sc 3:8:sc 3:10:ccc 4:14:sc 5:15:c") errors.push("story: the scenarios aren't conversation, agency, a two-stage dispute, the emergency and the final question, each opening on a slide: " + shape);
+    /* every area of study has a detail and a recall question, and the right answer isn't always in the same place */
+    const recalls = await page.evaluate(() => Object.keys(DISCIPLINES).map((k) => ({ k, d: DISCIPLINES[k].detail, r: DISCIPLINES[k].recall })));
+    for (const x of recalls) if (!x.d || !x.r || x.r.options.length !== 4 || !x.r.options[x.r.answer] || !x.r.reveal) errors.push("story: " + x.k + " has no detail or recall question");
+    if (new Set(recalls.map((x) => x.r.answer)).size < 3) errors.push("story: the recall answer sits in the same place for most areas of study");
     /* the program takes students from six fields only */
     const areas = await page.$$eval("#study-area option", (o) => o.map((x) => x.value).filter(Boolean));
     if (areas.join() !== "health,carework,allied_health,social_work,psychology,education,other") errors.push("start: study areas aren't the program's: " + areas.join(", "));
@@ -410,18 +442,18 @@ async function pdfFrom(page, nameFragment) {
     const { ctx, page } = await newPage(browser, base);
     await start(page, mode === "best" ? "Jenny Graffet" : "Sam Lee", mode === "best" ? "health" : "education");
     const trace = await play(page, mode);
-    if (trace.days.size !== 4) errors.push(mode + ": played " + trace.days.size + " scenarios, not 4");
-    if (trace.timers.length !== 5) errors.push(mode + ": answered " + trace.timers.length + " questions, not 5");
-    storyChecks(trace, mode);
+    if (trace.days.size !== 5) errors.push(mode + ": played " + trace.days.size + " screens of scenarios, not 4 and the final question");
+    if (trace.timers.length !== 6) errors.push(mode + ": answered " + trace.timers.length + " questions, not 6");
+    await storyChecks(page, trace, mode);
     if (trace.textareas) errors.push(mode + ": a written-answer box appeared");
     if (trace.timers.some((t) => t !== "25s")) errors.push(mode + ": timers were " + trace.timers.join(", "));
     const card = await answerQuestions(page, mode === "best"
-      ? { prefilledMentor: "keen", careers: ["Nursing", "Midwifery", "Medicine", "Paramedicine", "Pharmacy", "Not sure yet"], hobby: "Gardening", checkAge: true }
-      : { gender: "Male", social: 2, prefill: { pets: "allergic" } });
+      ? { hobby: "Gardening", checkAge: true, checkBack: true }
+      : { gender: "Male", social: 2, pets: "allergic", mentor: "open" });
     await page.screenshot({ path: path.join(OUT, "results-" + mode + ".png"), fullPage: true });
     if (mode === "best") cardChecks(card, mode);
     else screenedOutChecks(card, mode, [/Safety comes first/, /room to rent/, /gave Marg water and sat her up/, /anything to drink/,
-      /deleted it yourself/, /pay rent/, /hung up/, /coordinator would talk this through/]);
+      /deleted it yourself/, /pay rent/, /hung up/, /didn’t remember what Marg told you/, /coordinator would talk this through/]);
     const doc = await runDoc(page), parent = await page.evaluate(() => window.__store["profiles/applicant-1"]);
     const p = doc && doc.profile, sc = p && p.screening;
     if (!doc || !doc.complete) { errors.push(mode + ": profile not saved"); continue; }
@@ -432,23 +464,25 @@ async function pdfFrom(page, nameFragment) {
     const it = p.interests || {}, hh = p.household || {}, su = p.support || {};
     if (p.student.email !== undefined) errors.push(mode + ": the profile still carries an email");
     if (hh.smoker !== false || hh.needsSmokeFree !== false || hh.okWithPets !== (mode === "best") || hh.petAllergy !== (mode !== "best"))
-      errors.push(mode + ": the pre-filled smoking and pets answers (and the change to pets) didn't fill the profile: " + JSON.stringify(hh));
-    if (p.placement.campus !== "UTS City Campus" || p.student.age !== 21 || p.support.rentBudgetWeekly !== 150) errors.push(mode + ": campus or pre-filled answers not in the profile");
+      errors.push(mode + ": the smoking and pets answers didn't fill the profile: " + JSON.stringify(hh));
+    if (p.placement.campus !== "UTS City Campus" || p.student.age !== 21 || su.rentBudgetWeekly !== 150 || p.placement.stayMonths !== 12 || !/^\d{4}-\d{2}-01$/.test(p.placement.moveInDate)
+      || JSON.stringify(su.hoursPerWeek) !== '{"min":8,"max":10}' || JSON.stringify(su.helpTypes) !== '["Company and conversation","Cooking shared meals","Shopping and errands"]')
+      errors.push(mode + ": the answers given aren't in the profile: " + JSON.stringify({ placement: p.placement, support: su, age: p.student.age }));
+    if (it.careerGoal !== undefined || su.notOffered !== undefined || hh.otherLodgers !== undefined) errors.push(mode + ": the profile carries an answer nobody was asked: " + JSON.stringify({ it, su, hh }));
     if (mode === "best") {
-      if (it.careerGoal !== "Nursing" || it.fieldMentor !== "keen" || it.homeownerBackground !== "Retired nurse") errors.push("best: the conversation didn't pre-fill career answers: " + JSON.stringify(it));
+      if (it.fieldMentor !== "keen" || it.homeownerBackground !== "Retired nurse" || hh.homeownerGender !== "any") errors.push("best: career answers not in the profile: " + JSON.stringify(it));
       if (p.lifestyle.socialLevel !== 4 || JSON.stringify(p.student.languages) !== '["English"]' || JSON.stringify(it.hobbies) !== '["Gardening"]') errors.push("best: time together, languages or hobbies not in the profile");
-      if (JSON.stringify(su.helpTypes) !== '["Company and conversation","Cooking shared meals","Shopping and errands","Tech and phone help"]') errors.push("best: the scenarios didn't pre-fill the help offered: " + JSON.stringify(su.helpTypes));
-      /* the best run changed the age (to test it), so it isn't listed; the rest were left as they were */
-      if (!/Left at the demo’s typical answers: move-in month, length of stay, rent budget,/.test(sc.watchPoint) || /typical answers: age/.test(sc.watchPoint)) errors.push("best: staff aren't told which answers were left at the defaults: " + sc.watchPoint);
+      if (!/Remembered the detail Marg shared on the first evening/.test(sc.watchPoint) || !sc.choices.some((c) => c.day === 15 && c.tag === "recall_correct")) errors.push("best: the memory check isn't recorded: " + sc.watchPoint);
     } else {
-      if (it.careerGoal !== "Early childhood teaching" || it.fieldMentor !== "open" || p.lifestyle.socialLevel !== 2 || p.student.gender !== "Male") errors.push("worst: answers not in the profile: " + JSON.stringify(it));
-      if (/typical answers: [^.]*pets/.test(sc.watchPoint)) errors.push("worst: a changed pre-filled answer is reported as left at the default: " + sc.watchPoint);
+      if (it.fieldMentor !== "open" || p.lifestyle.socialLevel !== 2 || p.student.gender !== "Male") errors.push("worst: answers not in the profile: " + JSON.stringify(it));
+      if (!/Didn’t remember the detail Marg shared on the first evening: answered “A box of chalk \(it was: the brass school bell\)”/.test(sc.watchPoint)
+        || !sc.choices.some((c) => c.day === 15 && c.tag === "recall_missed")) errors.push("worst: the missed memory check isn't recorded for staff: " + sc.watchPoint);
     }
-    if (JSON.stringify(sc.landmarks.map((x) => x.day)) !== SCENARIO_DAYS || !sc.landmarks.every((x) => /^Scenario \d: /.test(x.title))) errors.push(mode + ": scenario landmarks " + JSON.stringify(sc.landmarks.map((x) => x.day + " " + x.title)));
+    if (JSON.stringify(sc.landmarks.map((x) => x.day)) !== SCENARIO_DAYS || !sc.landmarks.every((x) => /^(Scenario \d|Final question): /.test(x.title))) errors.push(mode + ": scenario landmarks " + JSON.stringify(sc.landmarks.map((x) => x.day + " " + x.title)));
     const days = [...new Set((sc.choices || []).map((c) => c.day))];
     if (JSON.stringify(days) !== SCENARIO_DAYS || sc.choices.some((c) => !c.tag)) errors.push(mode + ": not every scenario's choices were saved for screening: " + JSON.stringify(sc.choices));
     if (sc.flags.indexOf("quick_demo") === -1 || !/^Quick demo: four scenarios/.test(sc.watchPoint)) errors.push(mode + ": not marked as a quick demo for staff");
-    if ((await page.$$(".rows .row")).length !== 5) errors.push(mode + ": results don't list the five choices");
+    if ((await page.$$(".rows .row")).length !== 6) errors.push(mode + ": results don't list the six choices");
     if (!/and Marg$/.test((await page.textContent("h1")).trim())) errors.push(mode + ": results heading: " + (await page.textContent("h1")));
     const st = await contract(browser, base, p, mode);
     report[mode] = { type: sc.profile, meters: sc.meters, lowest: sc.lowestMoment, path: sc.finalPath, choices: await page.evaluate(() => S.choices.length), templateFilled: st.filled + "/" + st.total,
@@ -460,16 +494,25 @@ async function pdfFrom(page, nameFragment) {
       const intro = trace.screens.filter((x) => x.kind === "intro"), qs = trace.screens.filter((x) => x.kind === "question"), rep = trace.screens.filter((x) => x.kind === "reply");
       const total = trace.screens.reduce((n, x) => n + x.words, 0), clicks = trace.screens.length;
       const qWords = await page.evaluate(() => [].concat.apply([], DAYS.map((d) => d.steps.filter((s) => s.t === "choice")
-        .map((s) => (s.prompt + " " + s.options.map((o) => o.text).join(" ")).split(/\s+/).length))));
+        .map((s) => (storyText(s.lead) + " " + storyText(s.prompt) + " " + stepOptions(s).map((o) => o.text).join(" ")).split(/\s+/).length))));
+      /* questions: their words, and two seconds a tap */
+      const askMinutes = (wpm) => card.questionWords / wpm + card.questionTaps * 2 / 60;
       report.timing = {
         screens: { intro: intro.length, question: qs.length, reaction: rep.length },
         wordsReadInGame: total, longestQuestionWords: Math.max(...qWords),
         secondsNeededForLongestQuestionAt150wpm: Math.round(Math.max(...qWords) / 150 * 60),
-        gameMinutesAt200wpm: +((total / 200) + clicks / 60).toFixed(1), gameMinutesAt250wpm: +((total / 250) + clicks / 60).toFixed(1)
+        gameMinutesAt200wpm: +((total / 200) + clicks / 60).toFixed(1), gameMinutesAt250wpm: +((total / 250) + clicks / 60).toFixed(1),
+        questionWords: card.questionWords, questionTaps: card.questionTaps,
+        wholeRunMinutesAt200wpm: +((total / 200) + clicks / 60 + askMinutes(200)).toFixed(1), wholeRunMinutesAt250wpm: +((total / 250) + clicks / 60 + askMinutes(250)).toFixed(1)
       };
-      /* the screening and matching slot of the presentation is about five minutes, explanation included */
-      if (report.timing.gameMinutesAt250wpm > 1.5 || report.timing.gameMinutesAt200wpm > 1.8)
-        errors.push("timing: the scenarios take " + report.timing.gameMinutesAt250wpm + " minutes at a typical 250 words a minute (" + report.timing.gameMinutesAt200wpm + " at 200); the slot needs about a minute and a half");
+      /* Three minutes are set aside for a run on the day. This model reads every word, and people skim:
+         the earlier version (four scenarios, one page of questions, most answers pre-filled) came to
+         2.1 minutes here, and two timed runs of it took about 1 min 10 s. Scaled the same way, a run
+         must stay under two and a half minutes, leaving room for slower readers. */
+      const FIELD_SCALE = 70 / 127;
+      report.timing.expectedRunSeconds = Math.round(report.timing.wholeRunMinutesAt250wpm * 60 * FIELD_SCALE);
+      if (report.timing.expectedRunSeconds > 150 || report.timing.secondsNeededForLongestQuestionAt150wpm > 20)
+        errors.push("timing: a run would take about " + report.timing.expectedRunSeconds + " s (" + report.timing.wholeRunMinutesAt250wpm + " minutes reading every word at 250 a minute); three minutes are allowed, with room for slower readers");
     }
     if (mode === "worst") {
       await page.evaluate(() => { location.hash = "staff"; });
@@ -504,14 +547,14 @@ async function pdfFrom(page, nameFragment) {
     const { ctx, page } = await newPage(browser, base);
     await ctx.route("**/genstay-hosts.sample.json", (r) => r.abort());       // the hosts file can't load: results still work
     await start(page, "Tim Out", "carework");
-    await play(page, "best", { timeOut: [1, 3] });
+    await storyChecks(page, await play(page, "best", { timeOut: [1, 3] }), "timeouts");
     const card = await answerQuestions(page);
     if (card.saved || card.name) errors.push("timeouts: a match was shown without the hosts file");
     if (!/reached the placement service/.test(await page.textContent("#savestat"))) errors.push("timeouts: the profile wasn't sent when the hosts file couldn't load");
     const sc = (await runDoc(page)).profile.screening;
     const missed = await page.evaluate(() => S.choices.filter((c) => c.timedOut).map((c) => c.title));
     if (JSON.stringify(missed) !== '["First evening","The late night"]') errors.push("timeouts: recorded " + JSON.stringify(missed));
-    if (sc.flags.indexOf("missed_timer") === -1 || !/Ran out of time on 2 of 5 questions \(First evening, The late night\)/.test(sc.watchPoint)) errors.push("timeouts: not reported to staff: " + sc.watchPoint);
+    if (sc.flags.indexOf("missed_timer") === -1 || !/Ran out of time on 2 of 6 questions \(First evening, The late night\)/.test(sc.watchPoint)) errors.push("timeouts: not reported to staff: " + sc.watchPoint);
     const followUp = await page.evaluate(() => S.choices.filter((c) => c.day === 10).map((c) => c.tag));
     if (JSON.stringify(followUp) !== '["dispute_talked"]') errors.push("timeouts: a timed-out first answer didn't lead to Marg's note: " + JSON.stringify(followUp));
     report.timeouts = { missed, motivation: sc.motivation, watchPoint: sc.watchPoint };
@@ -523,7 +566,7 @@ async function pdfFrom(page, nameFragment) {
     const { ctx, page } = await newPage(browser, base);
     await ctx.route("**/genstay-hosts.sample.json", (r) => r.abort());
     await start(page, "Pat Tern", "social_work");
-    await play(page, "pattern");
+    await storyChecks(page, await play(page, "pattern"), "pattern");
     const card = await answerQuestions(page);
     screenedOutChecks(card, "pattern", [/No single choice ruled it out, but together these did/, /left it to Marg/, /pay rent/, /overreacted/]);
     if (/Safety comes first/.test(card.text) || /straight up|000/.test(card.text)) errors.push("pattern: the card gives reasons the participant didn't earn: " + card.text);
@@ -538,10 +581,10 @@ async function pdfFrom(page, nameFragment) {
   {
     const { ctx, page } = await newPage(browser, base);
     await start(page, "Dee Nied", "psychology");
-    await play(page, "best");
+    await storyChecks(page, await play(page, "best"), "waiting");
     await page.evaluate(() => { window.__deny = true; });
     /* a psychology student at Macquarie, allergic to pets, who'd like a female homeowner: no host is strong enough yet */
-    const waiting = await answerQuestions(page, { campus: "Macquarie Uni", social: 1, prefill: { pets: "allergic", homeownerGender: "female" } });
+    const waiting = await answerQuestions(page, { campus: "Macquarie Uni", social: 1, pets: "allergic", homeownerGender: "female" });
     waitingChecks(waiting, "waiting");
     report.waiting = { score: waiting.saved && waiting.saved.score, heldBack: waiting.saved && waiting.saved.shortfall, text: waiting.text.replace(/\s+/g, " ").trim() };
     await page.screenshot({ path: path.join(OUT, "results-waiting.png"), fullPage: true });
@@ -554,7 +597,7 @@ async function pdfFrom(page, nameFragment) {
 
     const local = await newPage(browser, base, { mock: false });
     await start(local.page, "Lou Cal", "education");
-    await play(local.page, "best");
+    await storyChecks(local.page, await play(local.page, "best"), "no runtime");
     cardChecks(await answerQuestions(local.page), "no runtime");
     const [dl] = await Promise.all([local.page.waitForEvent("download", { timeout: 10000 }), local.page.click("#dl")]);
     const file = path.join(OUT, dl.suggestedFilename());
@@ -583,7 +626,7 @@ async function pdfFrom(page, nameFragment) {
       await tablet.goto(base + "/genstay-screener.demo.html");
       await tablet.waitForSelector("#begin");
       await start(tablet, name, area);
-      await play(tablet, "best");
+      await storyChecks(tablet, await play(tablet, "best"), "live " + name);
       const card = await answerQuestions(tablet, { campus: name === "Ben" ? "USyd Camperdown" : "UNSW Kensington" });
       cardChecks(card, "live " + name);
       const arrived = await staff.waitForFunction((n) => [...document.querySelectorAll("#board-grid .bcard")].find((c) => c.querySelector(".b-person").textContent === n), name, { timeout: 8000 })

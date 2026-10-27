@@ -101,10 +101,9 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 
 /* questionnaire */
 .qhead{display:flex;flex-direction:column;gap:6px}
-details.prefill{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--field)}
-details.prefill summary{cursor:pointer;font-weight:600}
-details.prefill[open] summary{margin-bottom:8px}
-details.prefill .qgrid{margin-top:10px}
+.qprog{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+.qprog i{height:4px;border-radius:2px;background:var(--sunk)}
+.qprog i.on{background:var(--sage)}
 .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .qgrid .full{grid-column:1 / -1}
 .qfield{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -743,33 +742,59 @@ var ZONE_LABEL = {porch: "Front verandah", lounge: "Lounge room", kitchen: "Kitc
 "use strict";
 /* ============================================================
    CONTENT — the quick demo: four scenarios with Margaret "Marg" Hollis, 78,
-   short enough for a five-minute presentation slot.
-     1. The conversation: does the applicant ask about her career, or keep to themselves?
+   and a final question, short enough for a three-minute run.
+     1. The conversation: does the applicant ask about her career, or keep to
+        themselves? Marg also shares a detail from her working life.
      2. Agency: a scam text. Do they take over, or walk her through it?
      3. A dispute about a late night, in two stages: everyone answers the
         first; the second follows from that answer (agreeing on guests, a
         note asking to talk, or a call from her son), then all routes on to
      4. The emergency: a fall with a head knock. Keep her still, call 000.
-   Each question shows its situation (`lead`) above it, so a scenario is one
-   screen and Marg's reaction. Every question is multiple choice with a
-   25-second timer. Each scenario
-   keeps a day number from the full fortnight (n) for the profile's path
-   and landmark rows; `show` is the scenario the applicant sees (1 to 4).
+     Final question: recall the detail from the first evening (were they listening?).
+   Each scenario opens on an untimed slide that sets the scene; the question
+   follows with a short reminder of the situation (`lead`), multiple choice
+   with a 25-second timer. Each scenario keeps a day number from the full
+   fortnight (n) for the profile's path and landmark rows (the final question
+   is day 15, after it); `show` is the scenario the applicant sees (1 to 4).
    ============================================================ */
 
-/* Area of study picks Marg's old career: Day 3 is built around it, and the
-   profile offers it as the best homeowner background. */
+/* Area of study picks Marg's old career: the first scenario is built around
+   it, and the profile offers it as the best homeowner background. Each career
+   comes with one personal detail Marg shares on the first evening, and the
+   final question asks for it back (answer: the index of the right option). */
 var DISCIPLINES = {
-  health:        {label:"Health (nursing, medicine)",                   career:"a nurse"},
-  carework:      {label:"Carework (aged care, disability support)",     career:"a community carer"},
-  allied_health: {label:"Allied health (physio, OT, speech pathology)", career:"a physiotherapist"},
-  social_work:   {label:"Social work and community services",           career:"a social worker"},
-  psychology:    {label:"Psychology and counselling",                   career:"a counsellor"},
-  education:     {label:"Education and teaching",                       career:"a primary school teacher"},
-  other:         {label:"Other",                                        career:"a nurse"}
+  health:        {label:"Health (nursing, medicine)", career:"a nurse",
+                  detail:"She still wears the fob watch she was given when she qualified.",
+                  recall:{prompt:"What did Marg keep from her nursing days?", options:["Her stethoscope", "Her fob watch", "Her nursing cap", "Her old ward keys"], answer:1,
+                          reveal:"Marg holds up her fob watch: “Still ticking.”"}},
+  carework:      {label:"Carework (aged care, disability support)", career:"a community carer",
+                  detail:"She still bakes the lemon slice her clients asked for every Friday.",
+                  recall:{prompt:"What did Marg bake for her clients every Friday?", options:["Scones", "Anzac biscuits", "Lemon slice", "Banana bread"], answer:2,
+                          reveal:"Marg slides over the tin of lemon slice: “Friday’s batch.”"}},
+  allied_health: {label:"Allied health (physio, OT, speech pathology)", career:"a physiotherapist",
+                  detail:"She still does her old patients’ stretches every morning at seven.",
+                  recall:{prompt:"When does Marg still do her old patients’ stretches?", options:["Every morning at seven", "Before bed", "After lunch", "On Sundays"], answer:0,
+                          reveal:"Marg laughs: “Seven sharp, every morning. Join me?”"}},
+  social_work:   {label:"Social work and community services", career:"a social worker",
+                  detail:"Every Christmas, a family she helped to resettle still sends her a card.",
+                  recall:{prompt:"What does a family Marg once helped still send her?", options:["Flowers at Easter", "A card every Christmas", "A birthday cake", "A monthly letter"], answer:1,
+                          reveal:"Marg points to last Christmas’s card, still on the fridge."}},
+  psychology:    {label:"Psychology and counselling", career:"a counsellor",
+                  detail:"Her last clients gave her the jade plant on the windowsill.",
+                  recall:{prompt:"What did Marg’s last clients give her?", options:["A clock", "A painting", "A jade plant", "A teapot"], answer:2,
+                          reveal:"Marg nods at the jade plant on the windowsill."}},
+  education:     {label:"Education and teaching", career:"a primary school teacher",
+                  detail:"She still keeps the brass bell she rang at her old school.",
+                  recall:{prompt:"What did Marg keep from her teaching days?", options:["A box of chalk", "Her class photos", "Her red marking pen", "The brass school bell"], answer:3,
+                          reveal:"Marg rings the brass school bell, and laughs."}}
 };
+DISCIPLINES.other = {label:"Other", career:DISCIPLINES.health.career, detail:DISCIPLINES.health.detail, recall:DISCIPLINES.health.recall};
 function discipline(){ return DISCIPLINES[S.studyArea] || DISCIPLINES.other; }
-function storyText(value){ return String(value || "").replace(/\{\{career\}\}/g, discipline().career); }
+/* {{career}}, {{detail}}, {{recall}} (the final question) and {{reveal}} (its answer) follow the area of study. */
+function storyText(value){
+  var d = discipline(), words = {career: d.career, detail: d.detail, recall: d.recall.prompt, reveal: d.recall.reveal};
+  return String(value || "").replace(/\{\{(\w+)\}\}/g, function(all, key){ return words[key] == null ? all : words[key]; });
+}
 function impact(connection, respect, reliability, awareness){
   return {connection:connection, respect:respect, reliability:reliability, awareness:awareness};
 }
@@ -782,8 +807,9 @@ var DAYS = [
   {n:1, show:1, title:"First evening", time:"5:40 pm", zone:"kitchen", light:"gold",
    scene:{marg:{pose:"stand", x:606, y:338, s:0.98}, tea:true, cake:true, gloves:true, chair:false},
    steps:[
-    {t:"choice", lead:"Your first evening with Marg Hollis, 78. Over tea, she mentions she was {{career}} for thirty-five years.",
-     prompt:"How do you reply?", timeoutFx:impact(-1,0,0,0), timeoutNote:"Marg waits, then clears the cups.", options:[
+    {t:"say", opening:true, text:"Your first evening with Marg Hollis, 78. Over tea, she tells you she was {{career}} for thirty-five years. {{detail}}"},
+    {t:"choice", lead:"Marg pours a second cup, and the kitchen goes quiet.",
+     prompt:"What do you do?", timeoutFx:impact(-1,0,0,0), timeoutNote:"Marg waits, then clears the cups.", options:[
       {text:"Ask what she loved about the work.", fx:impact(1,1,0,0), tag:"career_curiosity", reply:"Marg’s face lights up, and the stories start."},
       {text:"Swap stories about your course.", fx:impact(1,1,0,0), tag:"career_exchange", reply:"Marg laughs: “Everything’s changed, and nothing has.”"},
       {text:"Head to your room to study.", fx:impact(-1,0,0,0), tag:"career_deferred", reply:"Marg says the tea will keep."},
@@ -795,7 +821,8 @@ var DAYS = [
   {n:4, show:2, title:"The bank text", time:"6:20 pm", zone:"yard", light:"dusk",
    scene:{marg:{pose:"stand", x:250, y:320, s:0.8, hold:"phone", mood:"neutral"}},
    steps:[
-    {t:"choice", lead:"A text from Marg’s “bank” says to reset her password now. She’s about to tap the link.",
+    {t:"say", opening:true, text:"Three days later, you get home early. Marg is in the back yard, frowning at her phone."},
+    {t:"choice", lead:"A text from her “bank” says to reset her password now. She’s about to tap the link.",
      prompt:"What do you do?", timeoutFx:impact(0,0,0,-1), timeoutNote:"While you’re still thinking, Marg taps the link.", options:[
       {text:"Show her the warning signs.", fx:impact(1,1,0,1), tag:"scam_taught", reply:"Marg spots the odd sender address herself."},
       {text:"Take her phone and delete it.", fx:impact(0,-1,0,1), tag:"phone_taken", reply:"Marg takes it back: “I can learn this.”"},
@@ -808,6 +835,7 @@ var DAYS = [
   {n:8, show:3, title:"The late night", time:"8:00 am", zone:"kitchen", light:"day",
    scene:{marg:{pose:"sit", x:440, y:306, s:0.78, mood:"neutral"}, chipped:true, note:true, milk:true},
    steps:[
+    {t:"say", opening:true, text:"Saturday. A friend comes over for dinner, and the two of you lose track of time."},
     /* no answer in time reads as waiting, so the follow-up still has a branch */
     {t:"choice", lead:"Your friend stayed late, and the music was loud. At breakfast, Marg is quiet.",
      prompt:"What do you do?", timeoutTag:"friction_wait", timeoutFx:impact(0,-1,-1,0), timeoutNote:"You leave for campus without a word.", options:[
@@ -849,18 +877,38 @@ var DAYS = [
    ]},
 
   /* ---------------- Scenario 4 — the emergency: keep her still, call 000 ---------------- */
-  {n:14, show:4, title:"The emergency", time:"5:20 pm", zone:"yard", light:"gold", kind:"landmark", contentNote:"a fall and an injury",
+  {n:14, show:4, title:"The emergency", time:"5:20 pm", zone:"yard", light:"gold", kind:"landmark", contentNote:"a fall and an injury", epilogue:true,
    scene:{marg:{pose:"floor", x:640, y:338, s:0.8}, stepLoose:true, basket:true, basketX:500, basketY:350, spilled:true},
    steps:[
-    {t:"choice", lead:"A thud from the yard. Marg has fallen on the loose brick step and hit her head. She’s dazed, and says her neck hurts.",
+    {t:"say", opening:true, text:"Two weeks in. You’re bringing in the washing while Marg waters the pots by the brick step."},
+    {t:"choice", lead:"A thud. Marg has fallen on the loose brick step and hit her head. She’s dazed, and says her neck hurts.",
      prompt:"What do you do first?", timeoutFx:impact(0,0,0,-2), timeoutNote:"You freeze. A neighbour hears Marg, and rings 000.", options:[
       {text:"Keep her still, and call 000.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called", reply:"The call-taker says not to move her, and stays on the line."},
       {text:"Help her up into a chair.", fx:impact(0,-1,0,-1), tag:"fall_lifted", reply:"Marg cries out. Paramedics say she shouldn’t have been moved."},
       {text:"Run next door for help.", fx:impact(0,0,0,-1), tag:"emergency_delayed", reply:"The neighbour rings 000 while you go back to Marg."},
       {text:"Give her water, and sit her up.", fx:impact(0,-1,0,-2), tag:"emergency_water", reply:"Paramedics say not to move her or give her anything."}
     ]}
+   ]},
+
+  /* ---------------- Final question — recall: were they listening on the first evening? ----------------
+     The options follow the area of study (DISCIPLINES[...].recall), so they're built in recallOptions(). */
+  {n:15, show:5, final:true, title:"Memory check", time:"10:00 am", zone:"kitchen", light:"day",
+   scene:{marg:{pose:"sit", x:440, y:306, s:0.78}, tea:true},
+   steps:[
+    {t:"choice", recall:true, lead:"A week later, Marg is home from hospital, and the kettle’s on. One last question, from your first evening.",
+     prompt:"{{recall}}", timeoutFx:impact(0,0,0,0), timeoutNote:"{{reveal}}"}
    ]}
 ];
+/* The final question's options, for this area of study. */
+function recallOptions(){
+  var r = discipline().recall;
+  return r.options.map(function(text, i){
+    return i === r.answer
+      ? {text:text, fx:impact(1,0,0,1), tag:"recall_correct", reply:"“You were listening.” {{reveal}}"}
+      : {text:text, fx:impact(-1,0,0,0), tag:"recall_missed", reply:"Not quite. {{reveal}}"};
+  });
+}
+function stepOptions(step){ return step.recall ? recallOptions() : step.options; }
 /* How it ends, shown with Marg's reaction to the last scenario. */
 var EPILOGUE = {
   warm:"At the hospital, Marg is stable. She takes your hand: “Thank you for staying.”",
@@ -876,7 +924,7 @@ var LOW_NOTES = {
   dispute_my_room:"Had a guest over without notice", dispute_avoided:"Avoided Marg’s request to talk",
   dispute_blamed:"Told David his mum overreacted", dispute_hung_up:"Hung up on David",
   fall_lifted:"Moved Marg after she hit her head", emergency_delayed:"Ran next door before calling 000",
-  emergency_water:"Gave Marg water and sat her up after the fall"
+  emergency_water:"Gave Marg water and sat her up after the fall", recall_missed:"Didn’t remember what Marg shared on the first evening"
 };
 </script>
 <script>
@@ -885,9 +933,9 @@ var LOW_NOTES = {
    ENGINE
    ============================================================ */
 var app = document.getElementById("app");
-var VERSION = "demo-2.0";
+var VERSION = "demo-2.1";
 var START_METER = 5;
-var SAVE_KEY = "genstay-screener-demo-v2";
+var SAVE_KEY = "genstay-screener-demo-v3"; /* v3: nothing pre-filled, so an older half-finished run starts again */
 var METERS = ["connection", "respect", "reliability", "awareness"];
 
 var S = null;
@@ -899,7 +947,7 @@ function freshState(){
     meters: {connection: START_METER, respect: START_METER, reliability: START_METER, awareness: START_METER},
     flags: {}, tags: {}, pathByDay: {},
     motivation: "", choices: [], concerns: [], pending: null, stepEnteredAt: null,
-    q: {}, qTouched: {}, qPage: 0, qPrefilled: false, synced: false, demoMatch: null, matchPending: false
+    q: {}, qPage: 0, synced: false, demoMatch: null, matchPending: false
   };
 }
 
@@ -934,8 +982,10 @@ function loadSaved(){
 }
 function clearSaved(){ try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
 
-/* How many scenarios the applicant sees (the dispute's two stages count as one), in a number and in words. */
-function scenarioCount(){ return DAYS.reduce(function(n, d){ return Math.max(n, d.show); }, 0); }
+/* How many scenarios the applicant sees (the dispute's two stages count as one; the final question doesn't count), in a number and in words. */
+function scenarioCount(){ return DAYS.reduce(function(n, d){ return d.final ? n : Math.max(n, d.show); }, 0); }
+/* "Scenario 2 of 4", or "Final question". */
+function dayLabel(d, withCount){ return d.final ? "Final question" : "Scenario " + d.show + (withCount ? " of " + scenarioCount() : ""); }
 function scenariosInWords(){ return ["no", "one", "two", "three", "four", "five", "six"][scenarioCount()] || String(scenarioCount()); }
 
 function makePid(){
@@ -1080,13 +1130,13 @@ function renderPaused(){
 function renderTitle(){
   var saved = loadSaved();
   var resumable = saved && !saved.submittedAt && ["play","paused","questionnaire"].indexOf(saved.view) !== -1;
-  var where = resumable ? (saved.view === "questionnaire" ? "the matching questions" : "scenario " + DAYS[saved.di].show + " of " + scenarioCount()) : "";
+  var where = resumable ? (saved.view === "questionnaire" ? "the matching questions" : dayLabel(DAYS[saved.di], true).toLowerCase()) : "";
   var unsent = saved && saved.submittedAt && !saved.synced;
   app.innerHTML =
     '<div class="stage">' + scenePorch(LIGHT.gold, {marg: {pose: "stand", x: 470, y: 301, s: 0.84}}) + '</div>'
     + '<div class="scroll"><div class="pad title">'
     + '<div><div class="kicker">Homeshare screening · demo</div><h1>GenStay Screener</h1></div>'
-    + '<p class="sub">' + capFirst(scenariosInWords()) + ' short scenarios sharing a home with Marg, 78: a first conversation, a scam text, a disagreement and an emergency. Each is multiple choice, with 25 seconds to answer. A few quick questions at the end, mostly filled in for you, build your matching profile and a fictional pairing.</p>'
+    + '<p class="sub">' + capFirst(scenariosInWords()) + ' short scenarios sharing a home with Marg, 78: a first conversation, a scam text, a disagreement and an emergency, then one last question. Each is multiple choice, with 25 seconds to answer. Two short pages of questions at the end build your matching profile and a fictional pairing.</p>'
     + (resumable
         ? '<div class="notice"><b>You have a run in progress</b>, up to ' + esc(where) + '.'
           + '<div class="btnrow" style="margin-top:10px">'
@@ -1109,7 +1159,7 @@ function renderTitle(){
     + '<label class="check"><input type="checkbox" id="c2"><span>I have read the content note and I’m ready to continue.</span></label>'
     + '<div id="terr"></div>'
     + '<button class="cont primary" id="begin">Begin</button>'
-    + '<p class="sub" style="font-size:12.5px">About 2 minutes, including the questions.</p>'
+    + '<p class="sub" style="font-size:12.5px">About 3 minutes, including the questions.</p>'
     + '</div></div>';
 
   if (resumable){
@@ -1146,7 +1196,7 @@ function sceneFor(day){
 }
 function topbarHTML(day){
   return '<div class="topbar"><div class="toprow">'
-    + '<span class="daylabel">Scenario ' + day.show + ' of ' + scenarioCount() + ' · ' + esc(day.title) + '</span>'
+    + '<span class="daylabel">' + dayLabel(day, true) + ' · ' + esc(day.title) + '</span>'
     + '<span class="clock">' + esc(day.time) + '</span><button class="pause" id="pause">Pause</button></div></div>';
 }
 
@@ -1181,12 +1231,12 @@ function renderSay(day, step){
 function renderChoice(day, step){
   var p = el("#panel");
   var seconds = step.timer || QUESTION_SECONDS;
-  /* the scenario's situation sits above its question: one screen per question, for a short demo */
-  var html = (step.lead && day.contentNote ? '<div class="notice"><b>Content note:</b> ' + esc(day.contentNote) + '.</div>' : '')
+  /* a short reminder of the situation sits above the question (the scenario's opening slide sets the scene) */
+  var html = (step.opening && day.contentNote ? '<div class="notice"><b>Content note:</b> ' + esc(day.contentNote) + '.</div>' : '')
     + (step.lead ? '<p class="line">' + esc(storyText(step.lead)) + '</p>' : '')
     + '<div class="prompt">' + esc(storyText(step.prompt)) + '</div>'
     + '<div class="timerlabel" id="tlabel">' + seconds + 's</div>';
-  html += '<div class="opts">' + step.options.map(function(o, i){
+  html += '<div class="opts">' + stepOptions(step).map(function(o, i){
     return '<button class="opt" data-i="' + i + '">' + esc(storyText(o.text)) + '</button>';
   }).join("") + '</div>';
   p.innerHTML = html;
@@ -1199,9 +1249,10 @@ function renderChoice(day, step){
 }
 
 function recordChoice(day, step, option, f, timedOut, seconds){
+  var r = discipline().recall, marked = !timedOut && step.recall && option.tag === "recall_missed" ? " (it was: " + r.options[r.answer].toLowerCase() + ")" : "";
   S.choices.push({
     day: day.n, title: day.title, prompt: storyText(step.prompt),
-    chosen: timedOut ? "(no response — timed out)" : storyText(option.text),
+    chosen: timedOut ? "(no response — timed out)" : storyText(option.text) + marked,
     tag: timedOut ? "timeout" : (option.tag || ""),
     connection: f.connection || 0, respect: f.respect || 0, reliability: f.reliability || 0, awareness: f.awareness || 0,
     timedOut: !!timedOut, seconds: seconds
@@ -1216,7 +1267,7 @@ function applyOption(option){
 function choose(day, step, idx, timedOut){
   clearTimer();
   var seconds = secsSince(S.stepEnteredAt);
-  var chosen = timedOut ? null : step.options[idx];
+  var chosen = timedOut ? null : stepOptions(step)[idx];
   var f = (timedOut ? step.timeoutFx || DEFAULT_TIMEOUT_FX : chosen.fx) || {};
   applyFx(f);
   if (timedOut && step.timeoutTag) S.tags[step.timeoutTag] = true; /* so a follow-up still has a branch */
@@ -1238,12 +1289,12 @@ function choose(day, step, idx, timedOut){
 function renderReply(){
   var p = S.pending || {}, day = DAYS[S.di];
   var moreToday = day.steps.slice(S.si + 1).some(stepIsAvailable), last = !moreToday && S.di === DAYS.length - 1;
-  var sameScenario = moreToday || (DAYS[S.di + 1] && DAYS[S.di + 1].show === day.show);
+  var next = DAYS[S.di + 1], sameScenario = moreToday || (next && next.show === day.show);
   el("#panel").innerHTML =
     (p.heading ? '<div class="who narr">' + esc(p.heading) + '</div>' : "")
     + (p.reply ? '<p class="line">' + esc(storyText(p.reply)) + '</p>' : "")
-    + (last ? '<p class="line">' + esc(EPILOGUE[pathTier()]) + '</p>' : "")
-    + '<button class="cont primary" id="next">' + (sameScenario ? "Continue" : last ? "Finish" : "Next scenario") + '</button>';
+    + (day.epilogue && !moreToday ? '<p class="line">' + esc(EPILOGUE[pathTier()]) + '</p>' : "")
+    + '<button class="cont primary" id="next">' + (sameScenario ? "Continue" : last ? "Finish" : next.final ? "Final question" : "Next scenario") + '</button>';
   el("#next").onclick = function(){ S.pending = null; nextStep(); };
 }
 
@@ -1299,16 +1350,6 @@ function hasSeriousConcern(){ return S.concerns.some(function(c){ return CONCERN
    the staff desk can compare them.
    ============================================================ */
 var YES_NO = [[true, "Yes"], [false, "No"]];
-/* The work each area of study leads to. */
-var CAREER_GOALS = {
-  health:        ["Nursing", "Midwifery", "Medicine", "Paramedicine", "Pharmacy"],
-  carework:      ["Aged care", "Disability support", "Community care"],
-  allied_health: ["Physiotherapy", "Occupational therapy", "Speech pathology", "Dietetics", "Exercise physiology"],
-  social_work:   ["Social work", "Community services", "Youth work"],
-  psychology:    ["Psychology", "Counselling"],
-  education:     ["Early childhood teaching", "Primary teaching", "Secondary teaching", "Special education"],
-  other:         ["Something else"]
-};
 /* Campuses as the host profiles name them (placement.campusCommuteMins). */
 var CAMPUS_OPTIONS = [["UTS City Campus", "UTS City Campus (Ultimo)"], ["USyd Camperdown", "University of Sydney (Camperdown)"],
   ["UNSW Kensington", "UNSW (Kensington)"], ["Macquarie Uni", "Macquarie University"], ["WSU Parramatta", "Western Sydney University (Parramatta)"],
@@ -1319,55 +1360,45 @@ function moveInOptions(){
   for (var k = 3; k <= 6; k++){
     var d = new Date(now.getFullYear(), now.getMonth() + k, 1);
     out.push([d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-01",
-      d.toLocaleDateString("en-AU", {month: "long", year: "numeric"}) + (d.getMonth() === 1 ? " (start of Semester 1)" : d.getMonth() === 6 ? " (start of Semester 2)" : "")]);
+      d.toLocaleDateString("en-AU", {month: "short", year: "numeric"}) + (d.getMonth() === 1 ? " · Semester 1" : d.getMonth() === 6 ? " · Semester 2" : "")]);
   }
   return out;
 }
-/* One page. The answers that move a pairing most, and differ most between
-   people, are asked; the rest start at typical answers (DEMO_DEFAULTS) under
-   "Pre-filled answers", where the applicant can change any of them. Staff
-   are told which were left at the defaults. */
+/* Two short pages, every answer the applicant's own (nothing is filled in
+   for them): first the filters that rule a home in or out, then the points
+   that rank the homes left. Only questions the matching uses are asked, and
+   most are a single tap. */
 var Q_PAGES = [
-  {title:"Your matching details", intro:"Four quick answers. The rest are filled in with typical answers to keep the demo short: open Pre-filled answers to change any.", fields:[
-    {id:"campus", path:"placement.campus", type:"select", label:"Campus you attend most", req:true, full:true, opts:CAMPUS_OPTIONS},
+  {title:"You and the home", intro:"Two short pages of the details we match on. Most answers are a tap.", fields:[
+    {id:"age", path:"student.age", type:"num", label:"Age", req:true, min:18, max:99, hint:"You need to be 18 or over to join a homeshare."},
     {id:"gender", path:"student.gender", type:"pick", label:"Gender", req:true, full:true, opts:[["Female","Female"],["Male","Male"],["Non-binary","Non-binary"],["Prefer not to say","Prefer not to say"]]},
-    {id:"socialLevel", path:"lifestyle.socialLevel", type:"scale", label:"How much time would you like to spend with your homeowner?", req:true, full:true, ends:["Mostly independent","Lots of time together"]},
-    {id:"helpTypes", path:"support.helpTypes", type:"chips", label:"Happy to help with", req:true, full:true, opts:["Company and conversation","Cooking shared meals","Tech and phone help","Gardening","Bins and light chores","Shopping and errands","Lifts in the homeowner’s car","Pet care","Appointments and outings","Being home in the evenings"]},
-    {id:"hobbies", path:"interests.hobbies", type:"chips", label:"Hobbies and interests", full:true, opts:["Gardening","Cooking and baking","Reading","Music","Sport and fitness","Walking","Crafts","Board games and puzzles","Films and TV","Art"]}
-  ], prefilled:[
-    {id:"age", path:"student.age", type:"num", label:"Age", short:"age", req:true, min:18, max:99, hint:"You need to be 18 or over to join a homeshare."},
-    {id:"moveInDate", path:"placement.moveInDate", type:"select", label:"When you’d like to move in", short:"move-in month", req:true, opts:moveInOptions},
-    {id:"stayMonths", path:"placement.stayMonths", type:"select", label:"How long you’d like to stay", short:"length of stay", req:true, num:true, opts:[["3","3 months"],["6","6 months"],["9","9 months"],["12","12 months"],["18","18 months"],["24","2 years"]]},
-    {id:"rentBudgetWeekly", path:"support.rentBudgetWeekly", type:"num", label:"Most you can pay in rent each week (AUD)", short:"rent budget", req:true, min:0, max:2000, full:true},
-    {id:"homeownerGender", path:"household.homeownerGender", type:"select", label:"I’d be comfortable living with a homeowner who is", short:"homeowner gender", req:true, full:true, opts:[["female","A woman"],["male","A man"],["any","Either is fine"]]},
-    {id:"otherLodgers", path:"household.otherLodgers", type:"select", label:"Other students in the home", short:"other students", req:true, full:true, opts:[["none","I’d rather be the only student"],["open","Open to another student"],["prefer","I’d like another student there"]]},
+    {id:"campus", path:"placement.campus", type:"select", label:"Campus you attend most", req:true, full:true, opts:CAMPUS_OPTIONS},
+    {id:"moveInDate", path:"placement.moveInDate", type:"pick", label:"When you’d like to move in", req:true, full:true, opts:moveInOptions},
+    {id:"stayMonths", path:"placement.stayMonths", type:"pick", label:"How long you’d like to stay", req:true, full:true, num:true, opts:[["3","3 months"],["6","6 months"],["12","12 months"],["18","18 months"]]},
+    {id:"rentBudgetWeekly", path:"support.rentBudgetWeekly", type:"pick", label:"Most you can pay in rent each week", req:true, full:true, num:true, opts:[["80","$80"],["100","$100"],["120","$120"],["150","$150"],["200","$200 or more"]]},
+    {id:"homeownerGender", path:"household.homeownerGender", type:"pick", label:"I’d be comfortable living with a homeowner who is", req:true, full:true, opts:[["female","A woman"],["male","A man"],["any","Either"]]},
     /* one tap each, filling two profile fields (and no contradictory pairs) */
-    {id:"smoking", type:"pick", label:"Smoking and vaping", short:"smoking", req:true, full:true,
-     opts:[["smoker","I smoke or vape"],["needs_free","I don’t, and I need a smoke-free home"],["either","I don’t, and I don’t mind"]],
+    {id:"smoking", type:"pick", label:"Smoking and vaping", req:true, full:true,
+     opts:[["smoker","I smoke or vape"],["needs_free","I don’t, and need a smoke-free home"],["either","I don’t, and don’t mind"]],
      sets:{smoker:{"household.smoker":true, "household.needsSmokeFree":false}, needs_free:{"household.smoker":false, "household.needsSmokeFree":true},
            either:{"household.smoker":false, "household.needsSmokeFree":false}}},
-    {id:"pets", type:"pick", label:"Pets", short:"pets", req:true, full:true,
-     opts:[["happy","Happy to live with pets"],["rather_not","I’d rather not"],["allergic","I’m allergic to pets"]],
+    {id:"pets", type:"pick", label:"Pets", req:true, full:true,
+     opts:[["happy","Happy to live with pets"],["rather_not","I’d rather not"],["allergic","I’m allergic"]],
      sets:{happy:{"household.okWithPets":true, "household.petAllergy":false}, rather_not:{"household.okWithPets":false, "household.petAllergy":false},
-           allergic:{"household.okWithPets":false, "household.petAllergy":true}}},
-    {id:"careerGoal", path:"interests.careerGoal", type:"select", label:"The work you’re heading for", short:"career goal", req:true, full:true,
-     opts:function(){ return (CAREER_GOALS[S.studyArea] || CAREER_GOALS.other).concat(["Not sure yet"]); }},
-    {id:"fieldMentor", path:"interests.fieldMentor", type:"select", label:"Would you like a homeowner who worked in your field?", short:"homeowner from their field", req:true, full:true, opts:[["keen","Yes, I’d love that"],["open","It would be nice"],["no","It doesn’t matter to me"]]},
-    {id:"languages", path:"student.languages", type:"chips", label:"Languages you speak", short:"languages", full:true, other:true, opts:["English","Mandarin","Cantonese","Vietnamese","Arabic","Greek","Italian","Hindi","Spanish","Korean"]},
-    {id:"wantsToLearn", path:"interests.wantsToLearn", type:"chips", label:"Something you’d like to learn", short:"things to learn", full:true, opts:["Gardening","Family recipes","Local history","Life advice","Crafts","Card games"]},
-    {id:"hoursPerWeek", path:"support.hoursPerWeek", type:"range", label:"Hours a week you can give to shared household life", short:"hours a week", req:true, full:true, opts:[["6-8","6–8 hours"],["8-10","8–10 hours"],["10-12","10–12 hours"],["12-15","12–15 hours"]]},
-    {id:"notOffered", path:"support.notOffered", type:"chips", label:"Not comfortable offering", short:"help not offered", full:true, opts:["Personal care","Managing medication","Overnight care","Heavy lifting","Cleaning the whole house"]}
+           allergic:{"household.okWithPets":false, "household.petAllergy":true}}}
+  ]},
+  {title:"Life together", fields:[
+    {id:"socialLevel", path:"lifestyle.socialLevel", type:"scale", label:"How much time would you like to spend with your homeowner?", req:true, full:true, ends:["Mostly independent","Lots of time together"]},
+    {id:"hoursPerWeek", path:"support.hoursPerWeek", type:"pick", range:true, label:"Hours a week you can give to shared household life", req:true, full:true, opts:[["6-8","6–8"],["8-10","8–10"],["10-12","10–12"],["12-15","12–15"]]},
+    {id:"helpTypes", path:"support.helpTypes", type:"chips", label:"Happy to help with", req:true, full:true, opts:["Company and conversation","Cooking shared meals","Tech and phone help","Gardening","Bins and light chores","Shopping and errands","Lifts in the homeowner’s car","Pet care","Appointments and outings","Being home in the evenings"]},
+    {id:"hobbies", path:"interests.hobbies", type:"chips", label:"Hobbies and interests", full:true, opts:["Gardening","Cooking and baking","Reading","Music","Sport and fitness","Walking","Crafts","Board games and puzzles","Films and TV","Art"]},
+    {id:"fieldMentor", path:"interests.fieldMentor", type:"pick", label:"Would you like a homeowner who worked in your field?", req:true, full:true, opts:[["keen","Yes, I’d love that"],["open","It would be nice"],["no","It doesn’t matter"]]},
+    {id:"wantsToLearn", path:"interests.wantsToLearn", type:"chips", label:"Something you’d like to learn", full:true, opts:["Gardening","Family recipes","Local history","Life advice","Crafts","Card games"]},
+    {id:"languages", path:"student.languages", type:"chips", label:"Languages you speak", full:true, other:true, opts:["English","Mandarin","Cantonese","Vietnamese","Arabic","Greek","Italian","Hindi","Spanish","Korean"]}
   ]}
 ];
-/* Typical answers for the pre-filled fields: open to most homes, so the demo pairing is decided by the answers given. */
-function demoDefaults(){
-  return {age: "21", moveInDate: moveInOptions()[1][0], stayMonths: "12", rentBudgetWeekly: "150", homeownerGender: "any", otherLodgers: "open",
-          smoking: "either", pets: "happy", careerGoal: (CAREER_GOALS[S.studyArea] || CAREER_GOALS.other)[0], fieldMentor: "open",
-          languages: ["English"], wantsToLearn: [], hoursPerWeek: "8-10", notOffered: ["Personal care"]};
-}
 var Q_FIELDS = [];
-Q_PAGES.forEach(function(page){ page.fields.concat(page.prefilled || []).forEach(function(f){ if (f.id) Q_FIELDS.push(f); }); });
-var PREFILLED = Q_PAGES[0].prefilled;
+Q_PAGES.forEach(function(page){ page.fields.forEach(function(f){ if (f.id) Q_FIELDS.push(f); }); });
 var WEEK = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
 function optPairs(f){ return (typeof f.opts === "function" ? f.opts() : f.opts).map(function(o){ return Array.isArray(o) ? o : [o, o]; }); }
@@ -1384,7 +1415,7 @@ function qValue(f){
   if (isBlank(v)) return undefined;
   if (f.type === "num" || f.type === "scale" || f.num) return Number(v);
   if (f.type === "list") { var l = splitList(v); return l.length ? l : undefined; }
-  if (f.type === "range"){
+  if (f.type === "range" || f.range){
     var m = String(v).split("-").map(Number);
     return m.length === 2 ? {min: m[0], max: m[1]} : m[0];
   }
@@ -1398,25 +1429,6 @@ function qInvalid(f){
   if (f.type === "num"){ var n = Number(v); return !isFinite(n) || n < f.min || n > f.max; }
   if (f.type === "tel") return String(v).replace(/\D/g, "").length < 8;
   return false;
-}
-
-/* What the scenarios already showed, offered as a starting point, and the demo's typical answers for the rest. */
-function prefillFromGame(){
-  if (S.qPrefilled) return;
-  var t = S.tags, talked = t.career_curiosity || t.career_exchange, help = ["Cooking shared meals", "Shopping and errands"];
-  if (talked) help.unshift("Company and conversation");
-  if (t.scam_taught || t.scam_escalated) help.push("Tech and phone help");
-  S.q.helpTypes = help;
-  S.q.socialLevel = talked ? 4 : t.career_deferred || t.arrival_practical ? 2 : 3;
-  var d = demoDefaults();
-  if (talked) d.fieldMentor = "keen";
-  Object.keys(d).forEach(function(k){ if (isBlank(S.q[k])) S.q[k] = d[k]; });
-  S.qTouched = {};
-  S.qPrefilled = true;
-}
-/* The pre-filled answers the applicant never changed, for the staff watch-point. */
-function untouchedDefaults(){
-  return PREFILLED.filter(function(f){ return !(S.qTouched || {})[f.id]; }).map(function(f){ return f.short; });
 }
 
 function qFieldHTML(f){
@@ -1434,9 +1446,9 @@ function qFieldHTML(f){
       }).join("") + '</div>'
       + (f.other ? '<input type="text" data-q="' + f.id + '__other" maxlength="200" placeholder="Anything else? Separate with commas" value="' + esc(S.q[f.id + "__other"] || "") + '" aria-label="' + esc(f.label) + ': other">' : '');
   } else if (f.type === "yesno" || f.type === "scale" || f.type === "pick"){
-    var pairs = f.type === "yesno" ? YES_NO : f.type === "pick" ? f.opts : [1,2,3,4,5].map(function(n){ return [n, String(n)]; });
+    var pairs = f.type === "yesno" ? YES_NO : f.type === "pick" ? optPairs(f) : [1,2,3,4,5].map(function(n){ return [n, String(n)]; });
     ctrl = '<div class="chips" id="' + id + '" role="group">' + pairs.map(function(o){
-        return '<button type="button" class="chip" data-one="' + f.id + '" data-v="' + o[0] + '" aria-pressed="' + (v === o[0]) + '">' + o[1] + '</button>';
+        return '<button type="button" class="chip" data-one="' + f.id + '" data-v="' + esc(o[0]) + '" aria-pressed="' + (v != null && String(v) === String(o[0])) + '">' + esc(o[1]) + '</button>';
       }).join("") + '</div>'
       + (f.ends ? '<span class="qhint">1 = ' + esc(f.ends[0]) + ' · 5 = ' + esc(f.ends[1]) + '</span>' : '');
   } else {
@@ -1449,26 +1461,21 @@ function qFieldHTML(f){
 }
 
 function renderQuestionnaire(){
-  prefillFromGame();
   prepareMatch();
-  var page = Q_PAGES[S.qPage], last = S.qPage === Q_PAGES.length - 1, more = page.prefilled || [];
+  var page = Q_PAGES[S.qPage], last = S.qPage === Q_PAGES.length - 1;
   app.innerHTML = '<div class="topbar"><div class="toprow"><span class="daylabel">Matching questions</span>'
-    + '<span class="clock">About 20 seconds</span></div></div>'
+    + '<span class="clock">Page ' + (S.qPage + 1) + ' of ' + Q_PAGES.length + '</span></div></div>'
     + '<div class="scroll" id="qscroll"><div class="pad">'
-    + '<div class="qhead">'
+    + '<div class="qhead"><div class="qprog">' + Q_PAGES.map(function(_, i){ return '<i class="' + (i <= S.qPage ? "on" : "") + '"></i>'; }).join("") + '</div>'
     + '<h2 style="font-size:25px;margin-top:8px">' + esc(page.title) + '</h2>'
     + (S.qPage === 0 ? '<p class="sub">Your ' + scenariosInWords() + ' scenarios with Marg are done. ' + esc(page.intro) + '</p>' : '')
     + '</div>'
     + '<div class="qgrid">' + page.fields.map(qFieldHTML).join("") + '</div>'
-    + (more.length ? '<details class="prefill" id="prefill"><summary>Pre-filled answers (' + more.length + ')</summary>'
-        + '<p class="sub" style="font-size:12.5px">Typical answers, open to most homes. Change any that don’t fit you.</p>'
-        + '<div class="qgrid">' + more.map(qFieldHTML).join("") + '</div></details>' : '')
     + '<div id="qerr"></div>'
     + '<div class="btnrow">' + (S.qPage > 0 ? '<button class="cont ghost" id="qback">Back</button>' : '')
     + '<button class="cont primary" id="qnext">' + (last ? "Submit my profile" : "Next") + '</button></div>'
     + '</div></div>';
 
-  var touch = function(id){ S.qTouched = S.qTouched || {}; S.qTouched[id] = true; };
   /* A field flagged by Next stops being flagged as soon as its answer is fine. */
   var recheck = function(id){
     var f = Q_FIELDS.filter(function(x){ return x.id === id; })[0], box = el("#qf-" + id);
@@ -1476,7 +1483,7 @@ function renderQuestionnaire(){
     if (!app.querySelector(".qfield.bad")) el("#qerr").innerHTML = "";
   };
   Array.prototype.forEach.call(app.querySelectorAll("[data-q]"), function(input){
-    input.addEventListener("input", function(){ var id = input.getAttribute("data-q"); S.q[id] = input.value; touch(id.split("__")[0]); save(); recheck(id.split("__")[0]); });
+    input.addEventListener("input", function(){ var id = input.getAttribute("data-q"); S.q[id] = input.value; save(); recheck(id.split("__")[0]); });
   });
   Array.prototype.forEach.call(app.querySelectorAll("[data-multi]"), function(b){
     b.onclick = function(){
@@ -1484,7 +1491,7 @@ function renderQuestionnaire(){
       var at = list.indexOf(val);
       if (at === -1) list.push(val); else list.splice(at, 1);
       if (id === "campusDays") list.sort(function(a, c){ return WEEK.indexOf(a) - WEEK.indexOf(c); });
-      S.q[id] = list; b.setAttribute("aria-pressed", String(at === -1)); touch(id); save(); recheck(id);
+      S.q[id] = list; b.setAttribute("aria-pressed", String(at === -1)); save(); recheck(id);
     };
   });
   Array.prototype.forEach.call(app.querySelectorAll("[data-one]"), function(b){
@@ -1492,14 +1499,13 @@ function renderQuestionnaire(){
       var id = b.getAttribute("data-one"), raw = b.getAttribute("data-v");
       S.q[id] = raw === "true" ? true : raw === "false" ? false : /^\d+$/.test(raw) ? Number(raw) : raw;
       Array.prototype.forEach.call(b.parentNode.children, function(x){ x.setAttribute("aria-pressed", String(x === b)); });
-      touch(id); save(); recheck(id);
+      save(); recheck(id);
     };
   });
   if (el("#qback")) el("#qback").onclick = function(){ S.qPage--; save(); render(); };
   el("#qnext").onclick = function(){
-    var all = page.fields.concat(more), bad = all.filter(function(f){ return f.id && qInvalid(f); });
-    all.forEach(function(f){ if (f.id) el("#qf-" + f.id).classList.toggle("bad", bad.indexOf(f) !== -1); });
-    if (bad.some(function(f){ return more.indexOf(f) !== -1; })) el("#prefill").open = true;
+    var bad = page.fields.filter(function(f){ return f.id && qInvalid(f); });
+    page.fields.forEach(function(f){ if (f.id) el("#qf-" + f.id).classList.toggle("bad", bad.indexOf(f) !== -1); });
     if (bad.length){
       el("#qerr").innerHTML = '<p class="err">' + (bad.length === 1 ? "One answer needs" : bad.length + " answers need") + ' a look: ' + esc(bad.map(function(f){ return f.label; }).join(", ")) + '.</p>';
       el("#qf-" + bad[0].id).scrollIntoView({block: "center"});
@@ -1540,18 +1546,12 @@ function scanQuestionnaire(){
     if (f.other) splitList(S.q[f.id + "__other"]).forEach(function(item){ scanText(where, item, true); });
   });
 }
-/* Answers that can't be right, for staff to ask about. (The one-tap smoking
-   and pets questions can't contradict themselves.) */
-function answerChecks(){
-  var q = S.q, out = [];
-  if (!isBlank(q.rentBudgetWeekly) && Number(q.rentBudgetWeekly) < 20) out.push("rent budget of $" + Number(q.rentBudgetWeekly) + " a week");
-  return out;
-}
 /* A plain-English summary for the staff watch-point. Staff can rewrite it. */
 function autoWatchPoint(){
   var parts = ["Quick demo: " + scenariosInWords() + " scenarios of 25-second multiple choice and no written answers, so treat the screening result as a first impression."];
-  var left = untouchedDefaults();
-  if (left.length) parts.push("Left at the demo’s typical answers: " + left.join(", ") + ".");
+  var recall = S.choices.filter(function(c){ return c.tag === "recall_correct" || c.tag === "recall_missed"; })[0];
+  if (recall) parts.push(recall.tag === "recall_correct" ? "Remembered the detail Marg shared on the first evening."
+    : "Didn’t remember the detail Marg shared on the first evening: answered “" + recall.chosen + "”.");
   var missed = S.choices.filter(function(c){ return c.timedOut; });
   if (missed.length) parts.push("Ran out of time on " + missed.length + " of " + S.choices.length + " questions ("
     + missed.map(function(c){ return c.title; }).join(", ") + ").");
@@ -1565,8 +1565,6 @@ function autoWatchPoint(){
     var lows = S.choices.filter(function(c){ return c.awareness < 0; }).map(function(c){ return "Day " + c.day + ": " + c.chosen.replace(/\.$/, ""); });
     parts.push("Low safety awareness (" + S.meters.awareness + "/10)" + (lows.length ? ": " + lows.slice(0, 3).join("; ") : "") + ".");
   }
-  var checks = answerChecks();
-  if (checks.length) parts.push("Answers to check: " + checks.join("; ") + ".");
   return parts.join(" ");
 }
 
@@ -1599,7 +1597,6 @@ function screeningPart(){
     flags: ["quick_demo"].concat(Object.keys(S.flags).filter(function(k){ return S.flags[k]; }))
       .concat(CONCERNS.filter(function(k){ return S.concerns.some(function(c){ return c.id === k.id; }); }).map(function(k){ return k.id; }))
       .concat(S.meters.awareness <= 3 ? ["low_safety_awareness"] : [])
-      .concat(answerChecks().length ? ["answers_to_check"] : [])
       .concat(S.choices.some(function(c){ return c.timedOut; }) ? ["missed_timer"] : []),
     watchPoint: autoWatchPoint(),
     /* every choice made, so the matching can weigh each day's answers (not only the landmarks) */
@@ -1607,7 +1604,7 @@ function screeningPart(){
     /* every scenario played, titled, so the template shows them all (not only the full game's four landmark days) */
     landmarks: DAYS.map(function(d){
       var made = S.choices.filter(function(c){ return c.day === d.n; });
-      return {day: d.n, title: "Scenario " + d.show + ": " + d.title, response: made.map(function(c){ return c.chosen; }).join(" · "), tags: made.map(function(c){ return c.tag; })};
+      return {day: d.n, title: dayLabel(d) + ": " + d.title, response: made.map(function(c){ return c.chosen; }).join(" · "), tags: made.map(function(c){ return c.tag; })};
     }).filter(function(x){ return x.response; })
   };
 }
@@ -1770,7 +1767,7 @@ function renderResults(){
   var type = PROFILE_TYPES[profileType()];
   var moments = S.choices.map(function(c){
     var d = DAYS.filter(function(x){ return x.n === c.day; })[0] || {show: "", title: c.title};
-    return '<div class="row"><div><b>Scenario ' + d.show + ' · ' + esc(d.title) + '</b><div class="sub" style="font-size:13px">' + esc(c.chosen) + '</div></div></div>';
+    return '<div class="row"><div><b>' + dayLabel(d) + ' · ' + esc(d.title) + '</b><div class="sub" style="font-size:13px">' + esc(c.chosen) + '</div></div></div>';
   }).join("");
   var file = "genstay-profile-" + S.pid + ".json";
 
