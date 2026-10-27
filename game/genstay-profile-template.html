@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GenStay Matchmaking Profile</title>
 <!--
-  GenStay Matchmaking Profile — receiving template v1.2.0
+  GenStay Matchmaking Profile — receiving template v1.2.1
   ---------------------------------------------------------------
   Blank by default. Send it a profile object (shape: GenStayProfile.blank())
   through any of these routes and it fills itself in:
@@ -220,7 +220,7 @@ body.pdf *{font-variation-settings:normal!important} /* the canvas can't draw va
 (function () {
   'use strict';
 
-  var VERSION = '1.2.0';
+  var VERSION = '1.2.1';
 
   /* ---------- settings (override with window.GENSTAY_CONFIG before this script) ---------- */
   var CONFIG = Object.assign({
@@ -576,8 +576,12 @@ body.pdf *{font-variation-settings:normal!important} /* the canvas can't draw va
       { l: 'Day 13 redemption', k: ['screening.redemption'], v: function () { return s.redemption; } },
       { l: 'Flags', k: ['screening.flags'], v: function () { return arr(s.flags).map(function (f) { return String(f).replace(/_/g, ' '); }); } }
     ];
-    [6, 9, 11, 14].forEach(function (day) {
-      rows.push({ l: 'Day ' + day + ' · ' + L.landmark[day], k: ['screening.landmarks[day=' + day + ']'], v: function () { return lmFor(day); } });
+    /* The full game's four landmark days; a run that played other days (the quick demo's scenarios) shows those, under their own titles. */
+    var played = lms.map(function (x) { return +x.day; }).filter(function (d) { return d > 0; });
+    var lmDays = played.some(function (d) { return !L.landmark[d] || d === 13; }) ? played : [6, 9, 11, 14];
+    lmDays.forEach(function (day) {
+      var own = lms.filter(function (x) { return +x.day === day; })[0];
+      rows.push({ l: own && own.title ? own.title : 'Day ' + day + ' · ' + L.landmark[day], k: ['screening.landmarks[day=' + day + ']'], v: function () { return lmFor(day); } });
     });
     var answers = arr(s.answers);
     if (answers.length) answers.forEach(function (a) {

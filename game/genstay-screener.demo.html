@@ -1,9 +1,9 @@
-<title>Pepaws Porch</title>
+<title>GenStay Screener demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
-/* Pepaws Porch — one weatherboard cottage in real light, drawn soft.
+/* GenStay Screener demo — one weatherboard cottage in real light, drawn soft.
    A committed single visual world: every surface is painted explicitly so
    the page holds on either host ground. Layout: one phone-width card for the
    applicant; a wide two-pane review desk for staff. */
@@ -81,9 +81,6 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 textarea{width:100%;min-height:132px;resize:vertical;padding:12px 13px;border-radius:10px;border:1px solid var(--line-2);background:var(--field);color:var(--ink);font:400 15.5px/1.5 var(--body)}
 textarea:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0 3px rgba(91,108,116,.16)}
-.tfoot{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.count{font:500 11.5px/1 var(--mono);color:var(--ink-3)}
-.count.short{color:var(--rust)}
 
 .timer{flex:none;height:4px;background:var(--sunk);position:relative;overflow:hidden}
 .timer i{display:block;height:100%;background:var(--rust);width:100%}
@@ -91,12 +88,6 @@ textarea:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0 3px rgba(
 
 .notice{border-left:3px solid var(--ochre);background:#F2EADA;padding:11px 13px;border-radius:0 8px 8px 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
 .notice b{color:var(--ink)}
-.daycard{position:absolute;inset:0;z-index:20;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:24px;text-align:center;animation:fade .3s ease}
-.daycard .n{font:600 12px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3)}
-.daycard h2{font-size:31px}
-.daycard .t{font-size:14.5px;color:var(--ink-2)}
-.daycard .cn{max-width:320px;margin-top:8px;font-size:13px;color:var(--ink-2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;background:var(--paper)}
-@keyframes fade{from{opacity:0}to{opacity:1}}
 
 .scroll{flex:1;min-height:0;overflow-y:auto}
 .pad{padding:20px 18px 24px;display:flex;flex-direction:column;gap:14px}
@@ -110,9 +101,10 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 
 /* questionnaire */
 .qhead{display:flex;flex-direction:column;gap:6px}
-.qprog{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
-.qprog i{height:4px;border-radius:2px;background:var(--sunk)}
-.qprog i.on{background:var(--sage)}
+details.prefill{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--field)}
+details.prefill summary{cursor:pointer;font-weight:600}
+details.prefill[open] summary{margin-bottom:8px}
+details.prefill .qgrid{margin-top:10px}
 .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .qgrid .full{grid-column:1 / -1}
 .qfield{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -135,6 +127,26 @@ input:focus,select:focus{border-color:var(--slate);outline:none;box-shadow:0 0 0
 .status .dotled{margin-top:6px}
 .dotled{width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-3)}
 .dotled.ok{background:var(--good)} .dotled.no{background:var(--bad)} .dotled.wait{background:var(--warn)}
+
+/* the participant's demo match */
+.matchcard{border:1px solid var(--line-2);border-radius:14px;background:var(--field);padding:16px;display:flex;flex-direction:column;gap:10px}
+.mc-kicker{font:600 11px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--sage-lo)}
+.mc-head{display:flex;align-items:center;gap:12px}
+.mc-avatar{width:54px;height:54px;border-radius:50%;background:var(--sage);color:var(--on-dark);display:grid;place-items:center;font:600 19px/1 var(--display);flex:none}
+.mc-who{flex:1;min-width:0}
+.mc-name{font:600 21px/1.2 var(--display)}
+.mc-sub{font-size:13.5px;color:var(--ink-2)}
+.mc-score{display:flex;flex-direction:column;align-items:center;background:var(--sage);color:var(--on-dark);border-radius:10px;padding:7px 10px;flex:none}
+.mc-score b{font:700 22px/1 var(--mono)}
+.mc-score span{font:600 10px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.mc-why{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;font-size:14.5px;line-height:1.4}
+.mc-why li{padding-left:20px;position:relative}
+.mc-why li::before{content:"✓";position:absolute;left:2px;color:var(--good);font-weight:700}
+.mc-talk{font-size:13.5px;line-height:1.45;color:var(--ink-2);margin:0}
+.mc-note{font-size:12px;color:var(--ink-3);margin:0}
+.matchcard.mc-wait{border-style:dashed}
+.matchcard.mc-out{background:var(--paper)}
+.mc-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.45}
 
 /* staff review desk */
 .desk{flex:1;min-height:0;display:grid;grid-template-columns:330px 1fr;background:var(--paper)}
@@ -246,11 +258,11 @@ details.parts .mparts{margin-top:6px}
 }
 @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
-<div id="app" role="application" aria-label="Pepaws Porch homeshare screening"></div>
+<div id="app" role="application" aria-label="GenStay Screener demo"></div>
 <script>
 "use strict";
 /* ============================================================
-   PEPAWS PORCH — scenes
+   GENSTAY SCREENER — scenes
    One weatherboard cottage and its back yard, drawn as soft SVG.
    Every room is a function of the light and a few props, so a day can
    show exactly what its story mentions and nothing it doesn't.
@@ -730,405 +742,141 @@ var ZONE_LABEL = {porch: "Front verandah", lounge: "Lounge room", kitchen: "Kitc
 <script>
 "use strict";
 /* ============================================================
-   CONTENT — fourteen days with Margaret "Marg" Hollis, 78.
-   Days 6, 9, 11 and 14 are fixed landmarks every applicant reaches;
-   the rest branch on earlier choices. Four hidden meters (0–10, start 5)
-   record what the applicant values: Connection, Respect, Reliability and
-   Awareness. Nothing here is pass or fail.
+   CONTENT — the quick demo: four scenarios with Margaret "Marg" Hollis, 78,
+   short enough for a five-minute presentation slot.
+     1. The conversation: does the applicant ask about her career, or keep to themselves?
+     2. Agency: a scam text. Do they take over, or walk her through it?
+     3. A dispute about a late night, in two stages: everyone answers the
+        first; the second follows from that answer (agreeing on guests, a
+        note asking to talk, or a call from her son), then all routes on to
+     4. The emergency: a fall with a head knock. Keep her still, call 000.
+   Each question shows its situation (`lead`) above it, so a scenario is one
+   screen and Marg's reaction. Every question is multiple choice with a
+   25-second timer. Each scenario
+   keeps a day number from the full fortnight (n) for the profile's path
+   and landmark rows; `show` is the scenario the applicant sees (1 to 4).
    ============================================================ */
 
-/* Area of study picks Marg's old career, so the applicant's field has a
-   living mentor in the house, and the papers in the Day 3 box. */
+/* Area of study picks Marg's old career: Day 3 is built around it, and the
+   profile offers it as the best homeowner background. */
 var DISCIPLINES = {
-  health:        {label:"Health (nursing, medicine)",                   career:"a nurse",                  papers:"her old ward reports, nursing notes and decades of advice scribbled in the margins"},
-  carework:      {label:"Carework (aged care, disability support)",     career:"a community carer",        papers:"her old care plans, shift handover notes and training certificates"},
-  allied_health: {label:"Allied health (physio, OT, speech pathology)", career:"a physiotherapist",        papers:"her old assessment reports and home-exercise sheets"},
-  social_work:   {label:"Social work and community services",           career:"a social worker",          papers:"her old training notes, referral guides and policy folders"},
-  psychology:    {label:"Psychology and counselling",                   career:"a counsellor",             papers:"her old training notes, reading lists and workshop handouts"},
-  education:     {label:"Education and teaching",                       career:"a primary school teacher", papers:"her old school reports, lesson plans and notes from parent evenings"},
-  other:         {label:"Other",                                        career:"a nurse",                  papers:"her old ward reports, nursing notes and decades of advice scribbled in the margins"}
+  health:        {label:"Health (nursing, medicine)",                   career:"a nurse"},
+  carework:      {label:"Carework (aged care, disability support)",     career:"a community carer"},
+  allied_health: {label:"Allied health (physio, OT, speech pathology)", career:"a physiotherapist"},
+  social_work:   {label:"Social work and community services",           career:"a social worker"},
+  psychology:    {label:"Psychology and counselling",                   career:"a counsellor"},
+  education:     {label:"Education and teaching",                       career:"a primary school teacher"},
+  other:         {label:"Other",                                        career:"a nurse"}
 };
 function discipline(){ return DISCIPLINES[S.studyArea] || DISCIPLINES.other; }
-function storyText(value){
-  var d = discipline();
-  return String(value || "").replace(/\{\{career\}\}/g, d.career).replace(/\{\{papers\}\}/g, d.papers);
-}
+function storyText(value){ return String(value || "").replace(/\{\{career\}\}/g, discipline().career); }
 function impact(connection, respect, reliability, awareness){
   return {connection:connection, respect:respect, reliability:reliability, awareness:awareness};
 }
 
+var QUESTION_SECONDS = 25;
+var DEFAULT_TIMEOUT_FX = impact(0, 0, -1, 0); /* no answer reads as not following through */
+
 var DAYS = [
-  /* ---------------- Day 1 — arrival ---------------- */
-  {n:1, title:"Arrival", time:"3:40 pm", zone:"kitchen", light:"gold",
+  /* ---------------- Scenario 1 — the conversation: do they ask, or keep to themselves? ---------------- */
+  {n:1, show:1, title:"First evening", time:"5:40 pm", zone:"kitchen", light:"gold",
    scene:{marg:{pose:"stand", x:606, y:338, s:0.98}, tea:true, cake:true, gloves:true, chair:false},
    steps:[
-    {t:"say", narr:true, text:"Margaret “Marg” Hollis, 78, welcomes you into the Hollis family home. She has just come in from the garden. The kettle is on and a cake is set on the table. The spare room is yours for a third of the usual rent, in exchange for about ten hours a week of shared household life."},
-    {t:"choice", prompt:"What do you do first?", options:[
-      {text:"Have a tea, sit down and ask about some photographs.", fx:impact(1,1,0,0), tag:"arrival_connected", reply:"Marg tells you who is in each photograph on the fridge."},
-      {text:"Have a tea and ask for a quick tour of the house.", fx:impact(0,1,1,0), tag:"arrival_tour", reply:"You learn which door sticks and where the spare key lives. Marg likes that you asked."},
-      {text:"Thank Marg, say you’re exhausted, and go and unpack first.", fx:impact(-1,0,0,0), tag:"arrival_alone", reply:"Marg says the tea will keep. When you come back out, she has saved you a slice of cake."},
-      {text:"Ask for the Wi-Fi password and where you can keep your groceries.", fx:impact(-1,0,1,0), tag:"arrival_practical", reply:"Marg points to the card by the phone and clears you a shelf. The welcome stays polite."}
-    ]},
-    {t:"choice", prompt:"What are you most looking forward to about living here?", options:[
-      {text:"A quiet place to study.", tag:"motivation_study"},
-      {text:"Saving money on rent.", tag:"motivation_saving"},
-      {text:"Company and conversation.", tag:"motivation_company"},
-      {text:"Learning from someone with life experience.", tag:"motivation_learning"}
-    ]},
-    {t:"say", narr:true, text:"You have your own room and your own life here. The arrangement works both ways."}
-   ]},
-
-  /* ---------------- Day 2 — house rhythms; plants the step and the fridge folder ---------------- */
-  {n:2, title:"House rhythms", time:"10:15 am", zone:"lounge", light:"day",
-   scene:{marg:{pose:"sit", x:606, y:300, s:0.78}, radio:true},
-   steps:[
-    {t:"say", narr:true, opening:true, text:"Marg walks you through the house routines."},
-    {t:"say", who:"Marg", text:"Bins go out on Tuesday, the radio goes on at half past four, and dinner’s at six. You’re welcome to join me, but there’s no obligation. Oh, and mind the brick step out to the granny flat. It’s seen better days."},
-    {t:"choice", prompt:"How do you want to handle the household routine?", options:[
-      {text:"Ask what time suits for dinner, and offer to cook one night a week.", fx:impact(1,1,1,0), tag:"shared_cooking", reply:"Marg suggests Thursdays. You agree to plan the menu together."},
-      {text:"Say you’ll do your own thing most nights, but you’ll let Marg know when plans change.", fx:impact(0,1,1,0), tag:"courteous_independence", reply:"Marg nods. Clear plans suit you both."},
-      {text:"Say nothing about dinner and plan to eat in your room.", fx:impact(-1,0,-1,0), tag:"dinner_avoided", reply:"The invitation stays open, but Marg doesn’t ask again tonight."},
-      {text:"Ask what’s wrong with the brick step, and whether Marg would like it looked at.", fx:impact(0,1,1,1), tag:"noticed_step", flag:"noticed_step", reply:"Marg brushes it off: “It’s been like that for years. I know where to put my feet.” You make a mental note to raise it again."}
-    ]},
-    {t:"choice", prompt:"On the tour you noticed a labelled folder on the fridge. What do you do?", requiresTags:["arrival_tour"], options:[
-      {text:"Ask what the folder is for, and where to find it in an emergency.", fx:impact(0,1,1,1), flag:"learned_meds_folder", reply:"It holds Marg’s GP details, medication list and emergency contacts. She shows you where it lives."},
-      {text:"Leave it alone. It’s not yours to look through.", fx:impact(0,1,0,0), reply:"You leave Marg’s private papers alone."}
+    {t:"choice", lead:"Your first evening with Marg Hollis, 78. Over tea, she mentions she was {{career}} for thirty-five years.",
+     prompt:"How do you reply?", timeoutFx:impact(-1,0,0,0), timeoutNote:"Marg waits, then clears the cups.", options:[
+      {text:"Ask what she loved about the work.", fx:impact(1,1,0,0), tag:"career_curiosity", reply:"Marg’s face lights up, and the stories start."},
+      {text:"Swap stories about your course.", fx:impact(1,1,0,0), tag:"career_exchange", reply:"Marg laughs: “Everything’s changed, and nothing has.”"},
+      {text:"Head to your room to study.", fx:impact(-1,0,0,0), tag:"career_deferred", reply:"Marg says the tea will keep."},
+      {text:"Ask for the Wi-Fi password.", fx:impact(-1,0,1,0), tag:"arrival_practical", reply:"Marg points to the card by the phone."}
     ]}
    ]},
 
-  /* ---------------- Day 3 — shared ground: Marg's old reports and advice ---------------- */
-  {n:3, title:"Shared ground", time:"11:00 am", zone:"hall", light:"day",
-   scene:{marg:{pose:"stand", x:476, y:344, s:0.8}, box:true},
+  /* ---------------- Scenario 2 — agency: take over, or walk her through it? ---------------- */
+  {n:4, show:2, title:"The bank text", time:"6:20 pm", zone:"yard", light:"dusk",
+   scene:{marg:{pose:"stand", x:250, y:320, s:0.8, hold:"phone", mood:"neutral"}},
    steps:[
-    {t:"say", narr:true, opening:true, text:"Marg asks what you’re studying, and her face lights up. She spent thirty-five years as {{career}}. A box of {{papers}} sits in the hallway."},
-    {t:"say", who:"Marg", text:"Everything was handwritten back then. The reports have changed a lot. The advice I’d give someone starting out hasn’t."},
-    {t:"choice", prompt:"The box is open. What catches your attention?", options:[
-      {text:"Ask what Marg enjoyed most about the work.", fx:impact(1,1,0,0), tag:"career_curiosity", reply:"Marg tells you about a hard first year, and the colleague who helped her through it."},
-      {text:"Ask whether her old notes and advice still hold up in your field.", fx:impact(1,0,0,0), tag:"career_exchange", reply:"You compare what has changed and what hasn’t. Some of her advice is better than your textbook’s."},
-      {text:"Ask about a framed photograph tucked in the box.", fx:impact(1,1,0,0), flag:"met_Dorothy_photo", tag:"met_Dorothy_photo", reply:"It’s Dorothy, Marg’s closest friend. They have known each other for fifty years."},
-      {text:"Say you should get back to your assignment.", fx:impact(0,0,0,0), tag:"career_deferred", reply:"Marg closes the box, but leaves it in the hall."}
-    ]},
-    {t:"text", id:"D3", min:40,
-     prompt:"What would you most want to ask Marg about her work, and what could you offer her in return?",
-     sub:"Write your question, and any skill, help or perspective you could share.",
-     placeholder:"I’d ask…", outcomes:[
-      {id:"reciprocal", match:/\b(ask|curious|experience|story|stories)\b[\s\S]{0,180}\b(offer|help|share|show|teach|records|update)\b/i, tag:"asked_about_career", flag:"asked_about_career", fx:impact(1,0,1,0)},
-      {id:"one_way", match:/\b(advice|reference|network|recommendation|contact)\b/i, tag:"career_one_way", fx:impact(0,0,0,0)}
-     ]},
-    {t:"say", narr:true, text:"The box stays in the hallway, where you can both come back to it."}
-   ]},
-
-  /* ---------------- Day 4 — generational gap: the bank text ---------------- */
-  {n:4, title:"Generational gap", time:"6:20 pm", zone:"yard", light:"dusk",
-   scene:{marg:{pose:"stand", x:250, y:320, s:0.8, hold:"phone", mood:"neutral"}, stepLoose:true},
-   steps:[
-    {t:"say", narr:true, opening:true, text:"Marg is looking at her phone when she receives a text from her bank. It asks her to reset her password urgently, and she is about to tap the link. As she steps out the back door, you notice the uneven brick step to the granny flat that Marg warned you about."},
-    {t:"choice", prompt:"What do you do about the text?", options:[
-      {text:"Ask if you can look at it together, point out the warning signs, and offer to call the bank on the number from her card.", fx:impact(1,1,0,1), tag:"scam_taught", reply:"Marg spots the odd sender address herself. You ring the number on the back of her card, not the one in the message."},
-      {text:"Take the phone and delete the message yourself.", fx:impact(0,-1,0,1), tag:"phone_taken", reply:"The message is gone. Marg takes her phone back: “I can learn this, you know.”"},
-      {text:"Say it looks suspicious, and suggest calling the bank together.", fx:impact(0,1,0,1), tag:"scam_escalated", reply:"Marg makes the call and asks the bank to check her account."},
-      {text:"Assume it’s fine and let Marg decide.", fx:impact(0,1,0,-1), tag:"scam_ignored", reply:"The link opens a convincing sign-in page. Marg hesitates before typing anything."}
-    ]},
-    {t:"choice", prompt:"Anything else you notice around the house?", excludesFlags:["noticed_step"], options:[
-      {text:"Mention the brick step to the granny flat, and ask whether Marg would like help getting it fixed.", fx:impact(0,1,1,1), flag:"noticed_step", tag:"noticed_step", reply:"Marg says it’s been like that for ages. You offer to help her find someone to fix it, rather than trying a repair yourself."},
-      {text:"Leave it for now.", fx:impact(0,0,0,-1), tag:"step_deferred", reply:"The uneven brick step is still there."}
-    ]},
-    {t:"choice", prompt:"Afterwards, Marg points out a folder on the fridge. What do you do?", requiresAnyTags:["scam_taught","scam_escalated"], excludesFlags:["learned_meds_folder"], options:[
-      {text:"Ask what the folder is for, and where to find it in an emergency.", fx:impact(0,1,1,1), flag:"learned_meds_folder", reply:"It lists her GP, medications and emergency contacts. Marg shows you where it lives."},
-      {text:"Thank Marg and leave her private papers closed.", fx:impact(0,1,0,0), reply:"You leave the folder where it is."}
+    {t:"choice", lead:"A text from Marg’s “bank” says to reset her password now. She’s about to tap the link.",
+     prompt:"What do you do?", timeoutFx:impact(0,0,0,-1), timeoutNote:"While you’re still thinking, Marg taps the link.", options:[
+      {text:"Show her the warning signs.", fx:impact(1,1,0,1), tag:"scam_taught", reply:"Marg spots the odd sender address herself."},
+      {text:"Take her phone and delete it.", fx:impact(0,-1,0,1), tag:"phone_taken", reply:"Marg takes it back: “I can learn this.”"},
+      {text:"Suggest she rings the bank.", fx:impact(0,1,0,1), tag:"scam_escalated", reply:"The bank confirms it’s a scam."},
+      {text:"Leave it. It’s her phone.", fx:impact(0,1,0,-1), tag:"scam_ignored", reply:"The link opens a convincing sign-in page."}
     ]}
    ]},
 
-  /* ---------------- Day 5 — two invitations ---------------- */
-  {n:5, title:"Two invitations", time:"8:30 am", zone:"yard", light:"day",
-   scene:{marg:{pose:"stand", x:300, y:320, s:0.8, outfit:"garden", hold:"trug"}},
-   steps:[
-    {t:"say", narr:true, opening:true, text:"You have a big assignment due tomorrow. Marg has been invited to a community garden morning, and asks if you’d like to come and meet the neighbours. A classmate has also texted about a study session on campus."},
-    {t:"say", who:"Marg", text:"No pressure either way. I thought you might like to see the gardens."},
-    {t:"text", id:"D5", min:40,
-     prompt:"How do you respond to Marg, and how do you tell her?",
-     sub:"Write what you would actually say, including any plan you suggest.", placeholder:"I’d tell Marg…", outcomes:[
-      {id:"warm_refusal", match:/\b(can't|can’t|cannot|won't|won’t|will not)\b[\s\S]{0,100}\b(sunday|tomorrow|another day|counter|next week|later|next time)\b/i, tag:"honest_refusal", fx:impact(1,1,1,0)},
-      {id:"study_then_join", match:/\b(last 30|last half|half an hour|after (i )?study|after the assignment|finish studying)\b/i, tag:"study_then_join", fx:impact(1,1,1,0)},
-      {id:"accepted_garden", match:/\b(yes|go with you|come along|join you)\b/i, tag:"accepted_garden", flag:"assignment_at_risk", fx:impact(1,0,-1,0)},
-      {id:"vague_or_avoidant", match:/\b(say nothing|make an excuse|avoid|disappear|don't tell|don’t tell|do not tell)\b/i, tag:"vague_excuse", fx:impact(-1,0,-1,0)}
-     ]},
-    {t:"say", narr:true, text:"That evening, you cross paths in the kitchen. Marg asks how the assignment is going."}
-   ]},
-
-  /* ---------------- Day 6 — LANDMARK: loss ---------------- */
-  {n:6, title:"Loss", time:"8:10 am", zone:"kitchen", light:"grey", kind:"landmark", contentNote:"This day involves bereavement.",
-   scene:{marg:{pose:"sit", x:440, y:306, s:0.78, mood:"sad"}, breakfast:true},
-   steps:[
-    {t:"say", narr:true, opening:true, pathText:{
-      warm:"The phone rings at breakfast. Afterwards, Marg comes to find you. “I need someone to know. Dorothy died overnight.”",
-      steady:"The phone rings at breakfast. Later, you find Marg still at the table with a cold cup of tea. “Dorothy’s gone,” she says.",
-      distant:"From the hallway, you overhear part of a phone call. Marg’s bedroom door closes. Later she says quietly, “Dorothy died last night.”"
-    }, text:"The phone rings at breakfast. Dorothy’s daughter says Dorothy died overnight."},
-    {t:"say", narr:true, excludesFlags:["met_Dorothy_photo"], text:"Dorothy was Marg’s closest friend. They had known each other for fifty years."},
-    {t:"say", who:"Marg", text:"I’ll put the kettle on."},
-    {t:"choice", prompt:"What do you do?", options:[
-      {text:"Sit with her in silence for a while and let her lead.", fx:impact(1,1,0,1), tag:"grief_present", reply:"You sit together. After a while, Marg starts talking about Dorothy."},
-      {text:"Say you’re sorry, and ask whether she’d like to tell you about Dorothy.", fx:impact(1,1,0,0), tag:"grief_invited", reply:"Marg tells you about a friendship that lasted fifty years."},
-      {text:"Make the tea, offer practical help with calls or meals, and check in again later.", fx:impact(0,1,1,1), tag:"grief_practical", reply:"Marg says a meal tonight would help. She decides what comes next."},
-      {text:"Say, “At least she’s in a better place.”", fx:impact(-1,0,0,-1), tag:"grief_dismissed", reply:"Marg looks down at her cup. The words don’t seem to help."},
-      {text:"Give her space and stay in your room.", fx:impact(-1,1,0,0), tag:"grief_withdrawn", reply:"The kettle boils. The rest of the morning passes quietly."},
-      {text:"Briefly share your own experience of grief, then bring the focus back to Dorothy.", fx:impact(1,0,0,0), tag:"grief_shared", reply:"Marg listens, then returns to a story about Dorothy."}
-    ]},
-    {t:"say", narr:true, text:"The funeral is on Saturday. Marg doesn’t ask you to come."}
-   ]},
-
-  /* ---------------- Day 7 — the funeral ---------------- */
-  {n:7, title:"The funeral", time:"10:00 am", zone:"porch", light:"grey",
-   scene:{marg:{pose:"stand", x:470, y:301, s:0.84, outfit:"funeral", hold:"bag", mood:"sad"}},
-   steps:[
-    {t:"say", narr:true, opening:true, text:"Marg is dressed for Dorothy’s funeral and getting ready to leave."},
-    {t:"choice", prompt:"How do you respond?", options:[
-      {text:"Offer to come with her for support and sit at the back.", fx:impact(1,1,0,1), tag:"attended_funeral", flag:"attended_funeral", replyByPath:{
-        warm:"At the service, Marg introduces you to Dorothy’s family as “my housemate, who’s been very good to me.”",
-        steady:"At the service, Marg introduces you to Dorothy’s family as “my tenant.”",
-        distant:"At the service, Marg introduces you simply as “the student who lives with me.”"
-      }},
-      {text:"Offer to drive her, and wait outside if she’d rather go in alone.", fx:impact(0,1,1,0), tag:"supported_funeral", flag:"attended_funeral", replyByPath:{
-        warm:"Marg accepts the lift and asks you to sit with her at the back.",
-        steady:"Marg accepts the lift and decides at the door whether you come in.",
-        distant:"Marg accepts the lift and thanks you for waiting outside."
-      }},
-      {text:"Say you have study to do, but ask how she’ll get home.", fx:impact(0,1,1,0), tag:"funeral_checkin", reply:"You agree to have a cup of tea together when she gets back."},
-      {text:"Wish her well and get on with your day.", fx:impact(-1,0,0,0), tag:"skipped_funeral", flag:"skipped_funeral", reply:"Marg comes home quietly. The house feels more formal that evening."}
-    ]}
-   ]},
-
-  /* ---------------- Day 8 — everyday friction ---------------- */
-  {n:8, title:"Everyday friction", time:"8:00 am", zone:"kitchen", light:"day",
+  /* ---------------- Scenario 3 — the dispute, stage 1: everyone sees it ---------------- */
+  {n:8, show:3, title:"The late night", time:"8:00 am", zone:"kitchen", light:"day",
    scene:{marg:{pose:"sit", x:440, y:306, s:0.78, mood:"neutral"}, chipped:true, note:true, milk:true},
    steps:[
-    {t:"say", narr:true, opening:true, pathText:{
-      warm:"Last night you had a friend over, later than you told Marg, and the music was louder than you realised. Over breakfast, Marg brings it up gently.",
-      steady:"Last night you had a friend over, later than you told Marg, and the music was louder than you realised. This morning the milk has moved to a different shelf, and there’s a note about a chipped mug by the kettle.",
-      distant:"Last night you had a friend over, later than you told Marg, and the music was louder than you realised. This morning Marg hasn’t said a word. The milk has moved shelves, and there’s a note about a chipped mug by the kettle."
-    }, text:"Last night you had a friend over, later than you told Marg. This morning there’s a note about a chipped mug by the kettle."},
-    {t:"say", who:"Marg", pathText:{
-      warm:"You had your friend over later than you said, and the music carried. I didn’t know how to bring it up.",
-      steady:"Morning. The milk’s on the top shelf now.",
-      distant:"Morning. The milk’s on the top shelf now."
-    }, text:"Morning."},
-    {t:"choice", prompt:"What do you do?", options:[
-      {text:"Apologise for the noise and ask how you can do better.", fx:impact(1,1,1,0), tag:"friction_repair", reply:"Marg admits it felt awkward to raise. You agree on a simple heads-up next time."},
-      {text:"Wait and see whether Marg brings it up.", fx:impact(0,0,0,0), tag:"friction_wait", reply:"The conversation stays polite. So does the awkwardness."},
-      {text:"Defend yourself: you pay rent, and it was only one night.", fx:impact(-1,-1,0,0), tag:"friction_defensive", reply:"Marg goes quiet. Her next invitation is more formal."},
-      {text:"Apologise, and suggest agreeing on guest and quiet-hour guidelines together.", fx:impact(1,1,1,0), tag:"friction_guidelines", reply:"You agree on notice for guests, quiet hours, and what feels comfortable for both of you."}
+    /* no answer in time reads as waiting, so the follow-up still has a branch */
+    {t:"choice", lead:"Your friend stayed late, and the music was loud. At breakfast, Marg is quiet.",
+     prompt:"What do you do?", timeoutTag:"friction_wait", timeoutFx:impact(0,-1,-1,0), timeoutNote:"You leave for campus without a word.", options:[
+      {text:"Apologise, and ask how to do better.", fx:impact(1,1,1,0), tag:"friction_repair", reply:"Marg admits it was awkward. You agree to give notice for guests."},
+      {text:"Wait to see if she raises it.", fx:impact(0,0,0,0), tag:"friction_wait", reply:"Breakfast stays polite, and awkward."},
+      {text:"Point out that you pay rent.", fx:impact(-1,-1,0,0), tag:"friction_defensive", reply:"Marg goes quiet, and leaves the room."},
+      {text:"Apologise, and suggest quiet hours.", fx:impact(1,1,1,0), tag:"friction_guidelines", reply:"You agree on quiet hours and notice for guests."}
     ]}
    ]},
 
-  /* ---------------- Day 9 — LANDMARK: boundaries ---------------- */
-  {n:9, title:"Boundaries", time:"6:30 pm", zone:"lounge", light:"gold", kind:"landmark", contentNote:"This day includes a biased remark.",
-   scene:{marg:{pose:"sit", x:606, y:300, s:0.78, mood:"neutral"}, tvOn:true, dinner:true},
+  /* ---------------- Scenario 3 — the dispute, stage 2: follows from the first answer ---------------- */
+  {n:10, show:3, title:"Later that week", time:"6:10 pm", zone:"lounge", light:"gold",
+   scene:{marg:{pose:"sit", x:606, y:300, s:0.78, mood:"neutral"}},
    steps:[
-    {t:"say", narr:true, opening:true, pathText:{
-      warm:"Over dinner in front of the news, Marg makes a comment about a neighbour from the community garden. It stings more because the trust between you is real.",
-      steady:"While you watch the news together over dinner, Marg makes an offhand comment about a neighbour from the community garden.",
-      distant:"Over dinner, Marg makes a comment about a neighbour from the community garden. It comes out more sharply than it might have a week ago."
-    }, text:"Over dinner, Marg makes a comment about a neighbour from the community garden."},
-    {t:"say", who:"Marg", text:"That new neighbour at the community garden is ever so well-spoken. You’d never guess she wasn’t born here. Where’s she actually from, do you think?"},
-    {t:"choice", prompt:"What do you do in that moment?", options:[
-      {text:"Laugh awkwardly and change the subject.", fx:impact(0,-1,0,0), tag:"boundary_laughed", reply:"Marg takes the laugh as agreement and moves on."},
-      {text:"Say nothing, go to your room, and think about it later.", fx:impact(-1,0,0,0), tag:"boundary_avoided", flag:"avoided_boundary", reply:"The moment passes, but it leaves you unsettled."},
-      {text:"Calmly say you don’t see it that way, and explain why the comment didn’t sit well with you.", fx:impact(1,1,0,0), tag:"boundary_calm", flag:"brought_up_remark", reply:"Marg is defensive at first, then listens. The conversation stays open."},
-      {text:"React sharply: say the comment is racist and you can’t live with it.", fx:impact(-1,1,0,0), tag:"boundary_sharp", flag:"brought_up_remark", reply:"Marg goes quiet and leaves the room. Your boundary was clear, but the relationship needs repair."},
-      {text:"Ask what makes her say that, then share your own view.", fx:impact(1,1,0,0), tag:"boundary_curious", flag:"brought_up_remark", reply:"Marg explains an old assumption. You disagree without treating it as harmless."},
-      {text:"Lecture her at length about why the comment is wrong.", fx:impact(-1,-1,0,0), tag:"boundary_lecture", flag:"brought_up_remark", reply:"Marg stops listening. The issue matters, and so does how you speak to each other."}
+    /* after agreeing on guests: do they follow through? */
+    {t:"choice", requiresAnyTags:["friction_repair","friction_guidelines"], lead:"A friend wants to stay over on Friday. You promised Marg notice for guests.",
+     prompt:"What do you do?", timeoutFx:impact(0,0,-1,0), timeoutNote:"Friday comes, and nobody has asked Marg.", options:[
+      {text:"Ask Marg first, and agree a time.", fx:impact(1,1,1,0), tag:"dispute_asked_first", reply:"Marg thanks you for asking. Friday is fine."},
+      {text:"Meet your friend in town.", fx:impact(0,0,1,0), tag:"dispute_met_out", reply:"Marg says your friends are welcome, with notice."},
+      {text:"Tell Marg on the night.", fx:impact(0,-1,-1,0), tag:"dispute_short_notice", reply:"Marg is caught off guard, but lets it go."},
+      {text:"Say yes. It’s your room too.", fx:impact(-1,-1,-1,0), tag:"dispute_my_room", reply:"At midnight, Marg knocks on your door."}
+    ]},
+    /* after waiting: Marg asks to talk */
+    {t:"choice", requiresAnyTags:["friction_wait"], lead:"A note under your door: “Can we talk about the other night? Marg.”",
+     prompt:"What do you do?", timeoutFx:impact(0,0,-1,0), timeoutNote:"The note stays on your desk.", options:[
+      {text:"Knock on her door and talk.", fx:impact(1,1,1,0), tag:"dispute_talked", reply:"Marg is relieved. You agree on quiet hours."},
+      {text:"Write back: “Sorry, won’t happen again.”", fx:impact(0,1,0,0), tag:"dispute_note_back", reply:"Marg would rather have talked."},
+      {text:"Ask the placement service to help.", fx:impact(0,0,0,0), tag:"dispute_to_service", reply:"The coordinator suggests you talk with Marg first."},
+      {text:"Wait for her to raise it again.", fx:impact(-1,0,-1,0), tag:"dispute_avoided", reply:"Days pass. The note stays where it was."}
+    ]},
+    /* after "I pay rent": her son rings */
+    {t:"choice", requiresAnyTags:["friction_defensive"], lead:"Marg’s son, David, rings: “Mum says there was a blow-up about noise. What happened?”",
+     prompt:"What do you say?", timeoutFx:impact(0,0,-1,0), timeoutNote:"David says he’ll call back tomorrow.", options:[
+      {text:"Own it, and say you’ll apologise.", fx:impact(1,1,1,0), tag:"dispute_owned", reply:"David thanks you. Marg accepts your apology."},
+      {text:"Explain, and suggest quiet hours.", fx:impact(0,1,1,0), tag:"dispute_mediated", reply:"David helps set quiet hours for you both."},
+      {text:"Say his mum overreacted.", fx:impact(-1,-1,0,0), tag:"dispute_blamed", reply:"David goes quiet. He’ll call the placement service."},
+      {text:"Say it’s not his business, and hang up.", fx:impact(-1,-1,-1,0), tag:"dispute_hung_up", reply:"David rings Marg straight back."}
     ]}
    ]},
 
-  /* ---------------- Day 10 — repair ---------------- */
-  {n:10, title:"Repair", time:"8:00 am", zone:"kitchen", light:"grey",
-   scene:{marg:{pose:"sit", x:440, y:306, s:0.78, mood:"neutral"}, biscuits:true},
-   steps:[
-    {t:"say", narr:true, opening:true, text:"The morning after Marg’s comment, the atmosphere is different."},
-    {t:"say", who:"Marg", text:"I’ve been thinking about last night. I don’t want us to stop talking."},
-    {t:"text", id:"D10", min:40,
-     prompt:"What do you want Marg to know about how you feel living here, and what would you like to understand about her view?",
-     sub:"You can come back to the comment without excusing it, or talk about another part of living together.",
-     placeholder:"I’d like Marg to know…", outcomes:[
-      {id:"open_repair", match:/\b(understand|ask|listen|talk|curious)\b[\s\S]{0,160}\b(feel|living|relationship|together|respect)\b/i, tag:"repair_open", fx:impact(1,1,1,0)},
-      {id:"withdrew", match:/\b(avoid|leave it|not discuss|change the subject|keep to myself)\b/i, tag:"repair_withdrawn", fx:impact(-1,0,0,0)}
-     ]},
-    {t:"say", narr:true, text:"One conversation doesn’t reset everything, but it makes room for the next one."}
-   ]},
-
-  /* ---------------- Day 11 — LANDMARK: safety ---------------- */
-  {n:11, title:"Safety", time:"5:20 pm", zone:"yard", light:"gold", kind:"landmark", contentNote:"This day involves a fall and an injury.",
+  /* ---------------- Scenario 4 — the emergency: keep her still, call 000 ---------------- */
+  {n:14, show:4, title:"The emergency", time:"5:20 pm", zone:"yard", light:"gold", kind:"landmark", contentNote:"a fall and an injury",
    scene:{marg:{pose:"floor", x:640, y:338, s:0.8}, stepLoose:true, basket:true, basketX:500, basketY:350, spilled:true},
    steps:[
-    {t:"say", narr:true, requiresFlags:["noticed_step"], text:"Late afternoon. Marg is carrying a basket of washing out to the granny flat when you hear a thud and a cry. It’s the brick step you raised earlier. She is on the ground beside it."},
-    {t:"say", narr:true, excludesFlags:["noticed_step"], text:"Late afternoon. Marg is carrying a basket of washing out to the granny flat when you hear a thud and a cry. She has caught her foot on the uneven brick step and is on the ground."},
-    {t:"say", who:"Marg", text:"I’m fine. Don’t fuss. I just need a minute."},
-    {t:"choice", prompt:"What do you do first?", options:[
-      {text:"Reach down and lift her to her feet straight away.", fx:impact(0,-1,0,-1), tag:"fall_lifted", reply:"Marg winces. You stop and ask where it hurts."},
-      {text:"Kneel beside her, speak calmly, and ask where it hurts and whether she hit her head. Keep her still while you check.", fx:impact(0,1,0,1), tag:"fall_checked", reply:"Marg says her hip hurts, and she isn’t sure whether she hit her head. You keep her still and call for medical advice."},
-      {text:"Ask whether she wants you to call someone, and follow her answer while you check for anything urgent.", fx:impact(0,1,0,1), tag:"fall_asked", reply:"Marg asks you to stay close. You check whether she hit her head."},
-      {text:"Call 000 straight away, explain the fall, and stay beside her.", fx:impact(0,0,1,1), tag:"fall_called", reply:"The call-taker asks whether she is conscious, whether she hit her head and where it hurts. You don’t move her."},
-      {text:"Accept “I’m fine” and walk away to give her some privacy.", fx:impact(-1,0,0,-1), tag:"fall_dismissed", reply:"When you look back, she is still on the ground. Giving her privacy didn’t mean leaving her without help."}
-    ]},
-    {t:"say", who:"Marg", text:"Please don’t tell David. I don’t want everyone making a fuss."},
-    {t:"choice", prompt:"Marg refuses more help and asks you not to tell her son, David. What now?", options:[
-      {text:"Promise not to tell anyone, and leave it there.", fx:impact(0,1,0,-1), tag:"fall_secret", reply:"You respect her wishes, but a fall and a possible knock to the head still need proper attention."},
-      {text:"Say you’ll respect that, but you’d like her to see a GP today, and offer to drive her.", fx:impact(0,1,1,1), tag:"fall_gp", reply:"Marg grumbles, then agrees to see the GP."},
-      {text:"Call David behind her back.", fx:impact(0,-1,-1,0), tag:"fall_told_behind_back", reply:"David knows now, but Marg finds out you called without asking her."},
-      {text:"Offer to get her to a doctor, and let her decide whether and how to tell David.", fx:impact(1,1,1,1), tag:"fall_supported", flag:"told_David", reply:"You make a plan together. Marg decides to ring David after the GP."}
-    ]},
-    {t:"choice", prompt:"Once Marg is safe, what do you do about the brick step?", options:[
-      {text:"Ignore it. The emergency is over.", fx:impact(0,0,0,-1), tag:"step_ignored", reply:"The step stays as it is."},
-      {text:"Block the brick step off for now, and ask Marg’s permission to find a handyman.", fx:impact(0,1,1,1), tag:"step_reported", flag:"step_reported", reply:"You put a chair across the step. Marg agrees it’s time to get it fixed."},
-      {text:"Try to fix the brick yourself, without asking or knowing how.", fx:impact(0,-1,-1,-1), tag:"step_diy", reply:"The brick wobbles worse than before. Marg is not impressed."},
-      {text:"Suggest she contact the council or a trades service, and offer to help organise it.", fx:impact(0,1,1,1), tag:"step_plan", flag:"step_reported", reply:"Marg agrees to make a repair plan with you."}
-    ]},
-    {t:"say", narr:true, text:"Marg is checked over and safe, with a bruised hip and some wounded pride."}
-   ]},
-
-  /* ---------------- Day 12 — the aftermath ---------------- */
-  {n:12, title:"The aftermath", time:"4:10 pm", zone:"lounge", light:"grey",
-   scene:{marg:{pose:"sit", x:606, y:300, s:0.78, mood:"sad"}, phone:true},
-   steps:[
-    {t:"say", narr:true, opening:true, text:"Marg is moving slowly after yesterday’s fall. Her son, David, rings and asks to speak with you."},
-    {t:"say", who:"David", text:"Mum says she’s fine, but she always says that. Why wasn’t I told about that step sooner?"},
-    {t:"choice", prompt:"How do you answer?", options:[
-      {text:"Be honest: explain when you noticed the step, what happened and what you did. Acknowledge it could have been raised more firmly.", fx:impact(0,1,1,1), tag:"david_honest", flag:"told_David", reply:"David is still worried, but he has a clearer picture. You talk about keeping Marg involved in the repair plan."},
-      {text:"Say Marg asked you not to tell him.", fx:impact(0,1,0,0), tag:"david_confidential", reply:"David understands, but he still wants to know what support is in place."},
-      {text:"Deflect: say it’s not your house and you don’t know.", fx:impact(0,0,-1,-1), tag:"david_deflected", reply:"David hears the evasion. Nothing is resolved."},
-      {text:"Reassure him, then pass the phone to Marg so they can agree on a repair plan together.", fx:impact(1,1,1,1), tag:"david_included", flag:"told_David", reply:"Marg chooses what to tell David. They agree to follow up the repair together."}
-    ]},
-    {t:"say", narr:true, text:"The call ends. Whether Marg overheard it shapes the rest of the afternoon."}
-   ]},
-
-  /* ---------------- Day 13 — last chance, personalised to the lowest moment ---------------- */
-  {n:13, title:"Last chance", time:"7:30 pm", zone:"kitchen", light:"dusk", kind:"personalised",
-   scene:{marg:{pose:"sit", x:440, y:306, s:0.78}, album:true, lamp:true},
-   steps:[
-    {t:"say", narr:true, redemptionText:true},
-    {t:"say", who:"Marg", text:"Before the fortnight’s out, is there anything you’d like to say to me?"},
-    {t:"text", id:"D13", min:40,
-     prompt:"If you could say one honest thing to Marg tonight about living here, what would it be?",
-     sub:"This is a chance to repair or deepen the relationship, not to erase what happened.",
-     placeholder:"One honest thing is…", outcomes:[
-      {id:"redemption_reached_out", match:/\b(sorry|apolog|understand|listen|talk|ask|thank|together|honest)\b/i, tag:"redemption_attempted", fx:impact(1,1,0,0)},
-      {id:"redemption_withdrew", match:/\b(nothing|rather not|don't know|don’t know|do not know|leave it)\b/i, tag:"redemption_withdrawn", fx:impact(0,0,0,0)}
-     ]},
-    {t:"say", narr:true, text:"Marg listens. One conversation doesn’t rewrite a fortnight, but it can change what comes next."}
-   ]},
-
-  /* ---------------- Day 14 — LANDMARK: the emergency (timed) ---------------- */
-  {n:14, title:"The emergency", time:"6:40 am", zone:"kitchen", light:"night", kind:"landmark", contentNote:"This day involves a medical emergency, and the first choice is timed.",
-   scene:{marg:{pose:"floor", x:352, y:376, s:1.55}, fallen:true, lamp:true, chair:false},
-   steps:[
-    {t:"say", narr:true, text:"Early morning. A crash comes from the kitchen. Marg is on the floor. She is breathing, but groggy and not responding clearly."},
-    {t:"choice", timer:15, prompt:"What do you do first?", sub:"You have fifteen seconds.", timeoutFx:impact(0,0,0,-1), timeoutNote:"The moment passes. You can still act now.", options:[
-      {text:"Check whether she responds, call 000 now and put the phone on speaker.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called", reply:"The call-taker answers. You stay with Marg and follow their instructions."},
-      {text:"Shake her and call David first.", fx:impact(0,-1,0,-2), tag:"emergency_shaken", reply:"David doesn’t pick up straight away. You realise this needs 000, now."},
-      {text:"Run next door for help before calling anyone.", fx:impact(0,0,0,-1), tag:"emergency_delayed", reply:"The neighbour comes to the door. You ask them to call 000 while you go back to Marg."},
-      {text:"Freeze for a moment, then take a breath.", fx:impact(0,0,0,-1), tag:"emergency_froze", reply:"You find your phone. There is still time to call 000."}
-    ]},
-    {t:"say", narr:true, requiresAnyTags:["emergency_froze","emergency_delayed","emergency_shaken","timeout_emergency"], text:"You take a breath. There is still time to get help."},
-    {t:"choice", timer:15, prompt:"What next?", sub:"You can still change what happens.", requiresAnyTags:["emergency_froze","emergency_delayed","emergency_shaken","timeout_emergency"],
-     timeoutNote:"A neighbour hears you call out and rings 000. You stay with Marg.", options:[
-      {text:"Call 000 and put the phone on speaker.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called", reply:"The call-taker is with you now."},
-      {text:"Call out to a neighbour to ring 000 while you stay beside Marg.", fx:impact(0,1,1,1), tag:"emergency_called", flag:"emergency_called", reply:"A neighbour rings 000, and you stay with Marg."}
-    ]},
-    {t:"say", narr:true, text:"The call-taker tells you to check her breathing, keep her warm and comfortable, and give her nothing to eat or drink. You speak calmly to Marg and protect her privacy while help is on the way."},
-    {t:"choice", prompt:"While the ambulance is on its way, what do you do?", options:[
-      {text:"Stay on the line, follow instructions, unlock the front door and turn on the porch light.", fx:impact(0,1,1,1), tag:"emergency_wait_safe", reply:"The way in is ready, and you stay beside Marg."},
-      {text:"Give Marg some water and try to sit her up.", fx:impact(0,-1,0,-2), tag:"emergency_water", reply:"The call-taker tells you not to give her anything to drink, and not to move her unless they say so."},
-      {text:"Leave Marg alone and go outside to flag down the ambulance.", fx:impact(0,0,0,-1), tag:"emergency_left", reply:"The call-taker asks you to stay with Marg, and to send someone else to the door if you can."}
-    ]},
-    {t:"say", narr:true, requiresFlags:["learned_meds_folder"], text:"The paramedics arrive and ask about Marg’s medications, allergies and GP. You go straight to the folder on the fridge and hand it over."},
-    {t:"choice", prompt:"The paramedics ask about Marg’s medications, allergies and GP. What do you do?", excludesFlags:["learned_meds_folder"], options:[
-      {text:"Ask Marg if she can answer, then look for anything labelled with her medical details.", fx:impact(0,1,1,1), tag:"folder_found", reply:"You spot the folder on the fridge marked MEDICAL and pass it to the paramedics."},
-      {text:"Call out to a neighbour to help look while you stay with Marg.", fx:impact(0,1,1,1), tag:"folder_found", reply:"A neighbour finds the folder on the fridge and brings it to the paramedics."}
-    ]},
-    {t:"say", narr:true, textByFlag:[
-      {requiresFlags:["told_David"], text:"They ask when the symptoms started and what you saw. You have David’s number, and share it for Marg’s care."},
-      {excludesFlags:["told_David"], text:"They ask when the symptoms started and what you saw. You don’t have David’s number, but the folder lists him as Marg’s emergency contact."}
-    ]},
-    {t:"multi", id:"D14", prompt:"What do you do once Marg is in the paramedics’ care? Select all that apply.", sub:"You can choose more than one.", min:1, options:[
-      {text:"Ask whether you can go with Marg in the ambulance.", tag:"went_with_host", fx:impact(1,1,0,0)},
-      {text:"Follow in your own transport, and call David on the way.", tag:"followed_to_hospital", setFlags:["told_David"], fx:impact(0,1,1,0)},
-      {text:"Stay home, call David and keep him updated.", tag:"called_David", setFlags:["told_David"], fx:impact(0,1,1,0)},
-      {text:"Gather Marg’s glasses, handbag and phone for the hospital.", tag:"packed_belongings", fx:impact(1,1,0,0)}
-    ]},
-    {t:"say", narr:true, pathText:{
-      warm:"At the hospital, Marg is stable and recovering. She asks for you by name, takes your hand and says, “Thank you for staying.” She mentions she has a new idea for the spare room.",
-      steady:"At the hospital, Marg is stable and recovering. She thanks you, a little formally, and seems surprised by how you showed up.",
-      distant:"At the hospital, Marg is stable and recovering. She thanks you, then quietly asks whether you’d like her to speak to the placement service about how things have gone."
-    }, text:"At the hospital, Marg is stable and recovering."}
+    {t:"choice", lead:"A thud from the yard. Marg has fallen on the loose brick step and hit her head. She’s dazed, and says her neck hurts.",
+     prompt:"What do you do first?", timeoutFx:impact(0,0,0,-2), timeoutNote:"You freeze. A neighbour hears Marg, and rings 000.", options:[
+      {text:"Keep her still, and call 000.", fx:impact(0,1,1,2), tag:"emergency_called", flag:"emergency_called", reply:"The call-taker says not to move her, and stays on the line."},
+      {text:"Help her up into a chair.", fx:impact(0,-1,0,-1), tag:"fall_lifted", reply:"Marg cries out. Paramedics say she shouldn’t have been moved."},
+      {text:"Run next door for help.", fx:impact(0,0,0,-1), tag:"emergency_delayed", reply:"The neighbour rings 000 while you go back to Marg."},
+      {text:"Give her water, and sit her up.", fx:impact(0,-1,0,-2), tag:"emergency_water", reply:"Paramedics say not to move her or give her anything."}
+    ]}
    ]}
 ];
-
-/* Openings that respond to earlier choices. Keyed by day number; the first
-   matching variant replaces that day's opening text. */
-var SCENARIO_POOLS = {
-  2: [
-    {id:"d2-connection", requiresAnyTags:["arrival_connected","motivation_company","motivation_learning"], opening:"Marg has saved you a seat in the lounge. The radio is on quietly in the corner."},
-    {id:"d2-independent", requiresAnyTags:["arrival_alone","arrival_practical","motivation_study","motivation_saving"], opening:"A list of house routines is stuck to the fridge. Marg finds you in the lounge to talk it through."}
-  ],
-  3: [
-    {id:"d3-shared-thread", requiresAnyTags:["shared_cooking","noticed_step"], opening:"Marg remembers yesterday’s chat and asks what you’re studying. Her face lights up: she spent thirty-five years as {{career}}. A box of {{papers}} sits in the hallway."},
-    {id:"d3-own-rhythm", requiresAnyTags:["courteous_independence","dinner_avoided"], opening:"Marg asks about your course before getting on with her morning. She mentions she spent thirty-five years as {{career}}. A box of {{papers}} sits in the hallway."}
-  ],
-  4: [
-    {id:"d4-curious", requiresAnyTags:["asked_about_career","career_curiosity","career_exchange"], opening:"Marg is looking at her phone when she receives a text from her bank. After yesterday’s chat, she turns the screen towards you. It asks her to reset her password urgently, and her thumb is over the link. As she steps out the back door, you notice the uneven brick step Marg warned you about."},
-    {id:"d4-surface", requiresAnyTags:["career_one_way","career_deferred"], opening:"Marg is looking at her phone when she receives a text from her bank. It looks urgent: reset your password now. She is about to tap the link. As she steps out the back door, you notice the uneven brick step Marg warned you about."}
-  ],
-  5: [
-    {id:"d5-confident", requiresAnyTags:["scam_taught","scam_escalated"], opening:"After yesterday’s bank scare, Marg is in good spirits. She has been invited to a community garden morning, and asks if you’d like to come and meet the neighbours. You have a big assignment due tomorrow, and a classmate has texted about a study session on campus."},
-    {id:"d5-independent", requiresAnyTags:["phone_taken","scam_ignored"], opening:"Marg mentions a community garden morning and asks if you’d like to come and meet the neighbours. You have a big assignment due tomorrow, and a classmate has texted about a study session on campus."}
-  ],
-  7: [
-    {id:"d7-close", requiresAnyTags:["grief_present","grief_invited","grief_shared"], opening:"Marg is dressed for Dorothy’s funeral. At the door, she says, “I’d like it if you came. Only if you want to.”"},
-    {id:"d7-practical", requiresAnyTags:["grief_practical","grief_dismissed","grief_withdrawn"], opening:"Marg is dressed for Dorothy’s funeral. She says she isn’t sure how she’ll get through the day."}
-  ],
-  10: [
-    {id:"d10-boundary-open", requiresAnyTags:["boundary_calm","boundary_curious"], opening:"Marg has baked biscuits and seems ready to talk after last night’s conversation."},
-    {id:"d10-boundary-strained", requiresAnyTags:["boundary_avoided","boundary_sharp","boundary_lecture","boundary_laughed"], opening:"Breakfast is quiet after last night. There’s a plate of biscuits on the table, and Marg seems unsure whether you want to talk."}
-  ],
-  12: [
-    {id:"d12-followthrough", requiresAnyTags:["step_reported","step_plan"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings to ask how the repair and the follow-up are going, and asks to speak with you."},
-    {id:"d12-told", requiresAnyTags:["fall_supported"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings after Marg’s call to him, and asks to speak with you."},
-    {id:"d12-called", requiresAnyTags:["fall_told_behind_back"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings back after your call, and asks to speak with you."},
-    {id:"d12-unresolved", requiresAnyTags:["fall_secret","step_ignored","step_diy","fall_dismissed"], opening:"Marg is moving slowly after yesterday’s fall. Her son, David, rings after hearing about it from a neighbour, and asks to speak with you."}
-  ]
+/* How it ends, shown with Marg's reaction to the last scenario. */
+var EPILOGUE = {
+  warm:"At the hospital, Marg is stable. She takes your hand: “Thank you for staying.”",
+  steady:"At the hospital, Marg is stable. She thanks you, a little surprised.",
+  distant:"At the hospital, Marg is stable. She thanks you, and wonders whether the placement service should check in on you both."
 };
 
-/* Day 13 looks back at the lowest moment from these days and builds the
-   evening around it. */
-var REDEMPTION_DAYS = [5, 7, 8, 9, 11, 12];
-var REDEMPTION_FALLBACK = ["vague_excuse","skipped_funeral","friction_defensive","boundary_avoided","boundary_laughed","boundary_sharp","boundary_lecture","fall_dismissed","step_ignored"];
-var REDEMPTION_STORIES = {
-  vague_excuse:"Marg mentions the next community garden morning. She asks you straight out whether you’d like to come, and leaves room for an honest answer.",
-  accepted_garden:"The assignment you put aside for the garden morning has caught up with you. Marg asks whether you’d like company while you make a plan.",
-  repair_withdrawn:"The conversation you chose not to have is still there. Marg gives you another quiet opening.",
-  skipped_funeral:"Marg is sorting through Dorothy’s letters. She asks whether you’d like to help, even though you missed the service.",
-  friction_defensive:"An overdue household job has piled up. You could take it over without asking, or ask Marg what kind of help would be useful.",
-  boundary_avoided:"Marg makes another offhand remark, and it brings back the moment you let pass. She waits to hear what you think this time.",
-  boundary_laughed:"A similar remark comes up again. This time there is room to say what you actually think.",
-  boundary_sharp:"The conversation from the other night is still unfinished. Marg asks whether you want to talk about how it ended.",
-  boundary_lecture:"Marg remembers the other night, and asks if you can explain your view without it turning into an argument.",
-  fall_dismissed:"Marg is still sore from the fall. She asks whether you’d help her make a plan in case it happens again.",
-  step_ignored:"The brick step still hasn’t been fixed. You have another chance to raise it and agree on what happens next.",
-  fall_lifted:"Marg’s hip is still sore from the fall. She asks for a hand getting something down from a high shelf, and how you help this time is up to you.",
-  fall_told_behind_back:"Marg brings up the call you made to David behind her back. She isn’t angry, but she wants to talk about it.",
-  step_diy:"The brick you tried to fix has come loose again. Marg asks what you think should happen now.",
-  david_deflected:"David rings again. This time Marg hands you the phone and waits to hear what you’ll say.",
-  meaningful_ask:"Marg asks you to help record a few of her stories for the family, or to set up a video call with an old colleague. It matters to her, and your time matters too."
-};
-var REDEMPTION_NOTES = {
-  vague_excuse:"Vague or avoidant reply to the garden invitation", accepted_garden:"Put the assignment aside for the garden morning",
-  repair_withdrawn:"Avoided the repair conversation", skipped_funeral:"Missed the funeral without offering support",
-  friction_defensive:"Defensive about the late-night noise", boundary_avoided:"Avoided the boundary after the remark",
-  boundary_laughed:"Laughed along with the remark", boundary_sharp:"Escalated sharply after the remark",
-  boundary_lecture:"Lectured Marg about the remark", fall_dismissed:"Walked away after the fall", step_ignored:"Ignored the uneven brick step",
-  fall_lifted:"Lifted Marg straight after the fall", fall_told_behind_back:"Called David behind Marg’s back",
-  step_diy:"Tried to repair the step without asking", david_deflected:"Deflected David’s questions"
+/* The lowest moment, in words staff can scan. Choices not listed here use their own text. */
+var LOW_NOTES = {
+  career_deferred:"Went to their room instead of talking", arrival_practical:"Asked for the Wi-Fi instead of talking",
+  phone_taken:"Took Marg’s phone and deleted the scam text", scam_ignored:"Left Marg alone with a scam text",
+  friction_defensive:"Pointed out they pay rent when Marg was upset", dispute_short_notice:"Told Marg about a guest on the night",
+  dispute_my_room:"Had a guest over without notice", dispute_avoided:"Avoided Marg’s request to talk",
+  dispute_blamed:"Told David his mum overreacted", dispute_hung_up:"Hung up on David",
+  fall_lifted:"Moved Marg after she hit her head", emergency_delayed:"Ran next door before calling 000",
+  emergency_water:"Gave Marg water and sat her up after the fall"
 };
 </script>
 <script>
@@ -1137,21 +885,21 @@ var REDEMPTION_NOTES = {
    ENGINE
    ============================================================ */
 var app = document.getElementById("app");
-var VERSION = "3.0";
+var VERSION = "demo-2.0";
 var START_METER = 5;
-var SAVE_KEY = "pepaws-porch-run-v3";
+var SAVE_KEY = "genstay-screener-demo-v2";
 var METERS = ["connection", "respect", "reliability", "awareness"];
 
 var S = null;
 function freshState(){
   return {
-    view: "title", pid: null, name: "", email: "", studyArea: "health",
+    view: "title", version: VERSION, pid: null, name: "", studyArea: "health",
     consentAt: null, startedAt: null, gameEndedAt: null, submittedAt: null,
     di: 0, si: 0, phase: "step",
     meters: {connection: START_METER, respect: START_METER, reliability: START_METER, awareness: START_METER},
-    flags: {}, tags: {}, scenarioSelections: {}, pathByDay: {}, redemption: null, redemptionOutcome: "",
-    motivation: "", responses: [], choices: [], concerns: [], pending: null, stepEnteredAt: null,
-    q: {}, qPage: 0, qPrefilled: false, synced: false
+    flags: {}, tags: {}, pathByDay: {},
+    motivation: "", choices: [], concerns: [], pending: null, stepEnteredAt: null,
+    q: {}, qTouched: {}, qPage: 0, qPrefilled: false, synced: false, demoMatch: null, matchPending: false
   };
 }
 
@@ -1164,7 +912,7 @@ function el(sel){ return app.querySelector(sel); }
 function nowISO(){ return new Date().toISOString(); }
 function secsSince(t){ return t ? Math.round((Date.now() - t) / 100) / 10 : 0; }
 
-/* Progress is kept in this browser so a refresh doesn't cost the fortnight.
+/* Progress is kept in this browser so a refresh doesn't lose your place.
    It is cleared once the profile reaches the placement record. */
 function save(){
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* private mode, blocked storage */ }
@@ -1175,6 +923,8 @@ function loadSaved(){
     if (!raw) return null;
     var v = JSON.parse(raw);
     if (!v || !v.pid || !v.view) return null;
+    /* A run part-way through an older version can't resume: the days have changed since. */
+    if (v.version !== VERSION && ["play", "paused"].indexOf(v.view) !== -1) return null;
     var base = freshState();
     Object.keys(base).forEach(function(key){ if (v[key] == null) v[key] = base[key]; });
     METERS.forEach(function(key){ if (v.meters[key] == null) v.meters[key] = START_METER; });
@@ -1184,8 +934,12 @@ function loadSaved(){
 }
 function clearSaved(){ try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
 
+/* How many scenarios the applicant sees (the dispute's two stages count as one), in a number and in words. */
+function scenarioCount(){ return DAYS.reduce(function(n, d){ return Math.max(n, d.show); }, 0); }
+function scenariosInWords(){ return ["no", "one", "two", "three", "four", "five", "six"][scenarioCount()] || String(scenarioCount()); }
+
 function makePid(){
-  return "PP-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+  return "DEMO-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
 }
 
 /* ---------- timer (single active) ---------- */
@@ -1231,33 +985,15 @@ function pathTier(){
 }
 function pathTierForDay(n){ return S.pathByDay[String(n)] || pathTier(); }
 
-/* ---------- Day 13: the lowest moment comes back in a new form ---------- */
+/* ---------- the lowest moment, for staff ---------- */
 function findLowestMoment(){
-  var cands = [];
+  var low = null;
   S.choices.forEach(function(c){
-    if (REDEMPTION_DAYS.indexOf(c.day) !== -1 && REDEMPTION_STORIES[c.tag] && choiceScore(c) < 0)
-      cands.push({tag: c.tag, day: c.day, score: choiceScore(c)});
+    var score = choiceScore(c);
+    if (score < 0 && (!low || score < low.score))
+      low = {day: c.day, score: score, note: c.timedOut ? "No answer in time (" + c.title + ")" : LOW_NOTES[c.tag] || c.chosen.replace(/\.$/, "")};
   });
-  S.responses.forEach(function(r){
-    if (r.day === 5 && r.outcome === "vague_or_avoidant") cands.push({tag: "vague_excuse", day: 5, score: -3});
-    if (r.day === 5 && r.outcome === "accepted_garden") cands.push({tag: "accepted_garden", day: 5, score: -1});
-    if (r.day === 10 && r.outcome === "withdrew") cands.push({tag: "repair_withdrawn", day: 10, score: -2});
-  });
-  cands.sort(function(a, b){ return a.score - b.score; });
-  var pick = cands[0] || null;
-  if (!pick){
-    REDEMPTION_FALLBACK.some(function(tag){
-      if (!S.tags[tag]) return false;
-      var c = S.choices.filter(function(x){ return x.tag === tag; })[0];
-      pick = {tag: tag, day: c ? c.day : null};
-      return true;
-    });
-  }
-  return pick ? {tag: pick.tag, day: pick.day, note: REDEMPTION_NOTES[pick.tag] || ""} : {tag: "meaningful_ask", day: null, note: ""};
-}
-function redemptionOpening(){
-  if (!S.redemption){ S.redemption = findLowestMoment(); save(); }
-  return REDEMPTION_STORIES[S.redemption.tag] || REDEMPTION_STORIES.meaningful_ask;
+  return low;
 }
 
 /* ---------- days, openings and step availability ---------- */
@@ -1267,20 +1003,8 @@ function hasNone(list, set){ return !(list || []).some(function(k){ return !!set
 
 function dayForIndex(index){
   var day = DAYS[index], key = String(day.n);
-  if (!S.pathByDay[key]) S.pathByDay[key] = pathTier();
-  if (!(key in S.scenarioSelections)){
-    var pick = (SCENARIO_POOLS[day.n] || []).filter(function(c){
-      return hasAll(c.requiresTags, S.tags) && hasAny(c.requiresAnyTags, S.tags);
-    })[0];
-    S.scenarioSelections[key] = pick ? pick.id : "";
-    save();
-  }
-  var id = S.scenarioSelections[key];
-  var chosen = id && (SCENARIO_POOLS[day.n] || []).filter(function(c){ return c.id === id; })[0];
-  if (!chosen) return day;
-  var resolved = Object.assign({}, day);
-  resolved.branchOpening = chosen.opening;
-  return resolved;
+  if (!S.pathByDay[key]){ S.pathByDay[key] = pathTier(); save(); }
+  return day;
 }
 function stepIsAvailable(step){
   return hasAll(step.requiresTags, S.tags) && hasAny(step.requiresAnyTags, S.tags)
@@ -1299,10 +1023,10 @@ function nextStep(){
   while (next < day.steps.length && !stepIsAvailable(day.steps[next])) next++;
   if (next < day.steps.length){ S.si = next; enterStep(); return; }
   if (S.di + 1 < DAYS.length){
-    S.di++; S.si = 0; S.view = "daycard";
+    S.di++; S.si = 0;
     day = dayForIndex(S.di);
     while (S.si < day.steps.length && !stepIsAvailable(day.steps[S.si])) S.si++;
-    save(); render(); return;
+    enterStep(); return;
   }
   endGame();
 }
@@ -1314,7 +1038,6 @@ function render(){
   clearTimer();
   app.className = "";
   if (S.view === "paused") return renderPaused();
-  if (S.view === "daycard") return renderDayCard();
   if (S.view === "play") return renderPlay();
   if (S.view === "questionnaire") return renderQuestionnaire();
   if (S.view === "results") return renderResults();
@@ -1323,7 +1046,7 @@ function render(){
 }
 
 function pauseRun(){
-  if (S.view !== "play" && S.view !== "daycard") return;
+  if (S.view !== "play") return;
   S.pausedFrom = S.view;
   S.pauseStartedAt = Date.now();
   if (S.timerDeadline){
@@ -1356,14 +1079,14 @@ function renderPaused(){
 /* ---------- title / consent ---------- */
 function renderTitle(){
   var saved = loadSaved();
-  var resumable = saved && !saved.submittedAt && ["play","daycard","paused","questionnaire"].indexOf(saved.view) !== -1;
-  var where = resumable ? (saved.view === "questionnaire" ? "the final questions" : "day " + DAYS[saved.di].n + " of 14") : "";
+  var resumable = saved && !saved.submittedAt && ["play","paused","questionnaire"].indexOf(saved.view) !== -1;
+  var where = resumable ? (saved.view === "questionnaire" ? "the matching questions" : "scenario " + DAYS[saved.di].show + " of " + scenarioCount()) : "";
   var unsent = saved && saved.submittedAt && !saved.synced;
   app.innerHTML =
     '<div class="stage">' + scenePorch(LIGHT.gold, {marg: {pose: "stand", x: 470, y: 301, s: 0.84}}) + '</div>'
     + '<div class="scroll"><div class="pad title">'
-    + '<div><div class="kicker">Homeshare screening</div><h1>Pepaws Porch</h1></div>'
-    + '<p class="sub">Spend fourteen days sharing a home with Marg, 78. There are no right or wrong answers: your choices shape the relationship, and a person at the placement service reads what you write. A few quick questions at the end help us find you the right home.</p>'
+    + '<div><div class="kicker">Homeshare screening · demo</div><h1>GenStay Screener</h1></div>'
+    + '<p class="sub">' + capFirst(scenariosInWords()) + ' short scenarios sharing a home with Marg, 78: a first conversation, a scam text, a disagreement and an emergency. Each is multiple choice, with 25 seconds to answer. A few quick questions at the end, mostly filled in for you, build your matching profile and a fictional pairing.</p>'
     + (resumable
         ? '<div class="notice"><b>You have a run in progress</b>, up to ' + esc(where) + '.'
           + '<div class="btnrow" style="margin-top:10px">'
@@ -1375,19 +1098,18 @@ function renderTitle(){
           + '<div class="btnrow" style="margin-top:10px"><button class="cont primary" id="resend">Send it now</button></div></div>'
         : '')
     + '<div style="display:flex;flex-direction:column;gap:12px">'
-    + '<label>Your full name<input type="text" id="fname" autocomplete="name" maxlength="120" value="' + esc(S.name) + '"></label>'
-    + '<label>University email<input type="email" id="femail" autocomplete="email" maxlength="160" value="' + esc(S.email) + '"></label>'
+    + '<label>Your first name<input type="text" id="fname" autocomplete="given-name" maxlength="120" value="' + esc(S.name) + '"></label>'
     + '<label>Area of study<select id="study-area">'
     + Object.keys(DISCIPLINES).map(function(k){
         return '<option value="' + k + '"' + (S.studyArea === k ? " selected" : "") + '>' + esc(DISCIPLINES[k].label) + '</option>';
       }).join("")
     + '</select></label></div>'
-    + '<div class="notice"><b>Content note.</b> The fortnight includes a bereavement, a biased remark, a fall and a medical emergency. Each of those days carries its own note. You can pause at any time.</div>'
-    + '<label class="check"><input type="checkbox" id="c1"><span>I understand my choices, my written answers, my questionnaire answers and how long I took are recorded, read by staff at the placement service, and used to build my matching profile.</span></label>'
+    + '<div class="notice"><b>Content note.</b> The last scenario is a fall with an injury, and carries its own note. You can pause at any time, and the timer pauses with you.</div>'
+    + '<label class="check"><input type="checkbox" id="c1"><span>I understand this is a demonstration. My choices, my answers and how long I took make a sample matching profile that placement staff can see, and a match with a fictional homeowner. Nothing here is a real placement.</span></label>'
     + '<label class="check"><input type="checkbox" id="c2"><span>I have read the content note and I’m ready to continue.</span></label>'
     + '<div id="terr"></div>'
-    + '<button class="cont primary" id="begin">Begin day 1</button>'
-    + '<p class="sub" style="font-size:12.5px">About 15–20 minutes, including the final questions.</p>'
+    + '<button class="cont primary" id="begin">Begin</button>'
+    + '<p class="sub" style="font-size:12.5px">About 2 minutes, including the questions.</p>'
     + '</div></div>';
 
   if (resumable){
@@ -1400,39 +1122,22 @@ function renderTitle(){
   }
   if (unsent) el("#resend").onclick = function(){ S = saved; S.view = "results"; render(); deliverProfile(); };
   el("#begin").onclick = function(){
-    var name = el("#fname").value.trim(), email = el("#femail").value.trim();
+    var name = el("#fname").value.trim();
     var errs = [];
-    if (name.length < 2) errs.push("Enter your full name.");
-    /* Australian university or educational addresses only (any *.edu.au, plus monash.edu). */
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.push("Enter a valid email address.");
-    else if (!/(^|\.)(edu\.au|monash\.edu)$/i.test(email.split("@").pop())) errs.push("Use your Australian university or educational email address.");
+    if (name.length < 2) errs.push("Enter your first name.");
     if (!el("#c1").checked || !el("#c2").checked) errs.push("Tick both boxes to start.");
     if (errs.length){ el("#terr").innerHTML = '<p class="err">' + esc(errs.join(" ")) + '</p>'; return; }
     S = freshState();
-    S.name = name; S.email = email; S.pid = makePid();
+    S.name = name; S.pid = makePid();
     S.studyArea = el("#study-area").value;
     S.consentAt = nowISO(); S.startedAt = nowISO();
-    S.view = "daycard";
-    save(); render();
+    S.view = "play";
+    enterStep();
     /* Ask for record-store access now, on the applicant's own click, so the
-       save at the end of the fortnight doesn't meet a consent prompt they
+       save at the end of the demo doesn't meet a consent prompt they
        might miss. Never blocks the game. */
     getCap("permissions").then(function(p){ if (p) p.request(["db", "user"]).then(null, function(){}); });
   };
-}
-
-/* ---------- day card ---------- */
-function renderDayCard(){
-  var day = dayForIndex(S.di);
-  app.innerHTML = topbarHTML(day)
-    + '<div class="stage">' + sceneFor(day) + '</div>'
-    + '<div class="panel"></div>'
-    + '<div class="daycard"><div class="n">Day ' + day.n + ' of 14</div><h2>' + esc(day.title) + '</h2>'
-    + '<div class="t">' + esc(day.time) + '</div>'
-    + (day.contentNote ? '<div class="cn"><b>Content note.</b> ' + esc(day.contentNote) + ' You can pause at any time.</div>' : '')
-    + '<button class="cont primary" id="go" style="margin-top:14px;align-self:center">Continue</button></div>';
-  el("#go").onclick = function(){ S.view = "play"; enterStep(); };
-  bindPause();
 }
 
 /* ---------- play ---------- */
@@ -1441,7 +1146,7 @@ function sceneFor(day){
 }
 function topbarHTML(day){
   return '<div class="topbar"><div class="toprow">'
-    + '<span class="daylabel">Day ' + day.n + ' / 14 · ' + esc(day.title) + '</span>'
+    + '<span class="daylabel">Scenario ' + day.show + ' of ' + scenarioCount() + ' · ' + esc(day.title) + '</span>'
     + '<span class="clock">' + esc(day.time) + '</span><button class="pause" id="pause">Pause</button></div></div>';
 }
 
@@ -1449,7 +1154,7 @@ function renderPlay(){
   var day = dayForIndex(S.di);
   var step = day.steps[S.si];
   if (!step || !stepIsAvailable(step)){ nextStep(); return; }
-  var timed = S.phase === "step" && step.t === "choice" && step.timer;
+  var timed = S.phase === "step" && step.t === "choice"; /* every question is timed */
   app.innerHTML = topbarHTML(day)
     + '<div class="stage">' + sceneFor(day) + '<div class="stagenote">' + esc(ZONE_LABEL[day.zone] || "") + '</div></div>'
     + (timed ? '<div class="timer"><i id="tbar"></i></div>' : '')
@@ -1457,8 +1162,6 @@ function renderPlay(){
   if (S.phase === "reply") renderReply();
   else if (step.t === "say") renderSay(day, step);
   else if (step.t === "choice") renderChoice(day, step);
-  else if (step.t === "text") renderText(day, step);
-  else if (step.t === "multi") renderMulti(day, step);
   bindPause();
 }
 
@@ -1467,41 +1170,38 @@ function flaggedStepText(step){
   return v ? v.text : (step.text || "");
 }
 function renderSay(day, step){
-  var text = step.redemptionText ? redemptionOpening()
-    : step.opening && day.branchOpening ? day.branchOpening
-    : step.textByFlag ? flaggedStepText(step)
-    : step.pathText && step.pathText[pathTierForDay(day.n)] || step.text;
-  text = esc(storyText(text));
+  var text = step.textByFlag ? flaggedStepText(step) : step.pathText && step.pathText[pathTierForDay(day.n)] || step.text;
   el("#panel").innerHTML =
-    '<div class="who' + (step.narr ? " narr" : "") + '">' + esc(step.narr ? "The Hollis house" : step.who) + '</div>'
-    + '<p class="line">' + (step.narr ? text : "&ldquo;" + text + "&rdquo;") + '</p>'
+    (step.opening && day.contentNote ? '<div class="notice"><b>Content note:</b> ' + esc(day.contentNote) + '.</div>' : '')
+    + '<p class="line">' + esc(storyText(text)) + '</p>'
     + '<button class="cont" id="next">Continue</button>';
   el("#next").onclick = nextStep;
 }
 
 function renderChoice(day, step){
   var p = el("#panel");
-  var html = '<div class="prompt">' + esc(step.prompt) + '</div>';
-  if (step.sub) html += '<p class="sub">' + esc(step.sub) + '</p>';
-  if (step.timer) html += '<div class="timerlabel" id="tlabel">' + step.timer + 's</div>';
+  var seconds = step.timer || QUESTION_SECONDS;
+  /* the scenario's situation sits above its question: one screen per question, for a short demo */
+  var html = (step.lead && day.contentNote ? '<div class="notice"><b>Content note:</b> ' + esc(day.contentNote) + '.</div>' : '')
+    + (step.lead ? '<p class="line">' + esc(storyText(step.lead)) + '</p>' : '')
+    + '<div class="prompt">' + esc(storyText(step.prompt)) + '</div>'
+    + '<div class="timerlabel" id="tlabel">' + seconds + 's</div>';
   html += '<div class="opts">' + step.options.map(function(o, i){
-    return '<button class="opt" data-i="' + i + '">' + esc(o.text) + '</button>';
+    return '<button class="opt" data-i="' + i + '">' + esc(storyText(o.text)) + '</button>';
   }).join("") + '</div>';
   p.innerHTML = html;
   Array.prototype.forEach.call(p.querySelectorAll(".opt"), function(b){
     b.onclick = function(){ choose(day, step, parseInt(b.getAttribute("data-i"), 10), false); };
   });
-  if (step.timer){
-    var duration = S.timerRemaining || step.timer;
-    S.timerRemaining = null;
-    runTimer(duration, function(){ choose(day, step, -1, true); });
-  }
+  var duration = S.timerRemaining || seconds;
+  S.timerRemaining = null;
+  runTimer(duration, function(){ choose(day, step, -1, true); });
 }
 
 function recordChoice(day, step, option, f, timedOut, seconds){
   S.choices.push({
-    day: day.n, title: day.title, prompt: step.prompt,
-    chosen: timedOut ? "(no response — timed out)" : option.text,
+    day: day.n, title: day.title, prompt: storyText(step.prompt),
+    chosen: timedOut ? "(no response — timed out)" : storyText(option.text),
     tag: timedOut ? "timeout" : (option.tag || ""),
     connection: f.connection || 0, respect: f.respect || 0, reliability: f.reliability || 0, awareness: f.awareness || 0,
     timedOut: !!timedOut, seconds: seconds
@@ -1513,61 +1213,37 @@ function applyOption(option){
   (option.setFlags || []).forEach(function(flag){ S.flags[flag] = true; });
 }
 
-function renderMulti(day, step){
-  var p = el("#panel");
-  p.innerHTML = '<div class="prompt">' + esc(step.prompt) + '</div>'
-    + (step.sub ? '<p class="sub">' + esc(step.sub) + '</p>' : '')
-    + '<div class="opts">' + step.options.map(function(option, index){
-        return '<label class="opt check"><input type="checkbox" data-multi="' + index + '"><span>' + esc(option.text) + '</span></label>';
-      }).join("") + '</div><button class="cont primary" id="multi-submit" disabled>Continue</button>';
-  var boxes = p.querySelectorAll("[data-multi]");
-  var submit = el("#multi-submit");
-  Array.prototype.forEach.call(boxes, function(box){
-    box.addEventListener("change", function(){
-      submit.disabled = p.querySelectorAll("[data-multi]:checked").length < (step.min || 1);
-    });
-  });
-  submit.onclick = function(){
-    var seconds = secsSince(S.stepEnteredAt);
-    Array.prototype.forEach.call(boxes, function(box){
-      if (!box.checked) return;
-      var option = step.options[parseInt(box.getAttribute("data-multi"), 10)];
-      applyFx(option.fx);
-      applyOption(option);
-      recordChoice(day, step, option, option.fx || {}, false, seconds);
-    });
-    save(); nextStep();
-  };
-}
-
 function choose(day, step, idx, timedOut){
   clearTimer();
   var seconds = secsSince(S.stepEnteredAt);
   var chosen = timedOut ? null : step.options[idx];
-  var f = (timedOut ? step.timeoutFx : chosen.fx) || {};
+  var f = (timedOut ? step.timeoutFx || DEFAULT_TIMEOUT_FX : chosen.fx) || {};
   applyFx(f);
-  if (timedOut) S.tags.timeout_emergency = true;
-  else {
+  if (timedOut && step.timeoutTag) S.tags[step.timeoutTag] = true; /* so a follow-up still has a branch */
+  if (!timedOut){
     applyOption(chosen);
     if (chosen.tag && chosen.tag.indexOf("motivation_") === 0) S.motivation = chosen.tag;
   }
   recordChoice(day, step, chosen, f, timedOut, seconds);
+  if (step.noReply){ save(); nextStep(); return; }
   S.pending = {
-    heading: timedOut ? "No response" : "You chose",
-    choiceText: timedOut ? "The moment passed." : chosen.text,
-    reply: timedOut ? (step.timeoutNote || "") : (chosen.replyByPath ? chosen.replyByPath[pathTierForDay(day.n)] : chosen.reply || "")
+    heading: timedOut ? "No answer in time" : "",
+    reply: timedOut ? (step.timeoutNote || "The moment passes without an answer.")
+      : chosen.replyByFlag && S.flags[chosen.replyByFlag.flag] ? chosen.replyByFlag.text : chosen.reply || ""
   };
   S.phase = "reply";
   save(); render();
 }
 
 function renderReply(){
-  var p = S.pending || {};
+  var p = S.pending || {}, day = DAYS[S.di];
+  var moreToday = day.steps.slice(S.si + 1).some(stepIsAvailable), last = !moreToday && S.di === DAYS.length - 1;
+  var sameScenario = moreToday || (DAYS[S.di + 1] && DAYS[S.di + 1].show === day.show);
   el("#panel").innerHTML =
-    '<div class="who narr">' + esc(p.heading) + '</div>'
-    + '<p class="line" style="font-size:15.5px;color:var(--ink-2)">' + esc(p.choiceText) + '</p>'
-    + (p.reply ? '<p class="line">' + esc(p.reply) + '</p>' : "")
-    + '<button class="cont" id="next">Continue</button>';
+    (p.heading ? '<div class="who narr">' + esc(p.heading) + '</div>' : "")
+    + (p.reply ? '<p class="line">' + esc(storyText(p.reply)) + '</p>' : "")
+    + (last ? '<p class="line">' + esc(EPILOGUE[pathTier()]) + '</p>' : "")
+    + '<button class="cont primary" id="next">' + (sameScenario ? "Continue" : last ? "Finish" : "Next scenario") + '</button>';
   el("#next").onclick = function(){ S.pending = null; nextStep(); };
 }
 
@@ -1610,146 +1286,91 @@ function scanText(source, text, fromQuestions){
   return hits;
 }
 function hasSeriousConcern(){ return S.concerns.some(function(c){ return CONCERNS.filter(function(k){ return k.id === c.id; })[0].serious; }); }
-
-function renderText(day, step){
-  var p = el("#panel");
-  p.innerHTML =
-    '<div class="prompt">' + esc(step.prompt) + '</div>'
-    + (step.sub ? '<p class="sub">' + esc(step.sub) + '</p>' : "")
-    + '<textarea id="ta" maxlength="1500" placeholder="' + esc(step.placeholder || "") + '" aria-label="' + esc(step.prompt) + '"></textarea>'
-    + '<div class="tfoot"><span class="count short" id="cnt"></span>'
-    + '<button class="cont primary" id="send" disabled>Send it</button></div>';
-  var ta = el("#ta"), cnt = el("#cnt"), send = el("#send");
-  var update = function(){
-    var n = ta.value.trim().length, ok = n >= step.min;
-    cnt.textContent = ok ? (n + " / 1500 characters") : (n + " / " + step.min + " characters minimum");
-    cnt.className = "count" + (ok ? "" : " short");
-    send.disabled = !ok;
-  };
-  ta.addEventListener("input", update);
-  update();
-  setTimeout(function(){ try { ta.focus(); } catch (e) {} }, 30);
-  send.onclick = function(){
-    var answer = ta.value.trim();
-    if (answer.length < step.min) return;
-    var hits = scanText("Day " + day.n, answer);
-    var serious = hits.some(function(k){ return k.serious; });
-    var outcome = serious ? null : (step.outcomes || []).filter(function(c){ return c.match.test(answer); })[0] || null;
-    if (serious){
-      applyFx(impact(-2, -2, -1, 0));
-      if (day.n === 13) S.redemptionOutcome = "redemption_hostile";
-    } else if (hits.length) applyFx(impact(-1, -1, 0, 0));
-    if (outcome){
-      if (outcome.tag) S.tags[outcome.tag] = true;
-      if (outcome.flag) S.flags[outcome.flag] = true;
-      applyFx(outcome.fx);
-      if (day.n === 13) S.redemptionOutcome = outcome.id;
-    }
-    S.responses.push({
-      id: step.id, day: day.n, prompt: step.prompt, answer: answer,
-      chars: answer.length, seconds: secsSince(S.stepEnteredAt), outcome: outcome ? outcome.id : "",
-      concerns: hits.map(function(k){ return k.id; })
-    });
-    save();
-    nextStep();
-  };
-}
 </script>
 <script>
 "use strict";
 /* ============================================================
-   FINAL QUESTIONS — the matching-profile fields the fortnight
-   can't tell us. Each field writes to one path in the GenStay
-   profile contract (genstay-profile-fields.md).
+   MATCHING QUESTIONS — two short pages of the key matching
+   fields the demo can't tell us: first the hard filters, then the
+   scoring points (career, shared interests, time together and
+   help). Each field writes to one path in the GenStay profile
+   contract (genstay-profile-fields.md), and the option lists match
+   the host profiles' (genstay-host-fields.md) so the matching on
+   the staff desk can compare them.
    ============================================================ */
 var YES_NO = [[true, "Yes"], [false, "No"]];
+/* The work each area of study leads to. */
+var CAREER_GOALS = {
+  health:        ["Nursing", "Midwifery", "Medicine", "Paramedicine", "Pharmacy"],
+  carework:      ["Aged care", "Disability support", "Community care"],
+  allied_health: ["Physiotherapy", "Occupational therapy", "Speech pathology", "Dietetics", "Exercise physiology"],
+  social_work:   ["Social work", "Community services", "Youth work"],
+  psychology:    ["Psychology", "Counselling"],
+  education:     ["Early childhood teaching", "Primary teaching", "Secondary teaching", "Special education"],
+  other:         ["Something else"]
+};
 /* Campuses as the host profiles name them (placement.campusCommuteMins). */
 var CAMPUS_OPTIONS = [["UTS City Campus", "UTS City Campus (Ultimo)"], ["USyd Camperdown", "University of Sydney (Camperdown)"],
   ["UNSW Kensington", "UNSW (Kensington)"], ["Macquarie Uni", "Macquarie University"], ["WSU Parramatta", "Western Sydney University (Parramatta)"],
   ["Another campus", "Another campus"]];
+/* Moving in three to six months from now: the first of each month, with semester starts marked. */
+function moveInOptions(){
+  var now = new Date(), out = [];
+  for (var k = 3; k <= 6; k++){
+    var d = new Date(now.getFullYear(), now.getMonth() + k, 1);
+    out.push([d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-01",
+      d.toLocaleDateString("en-AU", {month: "long", year: "numeric"}) + (d.getMonth() === 1 ? " (start of Semester 1)" : d.getMonth() === 6 ? " (start of Semester 2)" : "")]);
+  }
+  return out;
+}
+/* One page. The answers that move a pairing most, and differ most between
+   people, are asked; the rest start at typical answers (DEMO_DEFAULTS) under
+   "Pre-filled answers", where the applicant can change any of them. Staff
+   are told which were left at the defaults. */
 var Q_PAGES = [
-  {title:"About you", intro:"Five short pages. Most answers are a tap. Anything marked optional can be left blank.", fields:[
-    {id:"preferredName", path:"student.preferredName", type:"text", label:"Preferred name", ph:"If different from your first name"},
-    {id:"age", path:"student.age", type:"num", label:"Age", req:true, min:18, max:99, hint:"You need to be 18 or over to join a homeshare."},
-    {id:"gender", path:"student.gender", type:"select", label:"Gender", req:true, opts:["Female","Male","Non-binary","Another identity","Prefer not to say"]},
-    {id:"pronouns", path:"student.pronouns", type:"select", label:"Pronouns", opts:["she/her","he/him","they/them","Other","Prefer not to say"]},
-    {id:"phone", path:"student.phone", type:"tel", label:"Mobile number", req:true},
-    {id:"studentType", path:"student.studentType", type:"select", label:"Student type", req:true, opts:[["domestic","Domestic student"],["international","International student"]]},
-    {id:"countryOfOrigin", path:"student.countryOfOrigin", type:"text", label:"Country you grew up in"},
-    {id:"hometown", path:"student.hometown", type:"text", label:"Home town"},
-    {id:"languages", path:"student.languages", type:"list", label:"Languages you speak", full:true, ph:"English, Italian", hint:"Separate with commas."},
-    {type:"section", label:"Emergency contact"},
-    {id:"ecName", path:"student.emergencyContact.name", type:"text", label:"Name", req:true},
-    {id:"ecRelationship", path:"student.emergencyContact.relationship", type:"text", label:"Relationship to you", ph:"e.g. mother"},
-    {id:"ecPhone", path:"student.emergencyContact.phone", type:"tel", label:"Their phone", req:true}
-  ]},
-  {title:"Study and work", fields:[
-    {id:"university", path:"student.university", type:"text", label:"University or college", req:true},
-    {id:"course", path:"student.course", type:"text", label:"Course", req:true, ph:"e.g. Bachelor of Nursing"},
-    {id:"yearOfStudy", path:"student.yearOfStudy", type:"select", label:"Year of study", req:true, num:true, opts:[["1","1st year"],["2","2nd year"],["3","3rd year"],["4","4th year"],["5","5th year or later"]]},
-    {id:"campus", path:"placement.campus", type:"select", label:"Campus you attend most", req:true, opts:CAMPUS_OPTIONS},
-    {id:"campusDays", path:"placement.campusDays", type:"days", label:"Days you’re usually on campus", full:true},
-    {id:"careerGoal", path:"interests.careerGoal", type:"text", label:"Career you’re working towards", full:true},
-    {type:"section", label:"Paid work, if you have any"},
-    {id:"workRole", path:"student.work.role", type:"text", label:"Job", ph:"e.g. Casual barista"},
-    {id:"workHours", path:"student.work.hoursPerWeek", type:"num", label:"Hours a week", min:0, max:60},
-    {id:"workSchedule", path:"student.work.schedule", type:"text", label:"When you usually work", full:true, ph:"e.g. weekend mornings"}
-  ]},
-  {title:"Where and when", fields:[
-    {id:"preferredAreas", path:"placement.preferredAreas", type:"list", label:"Suburbs or areas you’d like to live in", full:true, hint:"Separate with commas."},
-    {id:"transport", path:"placement.transport", type:"select", label:"How you’ll get to campus", req:true, opts:["public transport","car","bike","walking","a mix"]},
-    {id:"maxCommuteMins", path:"placement.maxCommuteMins", type:"select", label:"Ideal longest commute", req:true, num:true, opts:[["20","20 minutes"],["30","30 minutes"],["40","40 minutes"],["45","45 minutes"],["60","1 hour"]]},
-    {id:"maxCommuteFlexMins", path:"placement.maxCommuteFlexMins", type:"select", label:"Longest you’d travel for a great match", num:true, opts:[["30","30 minutes"],["45","45 minutes"],["60","1 hour"],["75","1¼ hours"],["90","1½ hours"]]},
-    {id:"moveInDate", path:"placement.moveInDate", type:"date", label:"Earliest move-in date", req:true},
-    {id:"moveInFlexWeeks", path:"placement.moveInFlexWeeks", type:"select", label:"How flexible is that date?", num:true, opts:[["0","Fixed"],["1","± 1 week"],["2","± 2 weeks"],["4","± 4 weeks"]]},
-    {id:"stayMonths", path:"placement.stayMonths", type:"select", label:"How long you’d like to stay", req:true, num:true, opts:[["3","3 months"],["6","6 months"],["9","9 months"],["12","12 months"],["18","18 months"],["24","2 years"]]},
-    {id:"openToExtend", path:"placement.openToExtend", type:"yesno", label:"Open to staying longer?"},
-    {id:"rentBudgetWeekly", path:"support.rentBudgetWeekly", type:"num", label:"Most you can pay in rent each week (AUD)", req:true, min:0, max:2000, full:true, hint:"Homeshare rent is usually well below market rent."}
-  ]},
-  {title:"Home life", fields:[
-    {id:"homeownerGender", path:"household.homeownerGender", type:"select", label:"I’d be comfortable living with a homeowner who is", req:true, full:true, opts:[["female","A woman"],["male","A man"],["any","Either is fine"]]},
-    {id:"otherLodgers", path:"household.otherLodgers", type:"select", label:"Other students in the home", req:true, full:true, opts:[["none","I’d rather be the only student"],["open","Open to another student"],["prefer","I’d like another student there"]]},
-    {id:"smoker", path:"household.smoker", type:"yesno", label:"Do you smoke or vape?", req:true},
-    {id:"needsSmokeFree", path:"household.needsSmokeFree", type:"yesno", label:"Do you need a smoke-free home?", req:true},
-    {id:"okWithPets", path:"household.okWithPets", type:"yesno", label:"Happy to live with pets?", req:true},
-    {id:"petAllergy", path:"household.petAllergy", type:"yesno", label:"Any pet allergies?", req:true},
-    {id:"diet", path:"household.diet", type:"text", label:"Dietary needs or preferences", full:true},
-    {id:"accessibilityNeeds", path:"household.accessibilityNeeds", type:"text", label:"Accessibility needs", full:true},
-    {id:"dealbreakers", path:"household.dealbreakers", type:"list", label:"Anything that would rule a home out for you?", full:true, hint:"Separate with commas."},
-    {type:"section", label:"Your routine"},
-    {id:"bedtime", path:"lifestyle.bedtime", type:"time", label:"Usual bedtime"},
-    {id:"wakeTime", path:"lifestyle.wakeTime", type:"time", label:"Usual wake-up time"},
-    {id:"quietAfter", path:"lifestyle.quietAfter", type:"time", label:"You like it quiet after"},
-    {id:"guests", path:"lifestyle.guests", type:"select", label:"Guests", opts:["Rarely","Occasionally, with notice","Most weeks","Often"]},
-    {id:"weekdays", path:"lifestyle.weekdays", type:"text", label:"A typical weekday", full:true, ph:"e.g. Campus until 4, home most evenings"},
-    {id:"weekends", path:"lifestyle.weekends", type:"text", label:"A typical weekend", full:true},
-    {id:"socialLevel", path:"lifestyle.socialLevel", type:"scale", label:"How social are you at home?", full:true, ends:["I keep to myself","I love company"]},
-    {id:"socialNote", path:"lifestyle.socialNote", type:"text", label:"Anything else about how you like to live?", full:true},
-    {id:"tidiness", path:"lifestyle.tidiness", type:"select", label:"Tidiness", opts:["Very tidy","Keeps shared spaces tidy","Relaxed but clean","Still working on it"]},
-    {id:"communication", path:"lifestyle.communication", type:"select", label:"Best way to sort things out", opts:["Face to face","Text messages","A note on the fridge","A mix"]}
-  ]},
-  {title:"Helping out and shared interests", fields:[
-    {id:"hoursPerWeek", path:"support.hoursPerWeek", type:"range", label:"Hours a week you can give to shared household life", req:true, full:true, opts:[["6-8","6–8 hours"],["8-10","8–10 hours"],["10-12","10–12 hours"],["12-15","12–15 hours"]]},
+  {title:"Your matching details", intro:"Four quick answers. The rest are filled in with typical answers to keep the demo short: open Pre-filled answers to change any.", fields:[
+    {id:"campus", path:"placement.campus", type:"select", label:"Campus you attend most", req:true, full:true, opts:CAMPUS_OPTIONS},
+    {id:"gender", path:"student.gender", type:"pick", label:"Gender", req:true, full:true, opts:[["Female","Female"],["Male","Male"],["Non-binary","Non-binary"],["Prefer not to say","Prefer not to say"]]},
+    {id:"socialLevel", path:"lifestyle.socialLevel", type:"scale", label:"How much time would you like to spend with your homeowner?", req:true, full:true, ends:["Mostly independent","Lots of time together"]},
     {id:"helpTypes", path:"support.helpTypes", type:"chips", label:"Happy to help with", req:true, full:true, opts:["Company and conversation","Cooking shared meals","Tech and phone help","Gardening","Bins and light chores","Shopping and errands","Lifts in the homeowner’s car","Pet care","Appointments and outings","Being home in the evenings"]},
-    {id:"notOffered", path:"support.notOffered", type:"chips", label:"Not comfortable offering", full:true, opts:["Personal care","Managing medication","Overnight care","Heavy lifting","Cleaning the whole house"]},
-    {id:"bestTimes", path:"support.bestTimes", type:"chips", label:"Best times to help", full:true, opts:["Weekday mornings","Weekday afternoons","Weekday evenings","Saturdays","Sundays"]},
-    {id:"nightsHomePerWeek", path:"support.nightsHomePerWeek", type:"range", label:"Nights at home most weeks", opts:[["3-4","3–4 nights"],["5-6","5–6 nights"],["7","Every night"]]},
-    {id:"driversLicence", path:"support.driversLicence", type:"select", label:"Driver’s licence", opts:["Full licence","Provisional (P) licence","Learner licence","No licence"]},
-    {id:"hasCar", path:"support.hasCar", type:"yesno", label:"Do you have a car?"},
-    {type:"section", label:"Shared interests"},
-    {id:"hobbies", path:"interests.hobbies", type:"chips", label:"Hobbies and interests", full:true, other:true, opts:["Gardening","Cooking and baking","Reading","Music","Sport and fitness","Walking","Crafts","Board games and puzzles","Films and TV","Art"]},
-    {id:"canOffer", path:"interests.canOffer", type:"chips", label:"Something you could share or teach", full:true, other:true, opts:["Tech and phone help","Cooking","Conversation","Gardening","Music","Language practice","Help with forms and paperwork"]},
-    {id:"wantsToLearn", path:"interests.wantsToLearn", type:"chips", label:"Something you’d like to learn", full:true, other:true, opts:["Gardening","Family recipes","Local history","Life advice","Crafts","Card games"]},
-    {id:"homeownerBackground", path:"interests.homeownerBackground", type:"text", label:"A homeowner background that would suit you", full:true, ph:"e.g. retired nurse or carer"},
-    {id:"fieldMentor", path:"interests.fieldMentor", type:"select", label:"Would you like a homeowner who worked in your field?", req:true, full:true, opts:[["keen","Yes, I’d love that"],["open","It would be nice"],["no","It doesn’t matter to me"]]},
-    {id:"lifeGoals", path:"interests.lifeGoals", type:"list", label:"Goals for the next few years", full:true, hint:"Separate with commas."}
+    {id:"hobbies", path:"interests.hobbies", type:"chips", label:"Hobbies and interests", full:true, opts:["Gardening","Cooking and baking","Reading","Music","Sport and fitness","Walking","Crafts","Board games and puzzles","Films and TV","Art"]}
+  ], prefilled:[
+    {id:"age", path:"student.age", type:"num", label:"Age", short:"age", req:true, min:18, max:99, hint:"You need to be 18 or over to join a homeshare."},
+    {id:"moveInDate", path:"placement.moveInDate", type:"select", label:"When you’d like to move in", short:"move-in month", req:true, opts:moveInOptions},
+    {id:"stayMonths", path:"placement.stayMonths", type:"select", label:"How long you’d like to stay", short:"length of stay", req:true, num:true, opts:[["3","3 months"],["6","6 months"],["9","9 months"],["12","12 months"],["18","18 months"],["24","2 years"]]},
+    {id:"rentBudgetWeekly", path:"support.rentBudgetWeekly", type:"num", label:"Most you can pay in rent each week (AUD)", short:"rent budget", req:true, min:0, max:2000, full:true},
+    {id:"homeownerGender", path:"household.homeownerGender", type:"select", label:"I’d be comfortable living with a homeowner who is", short:"homeowner gender", req:true, full:true, opts:[["female","A woman"],["male","A man"],["any","Either is fine"]]},
+    {id:"otherLodgers", path:"household.otherLodgers", type:"select", label:"Other students in the home", short:"other students", req:true, full:true, opts:[["none","I’d rather be the only student"],["open","Open to another student"],["prefer","I’d like another student there"]]},
+    /* one tap each, filling two profile fields (and no contradictory pairs) */
+    {id:"smoking", type:"pick", label:"Smoking and vaping", short:"smoking", req:true, full:true,
+     opts:[["smoker","I smoke or vape"],["needs_free","I don’t, and I need a smoke-free home"],["either","I don’t, and I don’t mind"]],
+     sets:{smoker:{"household.smoker":true, "household.needsSmokeFree":false}, needs_free:{"household.smoker":false, "household.needsSmokeFree":true},
+           either:{"household.smoker":false, "household.needsSmokeFree":false}}},
+    {id:"pets", type:"pick", label:"Pets", short:"pets", req:true, full:true,
+     opts:[["happy","Happy to live with pets"],["rather_not","I’d rather not"],["allergic","I’m allergic to pets"]],
+     sets:{happy:{"household.okWithPets":true, "household.petAllergy":false}, rather_not:{"household.okWithPets":false, "household.petAllergy":false},
+           allergic:{"household.okWithPets":false, "household.petAllergy":true}}},
+    {id:"careerGoal", path:"interests.careerGoal", type:"select", label:"The work you’re heading for", short:"career goal", req:true, full:true,
+     opts:function(){ return (CAREER_GOALS[S.studyArea] || CAREER_GOALS.other).concat(["Not sure yet"]); }},
+    {id:"fieldMentor", path:"interests.fieldMentor", type:"select", label:"Would you like a homeowner who worked in your field?", short:"homeowner from their field", req:true, full:true, opts:[["keen","Yes, I’d love that"],["open","It would be nice"],["no","It doesn’t matter to me"]]},
+    {id:"languages", path:"student.languages", type:"chips", label:"Languages you speak", short:"languages", full:true, other:true, opts:["English","Mandarin","Cantonese","Vietnamese","Arabic","Greek","Italian","Hindi","Spanish","Korean"]},
+    {id:"wantsToLearn", path:"interests.wantsToLearn", type:"chips", label:"Something you’d like to learn", short:"things to learn", full:true, opts:["Gardening","Family recipes","Local history","Life advice","Crafts","Card games"]},
+    {id:"hoursPerWeek", path:"support.hoursPerWeek", type:"range", label:"Hours a week you can give to shared household life", short:"hours a week", req:true, full:true, opts:[["6-8","6–8 hours"],["8-10","8–10 hours"],["10-12","10–12 hours"],["12-15","12–15 hours"]]},
+    {id:"notOffered", path:"support.notOffered", type:"chips", label:"Not comfortable offering", short:"help not offered", full:true, opts:["Personal care","Managing medication","Overnight care","Heavy lifting","Cleaning the whole house"]}
   ]}
 ];
+/* Typical answers for the pre-filled fields: open to most homes, so the demo pairing is decided by the answers given. */
+function demoDefaults(){
+  return {age: "21", moveInDate: moveInOptions()[1][0], stayMonths: "12", rentBudgetWeekly: "150", homeownerGender: "any", otherLodgers: "open",
+          smoking: "either", pets: "happy", careerGoal: (CAREER_GOALS[S.studyArea] || CAREER_GOALS.other)[0], fieldMentor: "open",
+          languages: ["English"], wantsToLearn: [], hoursPerWeek: "8-10", notOffered: ["Personal care"]};
+}
 var Q_FIELDS = [];
-Q_PAGES.forEach(function(page){ page.fields.forEach(function(f){ if (f.id) Q_FIELDS.push(f); }); });
+Q_PAGES.forEach(function(page){ page.fields.concat(page.prefilled || []).forEach(function(f){ if (f.id) Q_FIELDS.push(f); }); });
+var PREFILLED = Q_PAGES[0].prefilled;
 var WEEK = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
-function optPairs(f){ return f.opts.map(function(o){ return Array.isArray(o) ? o : [o, o]; }); }
+function optPairs(f){ return (typeof f.opts === "function" ? f.opts() : f.opts).map(function(o){ return Array.isArray(o) ? o : [o, o]; }); }
 function isBlank(v){ return v == null || v === "" || (Array.isArray(v) && !v.length); }
 function splitList(text){ return String(text || "").split(/[,\n]/).map(function(x){ return x.trim(); }).filter(Boolean); }
 
@@ -1779,16 +1400,23 @@ function qInvalid(f){
   return false;
 }
 
-/* What the fortnight already showed, offered as a starting point. */
+/* What the scenarios already showed, offered as a starting point, and the demo's typical answers for the rest. */
 function prefillFromGame(){
   if (S.qPrefilled) return;
-  var help = [];
-  if (S.tags.arrival_connected || S.tags.motivation_company) help.push("Company and conversation");
-  if (S.tags.shared_cooking) help.push("Cooking shared meals");
-  if (S.tags.scam_taught || S.tags.scam_escalated) help.push("Tech and phone help");
-  if (help.length) S.q.helpTypes = help;
-  if (S.studyArea !== "other") S.q.homeownerBackground = "Retired " + discipline().career.replace(/^an? /, "");
+  var t = S.tags, talked = t.career_curiosity || t.career_exchange, help = ["Cooking shared meals", "Shopping and errands"];
+  if (talked) help.unshift("Company and conversation");
+  if (t.scam_taught || t.scam_escalated) help.push("Tech and phone help");
+  S.q.helpTypes = help;
+  S.q.socialLevel = talked ? 4 : t.career_deferred || t.arrival_practical ? 2 : 3;
+  var d = demoDefaults();
+  if (talked) d.fieldMentor = "keen";
+  Object.keys(d).forEach(function(k){ if (isBlank(S.q[k])) S.q[k] = d[k]; });
+  S.qTouched = {};
   S.qPrefilled = true;
+}
+/* The pre-filled answers the applicant never changed, for the staff watch-point. */
+function untouchedDefaults(){
+  return PREFILLED.filter(function(f){ return !(S.qTouched || {})[f.id]; }).map(function(f){ return f.short; });
 }
 
 function qFieldHTML(f){
@@ -1805,8 +1433,8 @@ function qFieldHTML(f){
         return '<button type="button" class="chip" data-multi="' + f.id + '" data-v="' + esc(o) + '" aria-pressed="' + (on.indexOf(o) !== -1) + '">' + esc(o) + '</button>';
       }).join("") + '</div>'
       + (f.other ? '<input type="text" data-q="' + f.id + '__other" maxlength="200" placeholder="Anything else? Separate with commas" value="' + esc(S.q[f.id + "__other"] || "") + '" aria-label="' + esc(f.label) + ': other">' : '');
-  } else if (f.type === "yesno" || f.type === "scale"){
-    var pairs = f.type === "yesno" ? YES_NO : [1,2,3,4,5].map(function(n){ return [n, String(n)]; });
+  } else if (f.type === "yesno" || f.type === "scale" || f.type === "pick"){
+    var pairs = f.type === "yesno" ? YES_NO : f.type === "pick" ? f.opts : [1,2,3,4,5].map(function(n){ return [n, String(n)]; });
     ctrl = '<div class="chips" id="' + id + '" role="group">' + pairs.map(function(o){
         return '<button type="button" class="chip" data-one="' + f.id + '" data-v="' + o[0] + '" aria-pressed="' + (v === o[0]) + '">' + o[1] + '</button>';
       }).join("") + '</div>'
@@ -1822,20 +1450,25 @@ function qFieldHTML(f){
 
 function renderQuestionnaire(){
   prefillFromGame();
-  var page = Q_PAGES[S.qPage], last = S.qPage === Q_PAGES.length - 1;
-  app.innerHTML = '<div class="topbar"><div class="toprow"><span class="daylabel">Final questions · ' + (S.qPage + 1) + ' of ' + Q_PAGES.length + '</span>'
-    + '<span class="clock">About 4 min</span></div></div>'
+  prepareMatch();
+  var page = Q_PAGES[S.qPage], last = S.qPage === Q_PAGES.length - 1, more = page.prefilled || [];
+  app.innerHTML = '<div class="topbar"><div class="toprow"><span class="daylabel">Matching questions</span>'
+    + '<span class="clock">About 20 seconds</span></div></div>'
     + '<div class="scroll" id="qscroll"><div class="pad">'
-    + '<div class="qhead"><div class="qprog">' + Q_PAGES.map(function(_, i){ return '<i class="' + (i <= S.qPage ? "on" : "") + '"></i>'; }).join("") + '</div>'
+    + '<div class="qhead">'
     + '<h2 style="font-size:25px;margin-top:8px">' + esc(page.title) + '</h2>'
-    + (S.qPage === 0 ? '<p class="sub">Your fortnight with Marg is done. These questions fill in the parts of your matching profile the game can’t tell us. ' + esc(page.intro) + '</p>' : '')
+    + (S.qPage === 0 ? '<p class="sub">Your ' + scenariosInWords() + ' scenarios with Marg are done. ' + esc(page.intro) + '</p>' : '')
     + '</div>'
     + '<div class="qgrid">' + page.fields.map(qFieldHTML).join("") + '</div>'
+    + (more.length ? '<details class="prefill" id="prefill"><summary>Pre-filled answers (' + more.length + ')</summary>'
+        + '<p class="sub" style="font-size:12.5px">Typical answers, open to most homes. Change any that don’t fit you.</p>'
+        + '<div class="qgrid">' + more.map(qFieldHTML).join("") + '</div></details>' : '')
     + '<div id="qerr"></div>'
     + '<div class="btnrow">' + (S.qPage > 0 ? '<button class="cont ghost" id="qback">Back</button>' : '')
     + '<button class="cont primary" id="qnext">' + (last ? "Submit my profile" : "Next") + '</button></div>'
     + '</div></div>';
 
+  var touch = function(id){ S.qTouched = S.qTouched || {}; S.qTouched[id] = true; };
   /* A field flagged by Next stops being flagged as soon as its answer is fine. */
   var recheck = function(id){
     var f = Q_FIELDS.filter(function(x){ return x.id === id; })[0], box = el("#qf-" + id);
@@ -1843,7 +1476,7 @@ function renderQuestionnaire(){
     if (!app.querySelector(".qfield.bad")) el("#qerr").innerHTML = "";
   };
   Array.prototype.forEach.call(app.querySelectorAll("[data-q]"), function(input){
-    input.addEventListener("input", function(){ S.q[input.getAttribute("data-q")] = input.value; save(); recheck(input.getAttribute("data-q").split("__")[0]); });
+    input.addEventListener("input", function(){ var id = input.getAttribute("data-q"); S.q[id] = input.value; touch(id.split("__")[0]); save(); recheck(id.split("__")[0]); });
   });
   Array.prototype.forEach.call(app.querySelectorAll("[data-multi]"), function(b){
     b.onclick = function(){
@@ -1851,21 +1484,22 @@ function renderQuestionnaire(){
       var at = list.indexOf(val);
       if (at === -1) list.push(val); else list.splice(at, 1);
       if (id === "campusDays") list.sort(function(a, c){ return WEEK.indexOf(a) - WEEK.indexOf(c); });
-      S.q[id] = list; b.setAttribute("aria-pressed", String(at === -1)); save(); recheck(id);
+      S.q[id] = list; b.setAttribute("aria-pressed", String(at === -1)); touch(id); save(); recheck(id);
     };
   });
   Array.prototype.forEach.call(app.querySelectorAll("[data-one]"), function(b){
     b.onclick = function(){
       var id = b.getAttribute("data-one"), raw = b.getAttribute("data-v");
-      S.q[id] = raw === "true" ? true : raw === "false" ? false : Number(raw);
+      S.q[id] = raw === "true" ? true : raw === "false" ? false : /^\d+$/.test(raw) ? Number(raw) : raw;
       Array.prototype.forEach.call(b.parentNode.children, function(x){ x.setAttribute("aria-pressed", String(x === b)); });
-      save(); recheck(id);
+      touch(id); save(); recheck(id);
     };
   });
   if (el("#qback")) el("#qback").onclick = function(){ S.qPage--; save(); render(); };
   el("#qnext").onclick = function(){
-    var bad = page.fields.filter(function(f){ return f.id && qInvalid(f); });
-    page.fields.forEach(function(f){ if (f.id) el("#qf-" + f.id).classList.toggle("bad", bad.indexOf(f) !== -1); });
+    var all = page.fields.concat(more), bad = all.filter(function(f){ return f.id && qInvalid(f); });
+    all.forEach(function(f){ if (f.id) el("#qf-" + f.id).classList.toggle("bad", bad.indexOf(f) !== -1); });
+    if (bad.some(function(f){ return more.indexOf(f) !== -1; })) el("#prefill").open = true;
     if (bad.length){
       el("#qerr").innerHTML = '<p class="err">' + (bad.length === 1 ? "One answer needs" : bad.length + " answers need") + ' a look: ' + esc(bad.map(function(f){ return f.label; }).join(", ")) + '.</p>';
       el("#qf-" + bad[0].id).scrollIntoView({block: "center"});
@@ -1874,15 +1508,20 @@ function renderQuestionnaire(){
     if (!last){ S.qPage++; save(); render(); el("#qscroll").scrollTop = 0; return; }
     scanQuestionnaire();
     S.submittedAt = nowISO();
-    S.view = "results";
+    S.view = "results"; S.matchPending = true;
     save(); render();
-    deliverProfile();
+    findDemoMatch().then(function(m){
+      S.demoMatch = m; S.matchPending = false;
+      save();
+      if (S.view === "results") drawMatchCard();
+      deliverProfile();
+    });
   };
 }
 
 /* ============================================================
    PROFILE — builds the GenStay matching profile (contract v1.0)
-   from the fortnight and the final questions.
+   from the days with Marg and the matching questions.
    ============================================================ */
 var PROFILE_TYPES = {
   connector:             {title:"The Connector",             colour:"var(--good)",  text:"You tended to build connection while keeping respect and boundaries in view."},
@@ -1891,41 +1530,31 @@ var PROFILE_TYPES = {
   transactional_guest:   {title:"The Transactional Guest",   colour:"var(--clay)",  text:"Your choices leaned towards keeping the arrangement practical and distant. That helps us work out what kind of homeshare would suit you."}
 };
 var MOTIVATION_CODES = {motivation_study:"quiet_space", motivation_saving:"saving_money", motivation_company:"company", motivation_learning:"learning"};
-var REDEMPTION_RESULT = {
-  redemption_reached_out:"Reached out in the Day 13 conversation (apologised, thanked or asked to talk).",
-  redemption_withdrew:"Held back in the Day 13 conversation.",
-  redemption_hostile:"Answered the Day 13 conversation with threatening or hostile language."
-};
-
-/* Free-text answers in the final questions get the same checks as the game's. */
+/* Typed answers in the matching questions get the same checks as the full game’s. */
 function scanQuestionnaire(){
   S.concerns = S.concerns.filter(function(c){ return !c.q; });
   Q_FIELDS.forEach(function(f){
-    var where = "Final questions, " + f.label.toLowerCase();
+    var where = "Matching questions, " + f.label.toLowerCase();
     if (f.type === "text") scanText(where, S.q[f.id], true);
     if (f.type === "list") splitList(S.q[f.id]).forEach(function(item){ scanText(where, item, true); });
     if (f.other) splitList(S.q[f.id + "__other"]).forEach(function(item){ scanText(where, item, true); });
   });
 }
-/* Answers that contradict each other or can't be right, for staff to ask about. */
+/* Answers that can't be right, for staff to ask about. (The one-tap smoking
+   and pets questions can't contradict themselves.) */
 function answerChecks(){
   var q = S.q, out = [];
-  if (q.smoker === true && q.needsSmokeFree === true) out.push("smokes or vapes, but needs a smoke-free home");
-  if (q.okWithPets === true && q.petAllergy === true) out.push("happy to live with pets, but has a pet allergy");
-  if (q.bedtime && q.wakeTime){
-    var mins = function(t){ var m = String(t).split(":"); return Number(m[0]) * 60 + Number(m[1]); };
-    var sleep = (mins(q.wakeTime) - mins(q.bedtime) + 1440) % 1440;
-    if (sleep < 240) out.push("bedtime " + q.bedtime + " and wake-up " + q.wakeTime + " leave under four hours’ sleep");
-  }
-  var work = Number(q.workHours);
-  if (q.studentType === "international" && work > 24) out.push("international student working " + work + " hours a week (check visa work limits)");
-  else if (work > 40) out.push("works " + work + " hours a week alongside study");
   if (!isBlank(q.rentBudgetWeekly) && Number(q.rentBudgetWeekly) < 20) out.push("rent budget of $" + Number(q.rentBudgetWeekly) + " a week");
   return out;
 }
 /* A plain-English summary for the staff watch-point. Staff can rewrite it. */
 function autoWatchPoint(){
-  var parts = [];
+  var parts = ["Quick demo: " + scenariosInWords() + " scenarios of 25-second multiple choice and no written answers, so treat the screening result as a first impression."];
+  var left = untouchedDefaults();
+  if (left.length) parts.push("Left at the demo’s typical answers: " + left.join(", ") + ".");
+  var missed = S.choices.filter(function(c){ return c.timedOut; });
+  if (missed.length) parts.push("Ran out of time on " + missed.length + " of " + S.choices.length + " questions ("
+    + missed.map(function(c){ return c.title; }).join(", ") + ").");
   CONCERNS.forEach(function(k){
     var found = S.concerns.filter(function(c){ return c.id === k.id; });
     if (!found.length) return;
@@ -1938,7 +1567,7 @@ function autoWatchPoint(){
   }
   var checks = answerChecks();
   if (checks.length) parts.push("Answers to check: " + checks.join("; ") + ".");
-  return parts.length ? "Automatic checks. " + parts.join(" ") : null;
+  return parts.join(" ");
 }
 
 function profileType(){
@@ -1954,32 +1583,32 @@ function setPath(obj, path, value){
   for (var i = 0; i < keys.length - 1; i++){ o[keys[i]] = o[keys[i]] || {}; o = o[keys[i]]; }
   o[keys[keys.length - 1]] = value;
 }
+/* Days keep their full-fortnight numbers (see DAYS), so the template's
+   landmark rows and path grid line up. */
 function screeningPart(){
-  var low = S.redemption && S.redemption.tag !== "meaningful_ask" ? S.redemption : null;
-  var after = low && low.day ? S.choices.filter(function(c){ return c.day > low.day; }).reduce(function(n, c){ return n + choiceScore(c); }, 0) : 0;
-  var final = S.responses.filter(function(r){ return r.day === 13; })[0];
+  var low = findLowestMoment();
+  var after = low ? S.choices.filter(function(c){ return c.day > low.day; }).reduce(function(n, c){ return n + choiceScore(c); }, 0) : 0;
   return {
     profile: profileType(),
     meters: {connection: S.meters.connection, respect: S.meters.respect, reliability: S.meters.reliability, awareness: S.meters.awareness},
     motivation: MOTIVATION_CODES[S.motivation] || null,
     finalPath: pathTier(),
-    pathByDay: DAYS.map(function(d){ return S.pathByDay[String(d.n)] || null; }),
-    recovered: low && low.day ? after > 0 : null,
+    pathByDay: DAYS.map(function(d){ return {day: d.n, path: S.pathByDay[String(d.n)] || null}; }),
+    recovered: low ? after > 0 : null,
     lowestMoment: low ? {day: low.day, note: low.note} : null,
-    redemption: low ? (REDEMPTION_RESULT[S.redemptionOutcome] || "No clear repair signal in the Day 13 conversation. Read the closing words.") : null,
-    flags: Object.keys(S.flags).filter(function(k){ return S.flags[k]; })
+    flags: ["quick_demo"].concat(Object.keys(S.flags).filter(function(k){ return S.flags[k]; }))
       .concat(CONCERNS.filter(function(k){ return S.concerns.some(function(c){ return c.id === k.id; }); }).map(function(k){ return k.id; }))
       .concat(S.meters.awareness <= 3 ? ["low_safety_awareness"] : [])
-      .concat(answerChecks().length ? ["answers_to_check"] : []),
+      .concat(answerChecks().length ? ["answers_to_check"] : [])
+      .concat(S.choices.some(function(c){ return c.timedOut; }) ? ["missed_timer"] : []),
     watchPoint: autoWatchPoint(),
     /* every choice made, so the matching can weigh each day's answers (not only the landmarks) */
     choices: S.choices.filter(function(c){ return c.tag; }).map(function(c){ return {day: c.day, tag: c.tag}; }),
-    landmarks: [6, 9, 11, 14].map(function(day){
-      var made = S.choices.filter(function(c){ return c.day === day; });
-      return {day: day, response: made.map(function(c){ return c.chosen; }).join(" · "), tags: made.map(function(c){ return c.tag; })};
-    }).filter(function(x){ return x.response; }),
-    answers: S.responses.filter(function(r){ return r.day !== 13; }).map(function(r){ return {day: r.day, question: r.prompt, answer: r.answer}; }),
-    finalWords: final ? final.answer : null
+    /* every scenario played, titled, so the template shows them all (not only the full game's four landmark days) */
+    landmarks: DAYS.map(function(d){
+      var made = S.choices.filter(function(c){ return c.day === d.n; });
+      return {day: d.n, title: "Scenario " + d.show + ": " + d.title, response: made.map(function(c){ return c.chosen; }).join(" · "), tags: made.map(function(c){ return c.tag; })};
+    }).filter(function(x){ return x.response; })
   };
 }
 function buildProfile(){
@@ -1987,17 +1616,24 @@ function buildProfile(){
   var p = {
     meta: {profileId: S.pid, updatedAt: (S.submittedAt || S.gameEndedAt || nowISO()).slice(0, 10),
            stages: {preGame: true, game: !!S.gameEndedAt, postGame: !!S.submittedAt}},
-    student: {firstName: names[0], lastName: names.slice(1).join(" ") || null, email: S.email, discipline: S.studyArea}
+    student: {firstName: names[0], lastName: names.slice(1).join(" ") || null, discipline: S.studyArea}
   };
-  Q_FIELDS.forEach(function(f){ var v = qValue(f); if (v !== undefined) setPath(p, f.path, v); });
+  Q_FIELDS.forEach(function(f){
+    var v = qValue(f);
+    if (v === undefined) return;
+    if (f.sets) Object.keys(f.sets[v] || {}).forEach(function(path){ setPath(p, path, f.sets[v][path]); });
+    else setPath(p, f.path, v);
+  });
+  if (S.studyArea !== "other" && S.q.fieldMentor !== "no") setPath(p, "interests.homeownerBackground", "Retired " + discipline().career.replace(/^an? /, ""));
   if (S.gameEndedAt) p.screening = screeningPart();
   return p;
 }
 
 /* ---------- storage: the artifact's record store, behind access rules ----------
-   profiles/<applicant id>             latest profile + a list of runs (staff read all; each applicant writes only their own)
-   profiles/<applicant id>/runs/<run>  every run, kept so staff can compare replays
-   reviews/<applicant id>              staff-only: pairing status, homeowner, checks, watch-point */
+   profiles/<account id>             the account's latest profile (staff read all; each account writes only its own)
+   profiles/<account id>/runs/<run>  every run, with its fictional match. On market day the stand's tablets
+                                     share one signed-in account, so each run is a different participant
+   reviews/<run>                     staff-only: pairing status, homeowner, checks, watch-point */
 function getCap(name){
   try {
     if (!window.claude || typeof window.claude.use !== "function") return Promise.resolve(null);
@@ -2021,7 +1657,7 @@ function indexFields(profile, extra){
 
 var syncChain = Promise.resolve();
 function syncProfile(){
-  var snap = {pid: S.pid, at: nowISO(), profile: buildProfile()};
+  var snap = {pid: S.pid, at: nowISO(), profile: buildProfile(), demoMatch: S.demoMatch || null};
   var attempt = function(){
     return writeProfile(snap).then(function(r){
       if (r.ok || (r.code !== "unavailable" && r.code !== "resource_exhausted")) return r;
@@ -2040,13 +1676,10 @@ function writeProfile(snap){
       if (!uid) return {ok: false, reason: "no_store"};
       var parent = db.doc("profiles/" + uid);
       var complete = !!snap.profile.meta.stages.postGame;
-      return parent.collection("runs").doc(snap.pid).set({pid: snap.pid, savedAt: snap.at, complete: complete, profile: snap.profile})
-        .then(function(){ return parent.get(); })
-        .then(function(doc){
-          var runs = (doc.exists && doc.data().runs || []).filter(function(r){ return r.pid !== snap.pid; });
-          runs.push({pid: snap.pid, savedAt: snap.at, complete: complete, screeningProfile: snap.profile.screening ? snap.profile.screening.profile : null});
-          return parent.set(indexFields(snap.profile, {updatedAt: snap.at, runs: runs}));
-        })
+      /* No list of runs in the account document: one shared stand account would grow it without limit,
+         and tablets writing at once would overwrite each other's lists. The desk reads the runs directly. */
+      return parent.collection("runs").doc(snap.pid).set({pid: snap.pid, savedAt: snap.at, complete: complete, profile: snap.profile, demoMatch: snap.demoMatch})
+        .then(function(){ return parent.set(indexFields(snap.profile, {updatedAt: snap.at, latestRun: snap.pid})); })
         .then(function(){ return {ok: true}; });
     });
   }).then(null, function(err){ return {ok: false, reason: "error", code: (err && err.code) || "unavailable"}; });
@@ -2096,11 +1729,10 @@ function copyText(text, statusId, onFail){
 }
 
 /* ============================================================
-   END OF THE FORTNIGHT, RESULTS
+   END OF THE DAYS, RESULTS
    ============================================================ */
 function endGame(){
   clearTimer();
-  if (!S.redemption) S.redemption = findLowestMoment();
   S.gameEndedAt = nowISO();
   S.view = "questionnaire"; S.qPage = 0;
   save(); render();
@@ -2136,24 +1768,22 @@ function showProfileText(note){
 
 function renderResults(){
   var type = PROFILE_TYPES[profileType()];
-  var seen = {};
-  var moments = S.choices.filter(function(c){
-    if (c.day < 5 || c.day > 13 || seen[c.day]) return false;
-    return (seen[c.day] = true);
-  }).map(function(c){
-    return '<div class="row"><div><b>Day ' + c.day + ' · ' + esc(c.title) + '</b><div class="sub" style="font-size:13px">' + esc(c.chosen) + '</div></div></div>';
+  var moments = S.choices.map(function(c){
+    var d = DAYS.filter(function(x){ return x.n === c.day; })[0] || {show: "", title: c.title};
+    return '<div class="row"><div><b>Scenario ' + d.show + ' · ' + esc(d.title) + '</b><div class="sub" style="font-size:13px">' + esc(c.chosen) + '</div></div></div>';
   }).join("");
   var file = "genstay-profile-" + S.pid + ".json";
 
   app.innerHTML =
     '<div class="stage">' + scenePorch(LIGHT.dusk, {marg: {pose: "stand", x: 470, y: 301, s: 0.84}}) + '</div>'
     + '<div class="scroll"><div class="pad">'
-    + '<div><div class="kicker">Fourteen days · complete</div>'
-    + '<h1 style="font-size:29px;margin-top:6px">' + esc(S.name.split(" ")[0] || "You") + ' and Marg: the fortnight</h1></div>'
+    + '<div><div class="kicker">Quick demo · complete</div>'
+    + '<h1 style="font-size:29px;margin-top:6px">' + esc(S.name.split(" ")[0] || "You") + ' and Marg</h1></div>'
+    + '<div id="matchcard"></div>'
     + '<div><span class="band" style="background:' + type.colour + '">' + esc(type.title) + '</span></div>'
     + '<p class="line">' + esc(type.text) + '</p>'
-    + '<div class="notice">This is a reflection on the path you took, not a pass-or-fail result. A person at the placement service reads your answers and makes any placement decision.</div>'
-    + (moments ? '<div><div class="who narr" style="margin-bottom:8px">Moments you shaped</div><div class="rows">' + moments + '</div></div>' : '')
+    + '<div class="notice" id="resultnote">' + resultNote() + '</div>'
+    + (moments ? '<div><div class="who narr" style="margin-bottom:8px">Your choices</div><div class="rows">' + moments + '</div></div>' : '')
     + (S.concerns.some(function(c){ return c.id === "welfare_concern"; })
         ? '<div class="notice"><b>If things feel hard right now,</b> you can talk to someone any time. Lifeline: <span class="mono">13 11 14</span>. Beyond Blue: <span class="mono">1300 22 4636</span>.</div>'
         : '')
@@ -2183,6 +1813,111 @@ function renderResults(){
   el("#showtext").onclick = function(){ showProfileText(); };
   el("#done").onclick = function(){ if (S.synced) clearSaved(); S = freshState(); render(); };
   if (S.synced) setStatus("savestat", "ok", "Your profile has reached the placement service. You can close this page.");
+  drawMatchCard();
+}
+
+/* ---------- the market-day pairing: a fictional homeowner ----------
+   Each participant is matched with the best of the fictional hosts in
+   genstay-hosts.sample.json, published beside this page, by the same
+   matching the staff desk uses (genstay-matching.js). Everyone gets
+   their own best match: hosts aren't used up. The pairing is saved with
+   the run, so the staff desk's live board shows what the participant saw. */
+var DEMO_HOSTS_URL = "genstay-hosts.sample.json";
+var demoHostsLoading = null;
+function loadDemoHosts(){
+  if (!demoHostsLoading) demoHostsLoading = fetch(DEMO_HOSTS_URL)
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function(text){ return loadMatcher().then(function(M){
+      if (!M) return null;
+      var generated = null;
+      try { generated = JSON.parse(text).generated; } catch (e) { /* a host list without a date keeps its dates */ }
+      return freshDates(M.parseHosts(text).hosts, generated);
+    }); })
+    .then(null, function(){ demoHostsLoading = null; return null; });
+  return demoHostsLoading;
+}
+/* The sample rooms come free a few months after the file was written
+   ("generated"). On a later market day every date moves forward by the
+   months since, so the rooms are still coming free when people play. */
+function freshDates(hosts, generated){
+  var from = /^(\d{4})-(\d{2})/.exec(generated || ""), now = new Date();
+  var months = from ? (now.getFullYear() - +from[1]) * 12 + now.getMonth() + 1 - +from[2] : 0;
+  if (months > 0) hosts.forEach(function(h){
+    var pl = h.placement || {}, m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(pl.availableFrom || "");
+    if (!m) return;
+    var d = new Date(+m[1], +m[2] - 1 + months, +m[3]);
+    pl.availableFrom = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+  });
+  return hosts;
+}
+function prepareMatch(){ loadDemoHosts(); }
+/* Resolves the match summary, or null if the hosts or the matcher couldn't load in time. */
+/* Resolves the outcome, or null. A screen-out (and its reasons) needs only
+   the matcher, so it still shows when the hosts file can't load. */
+function findDemoMatch(){
+  var late = new Promise(function(done){ setTimeout(function(){ done(null); }, 6000); });
+  return Promise.race([Promise.all([loadDemoHosts(), loadMatcher()]), late]).then(function(got){
+    var M = window.GenStayMatch;
+    if (!M) return null;
+    return matchSummary(M.bestMatch({id: S.pid, name: S.name, profile: buildProfile()}, (got && got[0]) || []));
+  }, function(){ return null; });
+}
+function capFirst(t){ t = String(t || ""); return t.charAt(0).toUpperCase() + t.slice(1); }
+/* Why the reasons below rule a placement out: one unsafe choice, or several concerning ones together. */
+function screenIntro(basis){
+  return basis.indexOf("unsafe") !== -1 ? "Safety comes first in a homeshare, and some choices rule a placement out on their own."
+    : basis.indexOf("pattern") !== -1 ? "No single choice ruled it out, but together these did."
+    : "Your choices across the game rule out a placement for now.";
+}
+/* The note under the profile type. A run that was screened out isn't told there's no pass or fail. */
+function resultNote(){
+  return (outcomeOf(S.demoMatch) === "screened_out"
+    ? "Most of the game is a reflection on the path you took, but the choices above rule a placement out."
+    : "This is a reflection on the path you took, not a pass-or-fail result.")
+    + " It comes from the quick demo; the full screening is fourteen days with written answers. A person at the placement service makes any placement decision.";
+}
+/* The participant's outcome: their homeowner; shortlisted and waiting for a
+   suitable host (no match strong enough yet); or no placement, when an answer
+   in the game rules one out. */
+function drawMatchCard(){
+  var box = el("#matchcard");
+  if (!box) return;
+  var m = S.demoMatch, o = outcomeOf(m);
+  if (el("#resultnote")) el("#resultnote").textContent = resultNote();
+  if (S.matchPending){ box.innerHTML = '<div class="matchcard"><div class="mc-kicker">Your demo match</div><p class="sub">Finding your homeowner…</p></div>'; return; }
+  if (!m){ box.innerHTML = ""; return; }
+  if (o === "screened_out"){
+    box.innerHTML = '<div class="matchcard mc-out"><div class="mc-kicker">No placement this time</div>'
+      + '<div class="mc-name">We can’t offer you a homeowner from this run</div>'
+      + '<p class="mc-talk">' + esc(screenIntro(m.basis || ["unsafe"])) + '</p>'
+      + '<ul class="mc-list">' + (m.reasons || []).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>'
+      + '<p class="mc-note">In a real application, a coordinator would talk this through with you. You’re welcome to play again.</p></div>';
+    return;
+  }
+  if (o === "waiting"){
+    var bar = m.minScore || 65;
+    box.innerHTML = '<div class="matchcard mc-wait"><div class="mc-kicker">Shortlisted</div>'
+      + '<div class="mc-name">Waiting for a suitable host</div>'
+      + '<p class="mc-talk">You’re on our shortlist, but none of our current homeowners is a strong enough match for you yet. '
+      + (m.closest ? esc("None passes every check" + (m.standsInWay && m.standsInWay[0] ? " (for the closest, " + m.standsInWay[0] + ")" : "") + ".")
+          : esc("Your closest scored " + m.score + ", and we only place pairings of " + bar + " or more.")) + '</p>'
+      + (!m.closest && m.shortfall && m.shortfall.length ? '<p class="mc-talk"><b>What held it back:</b> ' + esc(m.shortfall.join(" and ")) + '.</p>' : '')
+      + '<p class="mc-note">In a real placement, we’d match you when the right homeowner joins. We only place pairings that suit both people.</p></div>';
+    return;
+  }
+  var initials = m.hostName.split(/\s+/).filter(function(w){ return w !== "and"; });
+  initials = (initials[0] || "").charAt(0) + (initials.length > 1 ? initials[initials.length - 1].charAt(0) : "");
+  var couple = m.first.indexOf(" and ") !== -1;
+  box.innerHTML = '<div class="matchcard">'
+    + '<div class="mc-kicker">Your demo match</div>'
+    + '<div class="mc-head"><div class="mc-avatar" aria-hidden="true">' + esc(initials) + '</div>'
+    + '<div class="mc-who"><div class="mc-name">' + esc(m.first) + (m.age ? ", " + m.age + (m.partnerAge ? " and " + m.partnerAge : "") : "") + '</div>'
+    + '<div class="mc-sub">' + esc([m.suburb, m.career].filter(Boolean).join(" · ")) + '</div></div>'
+    + '<div class="mc-score" title="How well this pairing suits you both, out of 100"><b>' + m.score + '</b><span>match</span></div></div>'
+    + (m.highlights.length ? '<ul class="mc-why">' + m.highlights.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>' : '')
+    + (m.talkAbout.length ? '<p class="mc-talk"><b>Good to know:</b> ' + esc(capFirst(m.talkAbout.join("; "))) + '.</p>' : '')
+    + '<p class="mc-note">' + esc(m.first) + (couple ? " are" : " is") + ' made up for this demo. Real pairings are always made by people at the placement service.</p>'
+    + '</div>';
 }
 </script>
 <script>
@@ -2232,10 +1967,10 @@ function mergedProfile(item, profile){
 function renderStaff(){
   stopLive();
   app.className = "wide";
-  desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, run: null, frame: null, ready: false, pending: null,
-          hosts: [], match: null, hostSel: null, tab: "app", live: [], loaded: {}};
+  desk = {db: null, user: null, uid: null, items: [], reviews: {}, filter: "all", search: "", current: null, frame: null, ready: false, pending: null,
+          hosts: [], match: null, hostSel: null, tab: "app", live: [], byAccount: {}, stamps: {}, reads: {}, loaded: {}};
   app.innerHTML =
-    '<div class="topbar"><div class="toprow"><span class="daylabel">Pepaws Porch · staff review</span>'
+    '<div class="topbar"><div class="toprow"><span class="daylabel">GenStay Screener demo · staff review</span>'
     + '<span class="clock" id="acount">loading…</span></div>' + tabsHTML() + '</div>'
     + '<div class="desk" id="deskapp" role="tabpanel" aria-labelledby="tab-app">'
     + '<div class="queue"><div class="qtools">'
@@ -2255,7 +1990,6 @@ function renderStaff(){
     + '<div class="viewer"><div class="vbar">'
     + '<button class="cont small" id="prev" aria-label="Previous applicant">‹ Prev</button><button class="cont small" id="next" aria-label="Next applicant">Next ›</button>'
     + '<b class="grow" id="vname">No profile open</b>'
-    + '<select id="vrun" hidden aria-label="Choose a run"></select>'
     + '<button class="cont small" id="pdfone" disabled>Download PDF</button>'
     + '<button class="cont ghost small" id="dlone" disabled>Download JSON</button>'
     + '<button class="cont ghost small danger" id="delone" disabled>Delete applicant</button>'
@@ -2285,7 +2019,7 @@ function renderStaff(){
   };
   el("#pdfone").onclick = function(){
     var it = currentItem(); if (!it) return;
-    makePdfFile([mergedProfile(it, desk.run && desk.run.profile)], "genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".pdf", "fstat");
+    makePdfFile([mergedProfile(it)], "genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".pdf", "fstat");
   };
   el("#pdfall").onclick = function(){
     var list = visibleItems();
@@ -2303,10 +2037,9 @@ function renderStaff(){
   };
   el("#dlone").onclick = function(){
     var it = currentItem(); if (!it) return;
-    var p = mergedProfile(it, desk.run && desk.run.profile);
+    var p = mergedProfile(it);
     offerDownload("genstay-profile-" + cleanId(it.name || it.id).toLowerCase() + ".json", JSON.stringify(p, null, 2), "fstat");
   };
-  el("#vrun").onchange = function(){ openRun(this.value); };
   bindHostDesk();
   Promise.all([getCap("db"), getCap("user")]).then(function(caps){
     desk.db = caps[0]; desk.user = caps[1];
@@ -2423,12 +2156,23 @@ function loadQueue(openId){
     return Promise.resolve();
   }
   stopQueue();
-  desk.openId = openId || null; desk.loaded = {};
+  desk.byAccount = {}; desk.stamps = {}; desk.openId = openId || null; desk.loaded = {};
   setStatus("astat", "wait", "Reading the placement record…");
   var lost = function(err){ setStatus("astat", "no", "Lost the live link to the placement record (" + ((err && err.code) || "unavailable") + "). Press Refresh."); };
-  desk.live.push(desk.db.collection("profiles").orderBy("updatedAt", "desc").limit(1000).onSnapshot(function(snap){
+  desk.live.push(desk.db.collection("profiles").limit(1000).onSnapshot(function(snap){
     if (!desk) return;
-    desk.items = snap.docs.map(function(d){ return Object.assign({id: d.id}, d.data()); }).filter(function(it){ return it.profile; });
+    var seen = {};
+    snap.docs.forEach(function(d){
+      var data = d.data() || {};
+      seen[d.id] = 1;
+      if (data.imported){ desk.byAccount[d.id] = data.profile ? [Object.assign({id: d.id}, data)] : []; return; }
+      /* every save touches the account's index doc, so a changed stamp means new or changed runs */
+      var stamp = (data.updatedAt || "") + "|" + (data.latestRun || "") + "|" + (data.runsChangedAt || "");
+      if (desk.stamps[d.id] !== stamp){ desk.stamps[d.id] = stamp; readRuns(d.id, lost); }
+    });
+    Object.keys(desk.byAccount).forEach(function(id){
+      if (!seen[id]){ delete desk.byAccount[id]; delete desk.stamps[id]; }
+    });
     desk.loaded.profiles = true;
     queueChanged();
   }, lost));
@@ -2441,11 +2185,28 @@ function loadQueue(openId){
   }, lost));
   return Promise.resolve();
 }
+/* Every run on an account is a participant of its own: on market day the
+   stand's tablets share one signed-in account. */
+function readRuns(account, lost){
+  var d0 = desk, ticket = (desk.reads[account] || 0) + 1;
+  desk.reads[account] = ticket;
+  desk.byAccount[account] = desk.byAccount[account] || [];
+  desk.db.collection("profiles/" + account + "/runs").orderBy("savedAt", "desc").limit(1000).get().then(function(snap){
+    if (desk !== d0 || desk.reads[account] !== ticket || !desk.stamps[account]) return;
+    desk.byAccount[account] = snap.docs.map(function(d){
+      var r = d.data() || {};
+      return r.profile ? indexFields(r.profile, {id: d.id, account: account, updatedAt: r.savedAt, complete: !!r.complete, demoMatch: r.demoMatch || null}) : null;
+    }).filter(Boolean);
+    queueChanged();
+  }, lost);
+}
 /* Redraws after any live change, keeping the open profile open. */
 function queueChanged(){
   if (!desk || !desk.loaded.profiles || !desk.loaded.reviews) return;
   /* an applicant deleted here or on another staff screen: close their profile */
   if (desk.current && !itemById(desk.current)) closeItem();
+  desk.items = [].concat.apply([], Object.keys(desk.byAccount).map(function(k){ return desk.byAccount[k]; }))
+    .sort(function(a, b){ return String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")); });
   setStatus("astat", "ok", count(desk.items.length, "profile") + ". New ones appear here as people finish.");
   drawQueue();
   refreshMatches();
@@ -2484,10 +2245,11 @@ function drawQueue(){
       + (it.attention ? '<span class="pill dark" style="background:var(--bad)">Needs attention</span>' : '')
       + '<span class="pill">' + esc(label(PAIRING, r.pairingStatus)) + '</span>'
       + (it.complete ? '' : '<span class="pill">Questions unfinished</span>')
-      + ((it.runs || []).length > 1 ? '<span class="pill">' + it.runs.length + ' runs</span>' : '')
       + (it.imported ? '<span class="pill">From file</span>' : '')
+      + (/^DEMO-/.test(it.pid || "") ? '<span class="pill">Quick demo</span>' : '')
+      + (it.demoMatch ? '<span class="pill">' + esc(outcomeLabel(it.demoMatch)) + '</span>' : '')
       + '</span></button></li>';
-  }).join("") : '<li class="empty-state">' + (desk.items.length ? "No applicants match this filter." : "No profiles yet. They appear here when applicants finish the fortnight, or when you add profile files.") + '</li>';
+  }).join("") : '<li class="empty-state">' + (desk.items.length ? "No applicants match this filter." : "No profiles yet. They appear here when applicants finish the demo, or when you add profile files.") + '</li>';
   Array.prototype.forEach.call(app.querySelectorAll(".qitem"), function(b){ b.onclick = function(){ openItem(b.getAttribute("data-id")); }; });
 }
 function step(dir){
@@ -2500,48 +2262,39 @@ function step(dir){
 /* ---------- one applicant ---------- */
 /* No profile open: after the open applicant was deleted. */
 function closeItem(){
-  desk.current = null; desk.run = null;
+  desk.current = null;
   el("#vname").textContent = "No profile open";
   ["#pdfone", "#dlone", "#delone"].forEach(function(id){ el(id).disabled = true; });
   el("#review").innerHTML = '<div class="empty-state">Pick an applicant from the queue to review their profile.</div>';
   sendToFrame({});
 }
-/* An applicant's records: every run, the account's profile and the staff review. */
+/* An applicant's records: their run (or the imported profile) and the staff review.
+   The account's index keeps a copy of its latest run, so it's pointed at the
+   next newest run, or removed with the last one. Either way it changes, which
+   tells every open staff screen to read the account's runs again. */
 function eraseApplicant(it){
   var db = desk.db;
-  return db.collection("profiles/" + it.id + "/runs").limit(1000).get().then(function(snap){
-    return Promise.all(snap.docs.map(function(d){ return db.doc("profiles/" + it.id + "/runs/" + d.id).delete(); }));
-  }).then(function(){ return db.doc("profiles/" + it.id).delete(); })
-    .then(function(){ return db.doc("reviews/" + it.id).delete(); });
+  if (it.imported || !it.account) return db.doc("profiles/" + it.id).delete().then(function(){ return db.doc("reviews/" + it.id).delete(); });
+  var parent = db.doc("profiles/" + it.account);
+  return db.doc("profiles/" + it.account + "/runs/" + it.id).delete()
+    .then(function(){ return db.doc("reviews/" + it.id).delete(); })
+    .then(function(){ return db.collection("profiles/" + it.account + "/runs").orderBy("savedAt", "desc").limit(1).get(); })
+    .then(function(snap){
+      var next = snap.docs[0] && snap.docs[0].data();
+      return next && next.profile ? parent.set(indexFields(next.profile, {updatedAt: next.savedAt, latestRun: next.pid, runsChangedAt: nowISO()})) : parent.delete();
+    });
 }
 function openItem(id){
-  desk.current = id; desk.run = null;
+  desk.current = id;
   var it = currentItem(); if (!it) return;
   drawQueue();
   el("#vname").textContent = it.name || "Unnamed applicant";
   el("#dlone").disabled = false;
   el("#delone").disabled = false;
   el("#pdfone").disabled = !!desk.pdfBusy;
-  var runs = (it.runs || []).slice().sort(function(a, b){ return String(b.savedAt).localeCompare(String(a.savedAt)); });
-  var sel = el("#vrun");
-  sel.hidden = runs.length < 2;
-  sel.innerHTML = runs.map(function(r, i){
-    var t = PROFILE_TYPES[r.screeningProfile];
-    return '<option value="' + esc(r.pid) + '">' + (i === 0 ? "Latest run" : "Run of " + esc(String(r.savedAt).slice(0, 10))) + (t ? " · " + esc(t.title.replace(/^The /, "")) : "") + '</option>';
-  }).join("");
   setStatus("fstat", "wait", "Opening profile…");
   sendToFrame(mergedProfile(it));
   drawReview(it);
-}
-function openRun(pid){
-  var it = currentItem(); if (!it || !desk.db) return;
-  if (pid === it.pid){ desk.run = null; sendToFrame(mergedProfile(it)); return; }
-  setStatus("fstat", "wait", "Opening earlier run…");
-  desk.db.doc("profiles/" + it.id + "/runs/" + pid).get().then(function(doc){
-    if (!doc.exists){ setStatus("fstat", "no", "That run isn’t in the record."); return; }
-    desk.run = doc.data();
-    sendToFrame(mergedProfile(it, desk.run.profile));
-  });
 }
 function drawReview(it){
   var r = reviewFor(it), checks = r.checks;
@@ -2567,7 +2320,7 @@ function saveReview(it){
     desk.reviews[it.id] = review;
     drawQueue();
     refreshMatches();
-    sendToFrame(mergedProfile(it, desk.run && desk.run.profile));
+    sendToFrame(mergedProfile(it));
   };
   if (!desk.db){ done(); setStatus("rvstat", "wait", "Shown here only. The placement record isn’t available in this view."); return; }
   setStatus("rvstat", "wait", "Saving…");
@@ -2596,8 +2349,7 @@ function importTexts(texts){
   var at = nowISO();
   var items = profiles.map(function(p){
     var pid = (p.meta && p.meta.profileId) || ("import-" + Date.now().toString(36));
-    return indexFields(p, {id: "import-" + cleanId(pid), updatedAt: at, imported: true,
-      runs: [{pid: pid, savedAt: at, complete: !!(p.meta && p.meta.stages && p.meta.stages.postGame), screeningProfile: p.screening ? p.screening.profile : null}]});
+    return indexFields(p, {id: "import-" + cleanId(pid), updatedAt: at, imported: true});
   });
   if (!desk.db){
     items.forEach(function(it){ desk.items = desk.items.filter(function(x){ return x.id !== it.id; }); desk.items.unshift(it); });
@@ -2626,7 +2378,7 @@ function importTexts(texts){
    shows in their profile. Nobody is contacted.
    The live board shows each finished applicant with their best match:
    on market day, the fictional pairing the participant was shown.
-   This block is the same in pepaws-porch.html and pepaws-porch.demo.html.
+   This block is the same in genstay-screener.html and genstay-screener.demo.html.
    ============================================================ */
 var MATCHER_URL = "genstay-matching.js";
 var MATCHER_MISSING = "The matching script (genstay-matching.js) didn’t load. It must be published next to this page.";

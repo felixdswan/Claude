@@ -1,4 +1,4 @@
-/* Shared browser setup for the Pepaws Porch tests (the full game and the
+/* Shared browser setup for the GenStay Screener tests (the full game and the
    quick demo): a static server for game/, a stand-in for the artifact runtime
    (window.claude: record store, user, downloads, permissions), and pages that
    collect console errors and profile-template contract warnings. */

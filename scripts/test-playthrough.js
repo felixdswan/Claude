@@ -1,4 +1,4 @@
-/* Automated checks for Pepaws Porch, in a real browser.
+/* Automated checks for GenStay Screener, in a real browser.
 
    Serves game/ over HTTP (the staff desk embeds the profile template in a
    frame, which file:// won't allow), stands in for the artifact runtime with
@@ -11,16 +11,16 @@
        saves a review, and imports a profile file
      - screenshots every day's scene, the questionnaire, results and the desk
 
-   Usage: node scripts/test-playthrough.js [outdir]   (default: /tmp/pepaws-out) */
+   Usage: node scripts/test-playthrough.js [outdir]   (default: /tmp/genstay-screener-out) */
 const { chromium, serve, newPageFactory, storyDataProblems } = require("./browser-harness");
 const fs = require("fs");
 const path = require("path");
 
-const OUT = process.argv[2] || "/tmp/pepaws-out";
+const OUT = process.argv[2] || "/tmp/genstay-screener-out";
 fs.mkdirSync(OUT, { recursive: true });
 
 const errors = [];
-const newPage = newPageFactory(errors, "pepaws-porch.html");
+const newPage = newPageFactory(errors, "genstay-screener.html");
 
 const TEXT = {
   best: {
@@ -305,7 +305,7 @@ async function checkContract(browser, base, profile, label) {
   {
     const sample = fs.readFileSync(path.resolve(__dirname, "../genstay/genstay-profile.sample.json"), "utf8");
     const local = await newPage(browser, base, { mock: false });
-    await local.page.goto(base + "/pepaws-porch.html#staff");
+    await local.page.goto(base + "/genstay-screener.html#staff");
     await local.page.setViewportSize({ width: 1360, height: 980 });
     await local.page.click("#pastebtn"); await local.page.fill("#pastein", sample); await local.page.click("#pasteadd");
     await local.page.waitForSelector(".qitem");
@@ -319,7 +319,7 @@ async function checkContract(browser, base, profile, label) {
     await local.ctx.close();
 
     const off = await newPage(browser, base, { mock: false, offline: true });
-    await off.page.goto(base + "/pepaws-porch.html#staff");
+    await off.page.goto(base + "/genstay-screener.html#staff");
     await off.page.click("#pastebtn"); await off.page.fill("#pastein", sample); await off.page.click("#pasteadd");
     await off.page.waitForFunction(() => window.desk && desk.ready, null, { timeout: 8000 });
     await off.page.evaluate(() => { desk.frame.contentWindow.print = () => { window.__printed = true; }; });

@@ -306,19 +306,21 @@ filters.forEach(([name, hostId, kind, change], i) => {
   const REVIEWED_FINE = [
     /* a warmer or more independent style is never a fail */
     "arrival_connected", "arrival_tour", "arrival_alone", "arrival_practical", "motivation_study", "motivation_saving", "motivation_company", "motivation_learning",
-    "shared_cooking", "courteous_independence", "dinner_avoided", "noticed_step", "career_chat", "career_curiosity", "career_exchange", "career_deferred",
-    "together_garden", "together_baking", "together_later", "scam_taught", "scam_escalated", "step_deferred",
+    "shared_cooking", "courteous_independence", "dinner_avoided", "noticed_step", "career_curiosity", "career_exchange", "career_deferred",
+    "scam_taught", "scam_escalated", "step_deferred",
     "grief_present", "grief_invited", "grief_practical", "grief_withdrawn", "grief_shared", "attended_funeral", "supported_funeral", "funeral_checkin", "skipped_funeral",
     "friction_repair", "friction_wait", "friction_guidelines", "boundary_laughed", "boundary_avoided", "boundary_calm", "boundary_sharp", "boundary_curious",
     "fall_checked", "fall_asked", "fall_called", "fall_gp", "fall_supported", "step_reported", "step_plan",
     "david_honest", "david_confidential", "david_included", "emergency_called", "emergency_froze", "emergency_wait_safe",
     "folder_found", "went_with_host", "followed_to_hospital", "packed_belongings",
+    /* the quick demo's dispute follow-up: following through, or talking it over */
+    "dispute_asked_first", "dispute_met_out", "dispute_talked", "dispute_note_back", "dispute_to_service", "dispute_owned", "dispute_mediated",
     /* keyword-matched written answers: too unreliable to screen anyone out, so staff read them */
     "asked_about_career", "career_one_way", "honest_refusal", "study_then_join", "accepted_garden", "vague_excuse", "repair_open", "repair_withdrawn",
     "redemption_attempted", "redemption_withdrawn"
   ];
   const inGames = new Set();
-  for (const file of ["pepaws-porch.html", "pepaws-porch.demo.html"]) for (const m of read("game/" + file).matchAll(/tag:"([a-z0-9_]+)"/g)) inGames.add(m[1]);
+  for (const file of ["genstay-screener.html", "genstay-screener.demo.html"]) for (const m of read("game/" + file).matchAll(/tag:"([a-z0-9_]+)"/g)) inGames.add(m[1]);
   const unreviewed = [...inGames].filter((t) => !M.ANSWER_GRADES[t] && REVIEWED_FINE.indexOf(t) === -1);
   check(!unreviewed.length, "answers nobody has graded (add them to ANSWER_GRADES, or to REVIEWED_FINE here): " + unreviewed.join(", "));
   const stale = Object.keys(M.ANSWER_GRADES).filter((t) => !inGames.has(t)).concat(REVIEWED_FINE.filter((t) => !inGames.has(t)));
@@ -406,7 +408,7 @@ filters.forEach(([name, hostId, kind, change], i) => {
     const m = s.match(new RegExp('\\{id:"' + id + '"[^\\n]*?opts:\\[([^\\]]*)\\]'));
     return m ? JSON.parse("[" + m[1] + "]") : null;
   };
-  for (const file of ["pepaws-porch.html", "pepaws-porch.demo.html"]) {
+  for (const file of ["genstay-screener.html", "genstay-screener.demo.html"]) {
     const s = src(file);
     for (const id of ["helpTypes", "notOffered", "hobbies", "wantsToLearn", "canOffer", "bestTimes"]) {
       const got = opts(s, id);
@@ -439,7 +441,7 @@ filters.forEach(([name, hostId, kind, change], i) => {
     const m = read("game/" + file).match(/\/\* =+\n   HOSTS AND MATCHES[\s\S]*?<\/script>/);
     return m ? m[0] : null;
   };
-  const a = block("pepaws-porch.html"), b = block("pepaws-porch.demo.html");
+  const a = block("genstay-screener.html"), b = block("genstay-screener.demo.html");
   check(a && b, "a staff desk has no Hosts and matches block");
   check(a === b, "the Hosts and matches code differs between the full game and the demo");
 }

@@ -1,4 +1,4 @@
-# Pepaws Porch
+# GenStay Screener
 
 A homeshare screening game for an intergenerational housing placement service.
 
@@ -18,14 +18,14 @@ another on a built-in review desk, add the homeowners' profiles, and get suggest
 The other days branch on earlier choices. Day 13 brings back the applicant's lowest moment in a
 new form.
 
-A **quick demo** (`game/pepaws-porch.demo.html`) plays the same story in four to five minutes,
+A **demo** (`game/genstay-screener.demo.html`) plays four short scenarios in about two minutes,
 then pairs each player with a fictional homeowner. It's built for a live market-day stall: see
 [Quick demo](#quick-demo) and [Market day](#market-day) below.
 
 ## What's here
 
-    game/pepaws-porch.html               the game and the staff review desk, one file, no build step
-    game/pepaws-porch.demo.html          the quick demo, with its own staff desk, one file
+    game/genstay-screener.html               the game and the staff review desk, one file, no build step
+    game/genstay-screener.demo.html          the quick demo, with its own staff desk, one file
     game/genstay-profile-template.html   the GenStay profile template the desk shows each profile in
     game/genstay-matching.js             the matching: reads host profiles, filters and scores pairings from both sides, allocates the best
     game/genstay-hosts.sample.json       fifteen fictional hosts: the demo's market-day homeowners, and examples of the host format
@@ -36,7 +36,7 @@ then pairs each player with a fictional homeowner. It's built for a live market-
     scripts/test-demo.js                 automated runs of the quick demo, the Hosts and matches tab, and the live board
     scripts/test-matching.js             checks for the matching (no browser needed)
     scripts/browser-harness.js           shared test setup: a local server and a stand-in for the artifact runtime
-    design/pepaws-porch.html             the original design bible (from the earlier Bruce version, kept for reference)
+    design/pepaws-porch.html             the original design bible (from the earlier Bruce version, when the game was Pepaws Porch)
 
 The game, the template and the matching script are published together as one artifact, and the
 demo with the same two files and `genstay-hosts.sample.json` as another. Each page finds them by
@@ -118,11 +118,12 @@ The desk's second tab holds the homeowners' profiles and suggests pairings.
     real risk: lifting Marg straight up after her fall, walking away and leaving her on the
     ground, shaking her and ringing her son before 000 when she collapses, and giving her water
     and sitting her up.
-  - **Part fail (12):** a concern, such as leaving Marg alone with a scam text, telling her a
-    friend who just died is "in a better place", answering a complaint with "I pay rent", running
-    next door before calling 000, or (in the full game) keeping her fall secret. **Three part
-    fails** rule out automatic matching too; one or two show staff a caution on each pairing.
-  - **Fine (66):** everything else. A warmer or a more independent style never counts against
+  - **Part fail (17):** a concern, such as taking over Marg's phone or leaving her alone with a
+    scam text, answering a complaint with "I pay rent", hanging up on her son, running next door
+    before calling 000, or (in the full game) telling her a friend who just died is "in a better
+    place" or keeping her fall secret. **Three part fails** rule out automatic matching too; one
+    or two show staff a caution on each pairing.
+  - **Fine (69):** everything else. A warmer or a more independent style never counts against
     anyone, and keyword-matched written answers are left to staff.
 
   Every choice on every day counts, and a later recovery doesn't undo the first instinct. Staff
@@ -155,27 +156,36 @@ match the participant saw; in the full game, the applicant's best host among the
 
 ## Quick demo
 
-`game/pepaws-porch.demo.html` is a separate, shorter version for demonstrations and quick trials.
+`game/genstay-screener.demo.html` is a separate, shorter version for demonstrations and quick trials.
 The full game is unchanged.
 
-- **Nine days, four big moments.** Arrival, house routines, shared ground, the bank text and the
-  noisy night are the everyday days; loss, the biased remark, the fall and the emergency are the
-  big moments. Anything a later day mentions (the loose step, the dinner invitation, the community
-  garden, the medical folder) is set up on an earlier day that every applicant sees.
-- **Multiple choice only, 25 seconds a question.** Each day opens with an untimed scene, then one
-  timed question (two on Day 1), then Marg's reaction. Pausing pauses the timer. The longest
-  question is about 35 words, roughly 14 seconds' reading at a slow pace. A timed-out question
-  counts as no answer: it nudges the meters down a little and is reported to staff.
-- **Day 3 feeds the profile.** Marg talks about her career (the applicant's own field) and asks
-  what they'd like to do together: hear about her work, help at the community garden, bake, or
-  keep the week for study. The answer pre-fills the matching questions below.
-- **A first name and an optional email** to start. Typing an email in public slows a stall down.
-- **Two pages of matching questions.** The first covers the hard filters: age, gender, campus (one
-  of the five the hosts give commute times for), move-in month (the next few months), length of
-  stay, rent, homeowner gender, other students, smoking and pets (one tap each). The second covers the scoring points: the career they're heading for (options for their
-  area of study), whether they'd like a homeowner from their field, how much time they'd like to
-  spend together, languages, hobbies, something they'd like to learn, hours a week, and help
-  offered and not offered.
+Built for a five-minute presentation slot: about a minute and a half to play, and 20 seconds of
+questions.
+
+- **Four scenarios.** Each tests one thing staff care about:
+  1. **The conversation.** Over tea, Marg mentions her career (the applicant's own field). Do they
+     ask about it, swap stories, or keep to themselves?
+  2. **Agency.** A scam text. Do they walk her through the warning signs, or take her phone and
+     deal with it themselves?
+  3. **A dispute, in two stages.** Everyone answers the first: the morning after a loud late night.
+     The second follows from that answer: after agreeing to give notice, a friend wants to stay
+     (do they keep the agreement?); after waiting, Marg leaves a note asking to talk; after "I pay
+     rent", her son rings. All three lead on to the last scenario.
+  4. **The emergency.** Marg falls and hits her head. Do they keep her still and call 000?
+- **One screen a question, 25 seconds each.** The situation sits above the question, then Marg's
+  reaction. Five questions in all. Pausing pauses the timer. A timed-out question counts as no
+  answer; at the dispute, it counts as waiting, so the follow-up is Marg's note.
+- **The answers count.** Every option is graded (see Hosts and matches): moving Marg, or giving her
+  water, screens a player out on its own; taking over her phone, "I pay rent", hanging up on her son
+  and the like add up, three to a screen-out.
+- **A first name and an area of study** to start. No email.
+- **One page of matching questions, mostly pre-filled.** Campus, gender, how much time they'd like
+  to spend together, the help they'd offer, and hobbies. The conversation and the scam pre-fill
+  time together, help and whether they'd like a homeowner from their field. Everything else (age,
+  move-in month, stay, rent, homeowner gender, other students, smoking, pets, career goal,
+  languages, things to learn, hours, help not offered) starts at typical answers, open to most
+  homes, under **Pre-filled answers**, where any can be changed. Staff are told which were left
+  at the defaults.
 - **A curated outcome, one of three.** The results screen uses the same matching as the staff
   desk, against the fictional hosts in `genstay-hosts.sample.json`:
   - **Matched:** their best homeowner, scoring 65 or more: name, age, suburb, former career, the
@@ -190,12 +200,13 @@ The full game is unchanged.
 
   The Live board shows the same outcome, with first names only and no reasons for anyone not
   placed. If the hosts file can't load within six seconds, the results show without an outcome.
-- **About 4 to 5 minutes in all.** The nine days take about 3 to 4 minutes depending on reading
-  speed, and the questions about a minute.
+- **About two minutes in all.** Five questions and five reactions: 305 words, about 1.4 minutes
+  at a typical reading pace (1.7 at a slow one), plus the questions.
 - **The same GenStay profile.** It fills fewer fields (no written answers, no contact details).
   Profile ids start with `DEMO-`, the flags include `quick_demo` (and `missed_timer` if a timer
-  ran out), and the watch-point says it was the quick demo. Days keep their numbers from the full
-  fortnight (1, 2, 3, 4, 6, 8, 9, 11 and 14) so the template's landmark rows line up.
+  ran out), and the watch-point says it was the quick demo. Each scenario keeps a day number from
+  the full fortnight (1, 4, 8, 10 and 14) and is saved as a titled landmark, so staff see every
+  answer in the template.
 - **Its own artifact, desk and record store.** Publish the demo with the same capabilities, and the
   template, matching script and sample hosts beside it. Its `#staff` desk shows only demo profiles and its own
   hosts, so they never mix with real applicants. PDF and JSON downloads and the Hosts and matches
@@ -256,21 +267,21 @@ sign-in. Only `writeProfile()` and the desk's `loadQueue()` would change.
 
 Serve `game/` over HTTP (the desk embeds the template in a frame, which `file://` won't allow):
 
-    npx http-server game -p 8080      # then open http://localhost:8080/pepaws-porch.html
+    npx http-server game -p 8080      # then open http://localhost:8080/genstay-screener.html
 
 Without the artifact runtime there is no record store. The game still plays end to end and
 offers the download fallback, and the desk shows profile files you add without saving them.
 
-    node scripts/test-playthrough.js /tmp/pepaws-out
+    node scripts/test-playthrough.js /tmp/genstay-screener-out
 
 plays a best run, a worst run, a hostile run and a timed-out run against a stand-in record store,
 checks each stored profile against the template's contract, exercises the staff desk and the PDF
 downloads, and saves screenshots of every scene.
 
-    node scripts/test-demo.js /tmp/pepaws-demo-out
+    node scripts/test-demo.js /tmp/genstay-screener-demo-out
 
 does the same for the quick demo: best, worst and timed-out runs, checks that no screen mentions
-something the story hasn't set up, the two pages of questions, the match card and the match saved
+something the story hasn't set up, every branch of the dispute, the pre-filled questions page, the match card and the match saved
 with the run, the staff desk's PDF and JSON downloads, the Hosts and matches tab (the sample hosts
 file, pasted spreadsheet rows, the CSV template, the suggested pairings and their reasons,
 suggesting one, status and removal), the applicant's own profile download, a reading-time

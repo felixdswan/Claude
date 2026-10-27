@@ -184,9 +184,9 @@ The Source column is a suggestion for which stage captures each field. Pre = que
 
 Coded values outside these lists still display, just humanised (`intro_booked` → "Intro booked").
 
-## How Pepaws Porch fills this
+## How GenStay Screener fills this
 
-The screening game (`game/pepaws-porch.html`) builds the profile itself. There is no export step and no spreadsheet.
+The screening game (`game/genstay-screener.html`) builds the profile itself. There is no export step and no spreadsheet.
 
 | Stage | Where it happens | What it fills |
 |---|---|---|
@@ -197,17 +197,17 @@ The screening game (`game/pepaws-porch.html`) builds the profile itself. There i
 
 ### Quick demo
 
-`game/pepaws-porch.demo.html` builds the same profile from nine days of timed multiple choice and two pages of key matching questions, so it fills fewer fields. Differences:
+`game/genstay-screener.demo.html` builds the same profile from four scenarios of timed multiple choice (five questions: the dispute has a follow-up that depends on the first answer) and one page of matching questions, most of them pre-filled, so it fills fewer fields. Differences:
 
-- `meta.profileId` starts with `DEMO-`.
-- `screening.pathByDay` is `[{day, path}]` for the nine days played. Days keep their full-fortnight numbers (1, 2, 3, 4, 6, 8, 9, 11, 14), so `screening.landmarks` uses 6, 9, 11 and 14 like the full game.
+- `meta.profileId` starts with `DEMO-`. No email: the start page asks for a first name and an area of study.
+- The scenarios keep full-fortnight day numbers: 1 (the conversation), 4 (the scam text), 8 and 10 (the dispute and its follow-up) and 14 (the emergency). `screening.pathByDay` and `screening.choices` use those days.
+- `screening.landmarks` holds every scenario played, each with a `title` ("Scenario 3: Later that week"), so the template shows all five answers instead of the full game's four landmark rows.
 - `screening.flags` includes `quick_demo`, plus `missed_timer` when a 25-second timer ran out.
-- `screening.watchPoint` always opens with a quick-demo note and lists any timed-out questions.
-- No `screening.answers`, `finalWords` or `redemption` (there are no written answers and no Day 13), and no contact details beyond the email.
-- The start screen asks for a first name and an optional email (typing an email at a market stand slows everyone down).
-- The questions fill: `student.age`, `gender`, `languages`; `placement.campus` (one of the five campuses, from a list), `moveInDate` (the first of one of the next few months, from a list), `stayMonths`; `support.rentBudgetWeekly`, `hoursPerWeek`, `helpTypes`, `notOffered`; `household.homeownerGender`, `otherLodgers`, `smoker`, `needsSmokeFree`, `okWithPets`, `petAllergy` (smoking and pets are one tap each, so they can't contradict); `interests.careerGoal` (from options for the applicant's area of study), `fieldMentor`, `hobbies`, `wantsToLearn`; `lifestyle.socialLevel`.
-- Day 3 asks what the applicant would like to do with Marg this week. The answer pre-fills the questions: hearing about her career sets `fieldMentor` to `keen`, the community garden adds Gardening to `helpTypes` and `hobbies`, and baking adds Cooking and baking to `hobbies` and Family recipes to `wantsToLearn`. `student.languages` starts with English. All of these stay editable.
-- `interests.homeownerBackground` comes from the area of study, as in the full game's pre-fill, unless the applicant says a homeowner from their field doesn't matter.
+- `screening.watchPoint` opens with a quick-demo note, lists any timed-out questions, and names the pre-filled answers the applicant left at the demo's defaults.
+- No `screening.answers`, `finalWords` or `redemption` (no written answers and no Day 13), and no `screening.motivation`.
+- The questions ask `placement.campus`, `student.gender`, `lifestyle.socialLevel`, `support.helpTypes` and `interests.hobbies`. The rest start at typical answers the applicant can change: `student.age` (21), `placement.moveInDate` (the second month offered), `stayMonths` (12), `support.rentBudgetWeekly` (150), `household.homeownerGender` (either), `otherLodgers` (open), smoking (doesn't, doesn't mind), pets (happy), `interests.careerGoal` (the first for the area of study), `fieldMentor` (open), `student.languages` (English), `interests.wantsToLearn` (none), `support.hoursPerWeek` (8 to 10) and `notOffered` (personal care).
+- The conversation pre-fills: asking about Marg's career or swapping stories sets `fieldMentor` to `keen`, time together to 4 and adds Company and conversation to the help offered; heading off sets time together to 2. Handling the scam with her adds Tech and phone help.
+- `interests.homeownerBackground` comes from the area of study, unless the applicant says a homeowner from their field doesn't matter.
 - **The demo match.** When the questions are submitted, the demo matches the profile against the fictional hosts in `genstay-hosts.sample.json` (published beside it) with `GenStayMatch.bestMatch()`, and shows the participant their outcome: matched with a homeowner (scoring 65 or more), shortlisted and waiting for a suitable host, or no placement (an unsafe answer or a screening result rules it out). The run saves it as `demoMatch`: `{status, minScore, at}`, plus `{hostId, hostName, first, age, partnerAge, suburb, career, score, hostFit, studentFit, band, highlights, talkAbout, closest, standsInWay, shortfall, setAside}` when matched or waiting (the closest host, for staff), or `{reasons}` when screened out. The staff desk's Live board shows exactly that. It is not part of the profile and never reaches the template.
 - **Each run is its own applicant.** A market stand's tablets share one signed-in account, so the demo's desk lists every run separately (below).
 
